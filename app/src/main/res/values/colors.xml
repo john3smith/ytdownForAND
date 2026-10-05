@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="background">#F6F7F9</color>
+    <color name="surface">#FFFFFF</color>
+    <color name="text_primary">#17191C</color>
+    <color name="text_secondary">#62666D</color>
+    <color name="accent">#D92D20</color>
+    <color name="border">#D7DAE0</color>
+    <color name="progress">#1976D2</color>
+    <color name="progress_track">#DDE3EA</color>
+</resources>

@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">YTDown</string>
+    <string name="version_format">YTDown v%1$s</string>
+    <string name="screen_title">사진 및 동영상 다운로드</string>
+    <string name="info">i</string>
+    <string name="link_label">링크</string>
+    <string name="immediate_download">바로 다운로드</string>
+    <string name="url_hint">YouTube, X, Instagram 링크</string>
+    <string name="paste">붙여넣기</string>
+    <string name="download">다운로드</string>
+    <string name="download_account_media">X·Instagram 계정 전체 미디어</string>
+    <string name="cancel">취소</string>
+    <string name="cancel_press_again">취소하려면 1초 안에 한 번 더 누르세요.</string>
+    <string name="usage">사용법</string>
+    <string name="download_log">다운로드 로그</string>
+    <string name="download_log_empty">아직 다운로드 기록이 없습니다.</string>
+    <string name="clear_log">로그 삭제</string>
+    <string name="log_cleared">다운로드 로그를 삭제했습니다.</string>
+    <string name="usage_guide">1. 일반 다운로드\nYouTube, X 또는 Instagram 링크를 입력하거나 붙여넣은 뒤 화질을 선택하고 다운로드를 누르세요. 바로 다운로드가 켜져 있으면 공유하거나 클립보드에서 감지한 링크를 자동으로 다운로드합니다. 끄면 링크만 입력됩니다.\n\n2. 공유 다운로드\n지원하는 앱에서 링크를 YTDown으로 공유하면 앱이 열리고 바로 다운로드 설정에 따라 자동으로 시작하거나 링크만 입력됩니다.\n\n3. 계정 전체 미디어\nX 계정·게시물 또는 Instagram 프로필·게시물·릴스 탭 링크를 입력하고 계정 전체 미디어 버튼을 누르세요. Instagram 게시물 링크를 입력하면 작성자 계정을 찾습니다. 먼저 상단 로그인 메뉴에서 해당 사이트에 로그인해야 합니다.\n\n4. 대기열과 취소\n다운로드 중 새 링크는 최대 5개까지 대기합니다. 취소 버튼을 1초 안에 두 번 누르면 현재 작업과 대기열을 모두 취소합니다.\n\n5. 저장 위치\n완료된 파일은 Download/YTDown 폴더에 저장됩니다.</string>
+    <string name="quality_label">화질</string>
+    <string name="video_title_label">게시물 이름</string>
+    <string name="video_title_empty">다운로드할 게시물 이름이 표시됩니다.</string>
+    <string name="video_title_loading">게시물 이름 확인 중&#8230;</string>
+    <string name="video_title_unavailable">게시물 이름을 확인하지 못했습니다.</string>
+    <string name="status_ready">링크를 입력해 주세요.</string>
+    <string name="status_updating">yt-dlp 최신 버전 확인 중&#8230;</string>
+    <string name="status_engine_ready">준비 완료 (yt-dlp %1$s)</string>
+    <string name="status_update_failed">yt-dlp 업데이트 실패: %1$s</string>
+    <string name="status_starting">다운로드 준비 중&#8230;</string>
+    <string name="status_complete">다운로드가 완료되었습니다.</string>
+    <string name="status_failed">다운로드에 실패했습니다.</string>
+    <string name="status_cancelled">다운로드를 취소했습니다.</string>
+    <string name="invalid_url">YouTube, X 또는 Instagram 링크를 입력해 주세요.</string>
+    <string name="invalid_account_url">X 계정·게시물 또는 Instagram 프로필·게시물·릴스 탭 링크를 입력해 주세요.</string>
+    <string name="clipboard_empty">클립보드에 링크가 없습니다.</string>
+    <string name="already_downloading">같은 링크가 이미 다운로드 중이거나 대기 중입니다.</string>
+    <string name="queue_status">대기열 %1$d/10</string>
+    <string name="queue_added">대기열에 추가했습니다. 대기 %1$d개</string>
+    <string name="queue_full">대기열이 가득 찼습니다. 최대 10개까지 대기할 수 있습니다.</string>
+    <string name="queue_list">대기열 보기</string>
+    <string name="queue_empty">대기 중인 다운로드가 없습니다.</string>
+    <string name="queue_cancel_item">이 항목 취소</string>
+    <string name="queue_item_cancelled">대기 항목을 취소했습니다.</string>
+    <string name="wifi_only">Wi-Fi에서만 다운로드 시작</string>
+    <string name="wifi_waiting">Wi-Fi 연결을 기다리는 중 · 대기열 %1$d개</string>
+    <string name="wifi_required_bulk">Wi-Fi 연결 후 계정 다운로드를 시작할 수 있습니다.</string>
+    <string name="usage_queue_addendum">\n\n대기열 보기에서 각 대기 항목을 확인하거나 개별 취소할 수 있습니다. Wi-Fi에서만 다운로드 시작을 켜면 연결 전에는 새 다운로드가 대기하고, Wi-Fi 연결 시 순서대로 시작합니다.</string>
+    <string name="queue_cleared">현재 다운로드와 대기열을 취소했습니다.</string>
+    <string name="bulk_download_busy">다른 다운로드가 끝난 뒤 계정 전체 다운로드를 시작해 주세요.</string>
+    <string name="status_scanning_account">%1$s 계정의 미디어 게시물을 찾는 중&#8230;</string>
+    <string name="account_login_required">계정 전체 다운로드 전에 앱에서 %1$s에 로그인해 주세요.</string>
+    <string name="no_account_media">현재 %1$s 계정에서 미디어 게시물을 찾지 못했습니다.</string>
+    <string name="account_diagnostic_title">%1$s 계정 다운로드 진단 로그</string>
+    <string name="copy_log">로그 복사</string>
+    <string name="log_copied">진단 로그를 클립보드에 복사했습니다.</string>
+    <string name="close">닫기</string>
+    <string name="bulk_account_title">%1$s @%2$s 계정 미디어</string>
+    <string name="bulk_found">미디어 게시물 %1$d개를 최신순으로 다운로드합니다.</string>
+    <string name="bulk_progress">계정 미디어 %1$d/%2$d 시도</string>
+    <string name="bulk_attempting">계정 미디어 %1$d/%2$d 다운로드 시도 중&#8230;</string>
+    <string name="bulk_waiting">계정 미디어 %1$d/%2$d 시도 완료 · 다음 다운로드 시작</string>
+    <string name="bulk_complete">@%1$s: %2$d개 시도, %3$d개 성공, %4$d개 실패.</string>
+    <string name="bulk_failures_hint"> 실패 항목은 다운로드 로그를 확인하세요.</string>
+    <string name="engine_not_ready">다운로드 엔진을 준비하는 중입니다.</string>
+    <string name="save_location">저장 위치: Download/YTDown</string>
+    <string name="login_label">비공개 게시물 로그인</string>
+    <string name="login">로그인</string>
+    <string name="clear_login">로그인 정보 삭제</string>
+    <string name="login_status_none">저장된 로그인 없음</string>
+    <string name="login_status_saved">로그인 저장됨: %1$s</string>
+    <string name="login_instruction">%1$s에서 로그인한 뒤 로그인 완료를 누르세요.</string>
+    <string name="login_done">로그인 완료</string>
+    <string name="back">뒤로</string>
+    <string name="login_saved">로그인 정보를 저장했습니다.</string>
+    <string name="login_cleared">선택한 사이트의 로그인 정보를 삭제했습니다.</string>
+    <string name="login_cookie_missing">로그인을 확인할 수 없습니다. 사이트 로그인을 완료해 주세요.</string>
+    <string name="login_save_failed">로그인 정보 저장 실패:</string>
+    <string name="notification_channel_name">다운로드</string>
+    <string name="notification_channel_description">사진 및 동영상 다운로드 진행 상태</string>
+    <string name="notification_downloading">다운로드 중</string>
+    <string name="notification_downloading_queued">다운로드 중 · 대기 %1$d개</string>
+    <string name="status_background_timeout">Android의 6시간 백그라운드 실행 제한으로 다운로드를 중지했습니다.</string>
+    <string name="permission_required">저장 권한을 허용한 후 다시 시도해 주세요.</string>
+    <string name="status_with_detail">%1$s %2$s</string>
+    <string name="percent_format">%1$d%%</string>
+    <string-array name="quality_options">
+        <item>최고 화질</item>
+        <item>1080p 이하</item>
+        <item>720p 이하</item>
+    </string-array>
+    <string-array name="login_platforms">
+        <item>YouTube</item>
+        <item>X (Twitter)</item>
+        <item>Instagram</item>
+    </string-array>
+</resources>
