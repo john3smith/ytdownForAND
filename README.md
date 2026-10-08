@@ -1,5 +1,11 @@
 # YTDown for Android
 
+**YouTube·X·Instagram의 영상과 사진을 Android 기기에 저장하는 앱**입니다. 공유 메뉴로 링크를 보내거나 직접 입력하고, 대기열·계정 연속 다운로드·M4A 음원 추출을 사용할 수 있습니다.
+
+- [처음 사용하는 분을 위한 설명서](USER_GUIDE.md)
+- [APK 다운로드 및 버전별 변경사항](https://github.com/john3smith/ytdownForAND/releases)
+- [다른 PC에서 소스 빌드하기](SOURCE_BUILD.md)
+
 ## v1.9.17 음원만 추출
 
 - `음원만 추출 (M4A)` 토글을 추가했습니다. 최초 기본값은 **OFF**이며 변경한 설정은 기기에 저장됩니다.
