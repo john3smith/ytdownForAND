@@ -49,6 +49,7 @@ import androidx.core.content.ContextCompat;
 
 import com.yausername.youtubedl_android.YoutubeDL;
 import com.yausername.youtubedl_android.YoutubeDLRequest;
+import com.yausername.youtubedl_android.YoutubeDLResponse;
 import com.yausername.youtubedl_android.mapper.VideoInfo;
 
 import java.io.File;
@@ -80,6 +81,7 @@ public final class MainActivity extends Activity {
     private static final String UI_PREFERENCES = "ui_preferences";
     private static final String PREF_IMMEDIATE_DOWNLOAD = "immediate_download";
     private static final String PREF_WIFI_ONLY = "wifi_only";
+    private static final String PREF_AUDIO_ONLY = "audio_only";
     private static final long CANCEL_CONFIRM_WINDOW_MILLIS = 1_000;
 
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
@@ -90,6 +92,7 @@ public final class MainActivity extends Activity {
     private Spinner loginPlatformSpinner;
     private Switch immediateDownloadSwitch;
     private Switch wifiOnlySwitch;
+    private Switch audioOnlySwitch;
     private ProgressBar progressBar;
     private TextView videoTitleText;
     private TextView percentText;
@@ -341,6 +344,18 @@ public final class MainActivity extends Activity {
         });
         root.addView(wifiOnlySwitch, matchWrap(dp(12)));
 
+        audioOnlySwitch = new Switch(this);
+        audioOnlySwitch.setText(R.string.audio_only);
+        audioOnlySwitch.setTextColor(getColor(R.color.text_primary));
+        audioOnlySwitch.setChecked(getSharedPreferences(UI_PREFERENCES, MODE_PRIVATE)
+                .getBoolean(PREF_AUDIO_ONLY, false));
+        audioOnlySwitch.setOnCheckedChangeListener((button, checked) -> {
+            getSharedPreferences(UI_PREFERENCES, MODE_PRIVATE).edit()
+                    .putBoolean(PREF_AUDIO_ONLY, checked).apply();
+            if (qualitySpinner != null) qualitySpinner.setEnabled(!checked);
+        });
+        root.addView(audioOnlySwitch, matchWrap(dp(12)));
+
         TextView qualityLabel = new TextView(this);
         qualityLabel.setText(R.string.quality_label);
         qualityLabel.setTextColor(getColor(R.color.text_primary));
@@ -353,6 +368,7 @@ public final class MainActivity extends Activity {
                 this, R.array.quality_options, android.R.layout.simple_spinner_item);
         qualityAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         qualitySpinner.setAdapter(qualityAdapter);
+        qualitySpinner.setEnabled(!audioOnlySwitch.isChecked());
         qualitySpinner.setPadding(dp(10), 0, dp(10), 0);
         qualitySpinner.setBackground(rounded(Color.WHITE, getColor(R.color.border), 1, 6));
         root.addView(qualitySpinner, new LinearLayout.LayoutParams(
@@ -472,7 +488,8 @@ public final class MainActivity extends Activity {
     private void showUsage() {
         String guide = getString(R.string.usage_guide)
                 .replace("최대 5개", "최대 10개")
-                + getString(R.string.usage_queue_addendum);
+                + getString(R.string.usage_queue_addendum)
+                + getString(R.string.usage_audio_addendum);
         new AlertDialog.Builder(this)
                 .setTitle(R.string.usage)
                 .setMessage(guide)
@@ -654,7 +671,7 @@ public final class MainActivity extends Activity {
             return;
         }
 
-        enqueueTask(new DownloadQueue.Task(url, selectedFormat(), true));
+        enqueueTask(new DownloadQueue.Task(url, selectedFormat(), true, audioOnlySwitch.isChecked()));
     }
 
     private void startAccountDownload(DownloadQueue.Task task) {
@@ -832,7 +849,8 @@ public final class MainActivity extends Activity {
         }
         statusText.setText(getString(R.string.bulk_attempting,
                 bulkAttempted + 1, bulkTotal));
-        startDownload(new DownloadQueue.Task(url, format));
+        startDownload(new DownloadQueue.Task(url, format, false,
+                accountTask != null && accountTask.audioOnly));
     }
 
     private void finishBulkDiscovery(boolean success, String detail) {
@@ -875,7 +893,7 @@ public final class MainActivity extends Activity {
     }
 
     private void enqueueOrStart(String url, String format) {
-        enqueueTask(new DownloadQueue.Task(url, format));
+        enqueueTask(new DownloadQueue.Task(url, format, false, audioOnlySwitch.isChecked()));
     }
 
     private void enqueueTask(DownloadQueue.Task task) {
@@ -930,6 +948,8 @@ public final class MainActivity extends Activity {
 
         DownloadLogStore.start(this, task.url, task.format);
         logDownload("다운로드 작업 시작");
+        logDownload(task.audioOnly ? "음원만 추출: M4A · 사진/동영상 저장 안 함"
+                : "사진·동영상 다운로드 모드");
         downloading = true;
         long generation = ++downloadGeneration;
         activeUrl = task.url;
@@ -959,7 +979,7 @@ public final class MainActivity extends Activity {
         }
         File downloadCookieFile = cookieFile;
         activeDownloadFuture = executor.submit(() -> executeDownload(
-                task.url, outputDirectory, task.format, downloadCookieFile, generation));
+                task.url, outputDirectory, task.format, task.audioOnly, downloadCookieFile, generation));
     }
 
     private void startNextQueuedDownload() {
@@ -1014,6 +1034,7 @@ public final class MainActivity extends Activity {
                     ? (bulkScanning ? "미디어 검색 중" : "다운로드 " + bulkAttempted + "/" + bulkTotal)
                     : "대기";
             labels[index] = (index + 1) + ". [" + (task.account ? "계정 · " : "")
+                    + (task.audioOnly ? "음원 · " : "")
                     + state + "] " + task.url;
         }
         queueDialog = new AlertDialog.Builder(this)
@@ -1107,11 +1128,12 @@ public final class MainActivity extends Activity {
     }
 
     private void executeDownload(String url, File outputDirectory, String format,
-                                 File cookieFile, long generation) {
+                                 boolean audioOnly, File cookieFile, long generation) {
         if (!isDownloadActive(generation)) {
             return;
         }
-        boolean socialUrl = SocialImageDownloader.supports(url);
+        // Audio-only must never take the image/direct-video shortcut or photo fallback.
+        boolean socialUrl = !audioOnly && SocialImageDownloader.supports(url);
         logDownload(socialUrl
                 ? "소셜 게시물 감지: 구조화된 전체 미디어를 먼저 실행"
                 : "일반 동영상 주소 감지");
@@ -1194,12 +1216,22 @@ public final class MainActivity extends Activity {
         YoutubeDLRequest request = new YoutubeDLRequest(url);
         request.addOption("--yes-playlist");
         request.addOption("--no-mtime");
-        request.addOption("--merge-output-format", "mp4");
+        if (audioOnly) {
+            request.addOption("--extract-audio");
+            request.addOption("--audio-format", "m4a");
+            request.addOption("--no-keep-video");
+            request.addOption("--no-simulate");
+            request.addOption("--progress");
+            request.addOption("--print", "after_move:"
+                    + DownloadArtifactTracker.AUDIO_PATH_MARKER + "%(filepath)j");
+        } else {
+            request.addOption("--merge-output-format", "mp4");
+        }
         if (cookieFile != null && cookieFile.isFile()) {
             request.addOption("--cookies", cookieFile.getAbsolutePath());
         }
         request.addOption("-f", format);
-        request.addOption("-o", DownloadFormatSelector.outputTemplate(outputDirectory));
+        request.addOption("-o", DownloadFormatSelector.outputTemplate(outputDirectory, audioOnly));
 
         Map<String, String> filesBeforeVideoDownload =
                 DownloadArtifactTracker.snapshot(outputDirectory);
@@ -1226,9 +1258,29 @@ public final class MainActivity extends Activity {
         int ytDlpVideoCount = 0;
         Throwable videoError = null;
         try {
-            logDownload("yt-dlp 전체 동영상 항목 다운로드 실행");
-            YoutubeDL.getInstance().execute(request, PROCESS_ID, callback);
+            logDownload(audioOnly ? "yt-dlp 음원 추출 실행 · M4A"
+                    : "yt-dlp 전체 동영상 항목 다운로드 실행");
+            YoutubeDLResponse response = YoutubeDL.getInstance().execute(request, PROCESS_ID, callback);
             if (!isDownloadActive(generation)) {
+                return;
+            }
+            if (audioOnly) {
+                logDownload("최종 음원 경로 보고: "
+                        + (response.getOut().contains(DownloadArtifactTracker.AUDIO_PATH_MARKER) ? "있음" : "없음"));
+                List<File> audioFiles = DownloadArtifactTracker.completedAudioFiles(
+                        outputDirectory, response.getOut());
+                if (audioFiles.isEmpty()) {
+                    throw new IllegalStateException("실제 M4A 음원 파일이 없습니다. 사진 전용 게시물이나 음원 없는 영상은 추출할 수 없습니다.");
+                }
+                String[] paths = new String[audioFiles.size()];
+                for (int index = 0; index < audioFiles.size(); index++) {
+                    File audio = audioFiles.get(index);
+                    paths[index] = audio.getAbsolutePath();
+                    logDownload("실제 음원 확인: " + audio.getName() + " (" + audio.length() + " bytes)");
+                }
+                MediaScannerConnection.scanFile(this, paths, null, null);
+                logDownload("음원 추출 완료: " + audioFiles.size() + "개 · M4A");
+                runOnUiThread(() -> finishDownload(generation, true, null));
                 return;
             }
             List<File> videoFiles = DownloadArtifactTracker.changedVideos(
@@ -1250,7 +1302,7 @@ public final class MainActivity extends Activity {
                 return;
             }
             videoError = error;
-            logDownload("yt-dlp 동영상 다운로드 실패: " + safeMessage(error));
+            logDownload((audioOnly ? "음원 추출 실패: " : "yt-dlp 동영상 다운로드 실패: ") + safeMessage(error));
         }
 
         if (socialUrl && !videoDownloaded && imageCount == 0
@@ -1490,7 +1542,7 @@ public final class MainActivity extends Activity {
         bulkDownloadButton.setEnabled(engineReady);
         cancelButton.setEnabled(active || bulkMode);
         urlInput.setEnabled(true);
-        qualitySpinner.setEnabled(true);
+        qualitySpinner.setEnabled(!audioOnlySwitch.isChecked());
     }
 
     private void pasteUrl() {
@@ -1736,8 +1788,8 @@ public final class MainActivity extends Activity {
     }
 
     private String selectedFormat() {
-        return DownloadFormatSelector.forQualityPosition(
-                qualitySpinner.getSelectedItemPosition());
+        return DownloadFormatSelector.forMode(
+                qualitySpinner.getSelectedItemPosition(), audioOnlySwitch.isChecked());
     }
 
     private String getAppVersionName() {

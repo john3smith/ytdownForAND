@@ -43,6 +43,8 @@
     <string name="queue_cancel_item">이 항목 취소</string>
     <string name="queue_item_cancelled">대기 항목을 취소했습니다.</string>
     <string name="wifi_only">Wi-Fi에서만 다운로드 시작</string>
+    <string name="audio_only">음원만 추출 (M4A)</string>
+    <string name="usage_audio_addendum">\n\n음원만 추출은 기본 OFF입니다. 켜면 사진과 동영상 대신 M4A 음원만 저장하며 영상 화질 설정은 적용되지 않습니다. 공유·대기열·계정 다운로드는 등록 당시의 음원 설정을 유지합니다. 사진 전용 게시물이나 소리 없는 영상에는 추출할 음원이 없습니다.</string>
     <string name="wifi_waiting">Wi-Fi 연결을 기다리는 중 · 대기열 %1$d개</string>
     <string name="wifi_required_bulk">Wi-Fi 연결 후 계정 다운로드를 시작할 수 있습니다.</string>
     <string name="usage_queue_addendum">\n\n대기열 보기에서 각 대기 항목을 확인하거나 개별 취소할 수 있습니다. Wi-Fi에서만 다운로드 시작을 켜면 연결 전에는 새 다운로드가 대기하고, Wi-Fi 연결 시 순서대로 시작합니다.</string>

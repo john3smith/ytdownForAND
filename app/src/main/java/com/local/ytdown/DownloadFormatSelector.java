@@ -23,7 +23,17 @@ final class DownloadFormatSelector {
     }
 
     static String outputTemplate(File outputDirectory) {
+        return outputTemplate(outputDirectory, false);
+    }
+
+    static String forMode(int position, boolean audioOnly) {
+        return audioOnly ? "bestaudio[ext=m4a]/bestaudio/best[acodec!=none]"
+                : forQualityPosition(position);
+    }
+
+    static String outputTemplate(File outputDirectory, boolean audioOnly) {
         return new File(outputDirectory,
-                "%(title).165B [%(id)s]-%(autonumber)03d.%(ext)s").getAbsolutePath();
+                "%(title).165B [%(id)s]-%(autonumber)03d"
+                        + (audioOnly ? "-audio" : "") + ".%(ext)s").getAbsolutePath();
     }
 }

@@ -12,15 +12,21 @@ final class DownloadQueue {
         final String url;
         final String format;
         final boolean account;
+        final boolean audioOnly;
 
         Task(String url, String format) {
             this(url, format, false);
         }
 
         Task(String url, String format, boolean account) {
+            this(url, format, account, false);
+        }
+
+        Task(String url, String format, boolean account, boolean audioOnly) {
             this.url = url;
             this.format = format;
             this.account = account;
+            this.audioOnly = audioOnly;
         }
     }
 

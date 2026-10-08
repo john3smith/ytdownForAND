@@ -8,6 +8,18 @@ import org.junit.Test;
 
 public class DownloadQueueTest {
     @Test
+    public void tasksDefaultToVideoAndKeepTheirOwnAudioModeInQueue() {
+        DownloadQueue queue = new DownloadQueue();
+        DownloadQueue.Task audioAccount = new DownloadQueue.Task("https://x.com/account", "audio", true, true);
+        DownloadQueue.Task video = new DownloadQueue.Task("https://youtu.be/video", "best");
+        assertTrue(queue.offer(audioAccount, null));
+        assertTrue(queue.offer(video, null));
+        assertTrue(queue.poll().audioOnly);
+        assertFalse(queue.poll().audioOnly);
+        assertFalse(new DownloadQueue.Task("url", "format", true).audioOnly);
+    }
+
+    @Test
     public void accountUsesOneSlotAndKeepsCapturedFormatWithLaterSharedLinks() {
         DownloadQueue queue = new DownloadQueue();
         DownloadQueue.Task account = new DownloadQueue.Task("https://www.instagram.com/example/", "best", true);
