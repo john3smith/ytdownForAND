@@ -13,7 +13,9 @@ final class FfmpegStreamDownloadOptions {
         if (!singlePass || audioOnly) return false;
         requireFile(executable);
         requireFile(caBundle);
-        String arguments = "ffmpeg_i:-tls_verify 1 -ca_file "
+        // --print implies quiet in yt-dlp and otherwise hides FFmpeg's root error.
+        // A later global log level preserves errors without verbose commands/headers.
+        String arguments = "ffmpeg_i:-loglevel error -nostats -tls_verify 1 -ca_file "
                 + quoteArgument(caBundle.getAbsolutePath()) + " -rw_timeout 30000000";
         option.accept("--downloader", "ffmpeg");
         option.accept("--ffmpeg-location", executable.getAbsolutePath());

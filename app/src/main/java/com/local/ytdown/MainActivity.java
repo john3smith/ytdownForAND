@@ -555,6 +555,11 @@ public final class MainActivity extends Activity {
     private void openLogin() {
         Intent intent = new Intent(this, LoginActivity.class);
         intent.putExtra(LoginActivity.EXTRA_PLATFORM, selectedLoginPlatform());
+        String sessionUrl = urlInput.getText().toString().trim();
+        if (AuthCookieStore.PORNHUB.equals(selectedLoginPlatform())
+                && AuthCookieStore.isTrustedLoginPage(sessionUrl, AuthCookieStore.PORNHUB)) {
+            intent.putExtra(LoginActivity.EXTRA_SESSION_URL, sessionUrl);
+        }
         startActivityForResult(intent, LOGIN_REQUEST);
     }
 
@@ -1285,6 +1290,7 @@ public final class MainActivity extends Activity {
         BrowserRequestHeaders.apply(url, browserDefaultUserAgent, request::addOption);
         if (singlePass) {
             request.addOption("--no-simulate");
+            request.addOption("--no-quiet");
             request.addOption("--progress");
             request.addOption("--print", "before_dl:" + DownloadTitleParser.MARKER + "%(title)j");
         }
@@ -1428,7 +1434,15 @@ public final class MainActivity extends Activity {
             if (!isDownloadActive(generation)) {
                 return;
             }
-            videoError = error;
+            if (singlePass && !audioOnly) {
+                String diagnostics = FfmpegFailureDetails.summarize(safeMessage(error));
+                for (String line : diagnostics.split("\n")) {
+                    logDownload("FFmpeg 상세: " + line);
+                }
+                videoError = new java.io.IOException(diagnostics);
+            } else {
+                videoError = error;
+            }
             if (singlePass && !titleReceived.get()) {
                 runOnUiThread(() -> {
                     if (isDownloadActive(generation)) {
@@ -1436,7 +1450,7 @@ public final class MainActivity extends Activity {
                     }
                 });
             }
-            logDownload((audioOnly ? "음원 추출 실패: " : "yt-dlp 동영상 다운로드 실패: ") + safeMessage(error));
+            logDownload((audioOnly ? "음원 추출 실패: " : "yt-dlp 동영상 다운로드 실패: ") + safeMessage(videoError));
         }
 
         if (socialUrl && !videoDownloaded && imageCount == 0

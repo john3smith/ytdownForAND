@@ -21,14 +21,20 @@ final class DownloadFailureAdvice {
                 || error.contains("winerror 10054") || error.contains("remote end closed connection")) {
             return "네트워크 또는 사이트가 연결을 강제로 종료했습니다. 같은 링크가 일반 Chrome에서 열리는지 확인해 주세요. 이 오류만으로 로그인 실패라고 판단하지 않습니다.";
         }
-        if (error.contains("http error 403") || error.contains("http error 401")) {
+        if (error.contains("http error 403") || error.contains("http error 401")
+                || error.contains("server returned 403") || error.contains("server returned 401")
+                || error.contains("403 forbidden") || error.contains("401 unauthorized")) {
             return "사이트가 요청을 거절했습니다. 일반 Chrome에서 접근 가능한지와 앱에 저장된 로그인 상태를 확인해 주세요. 접근 제한을 자동으로 우회하지 않습니다.";
         }
-        if (error.contains("http error 404")) {
+        if (error.contains("http error 404") || error.contains("server returned 404")
+                || error.contains("404 not found")) {
             return "해당 링크를 찾을 수 없습니다. 삭제되었거나 주소가 바뀌었는지 확인해 주세요.";
         }
         if (error.contains("timed out") || error.contains("timeout")) {
             return "서버 응답 시간이 초과됐습니다. 인터넷 연결 및 같은 링크의 일반 Chrome 접속 여부를 확인해 주세요.";
+        }
+        if (error.contains("ffmpeg exited with code")) {
+            return "FFmpeg가 저장 도중 종료됐습니다. 종료 코드만으로 원인을 확정할 수 없습니다. 로그의 FFmpeg 상세 항목을 확인해 주세요.";
         }
         return null;
     }

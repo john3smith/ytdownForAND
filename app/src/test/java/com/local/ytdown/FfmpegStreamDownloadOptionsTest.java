@@ -27,6 +27,7 @@ public class FfmpegStreamDownloadOptionsTest {
         assertEquals("ffmpeg", options.get("--downloader"));
         assertEquals(executable.getAbsolutePath(), options.get("--ffmpeg-location"));
         String args = options.get("--downloader-args");
+        assertTrue(args.startsWith("ffmpeg_i:-loglevel error -nostats "));
         assertTrue(args.contains("-tls_verify 1"));
         assertTrue(args.contains("-ca_file '" + ca.getAbsolutePath() + "'"));
         assertTrue(args.endsWith("-rw_timeout 30000000"));

@@ -32,4 +32,9 @@ public class DownloadFailureAdviceTest {
         assertNull(DownloadFailureAdvice.forError(""));
         assertNull(DownloadFailureAdvice.forError("No video formats found"));
     }
+    @Test public void explainsFfmpegHttpErrorsAndUnknownExitSeparately() {
+        assertTrue(DownloadFailureAdvice.forError("Server returned 403 Forbidden").contains("요청을 거절"));
+        assertTrue(DownloadFailureAdvice.forError("Server returned 404 Not Found").contains("주소"));
+        assertTrue(DownloadFailureAdvice.forError("ERROR: ffmpeg exited with code 8").contains("확정할 수 없습니다"));
+    }
 }

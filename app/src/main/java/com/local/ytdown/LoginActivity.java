@@ -3,8 +3,12 @@ package com.local.ytdown;
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Color;
+import android.graphics.Bitmap;
 import android.graphics.Typeface;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.SystemClock;
 import android.text.TextUtils;
 import android.view.Gravity;
 import android.view.View;
@@ -17,6 +21,7 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.webkit.WebResourceError;
 import android.webkit.WebResourceRequest;
+import android.webkit.WebResourceResponse;
 import android.webkit.RenderProcessGoneDetail;
 import android.widget.Button;
 import android.widget.LinearLayout;
@@ -31,6 +36,7 @@ import java.io.File;
 
 public final class LoginActivity extends Activity {
     static final String EXTRA_PLATFORM = "platform";
+    static final String EXTRA_SESSION_URL = "session_url";
 
     private String platform;
     private WebView webView;
@@ -39,6 +45,10 @@ public final class LoginActivity extends Activity {
     private boolean saving;
     private HttpsConnectionAssist.Lease httpsLease;
     private boolean proxyOwned;
+    private String initialUrl;
+    private final LoginPageReadiness pageReadiness = new LoginPageReadiness();
+    private final Handler readinessHandler = new Handler(Looper.getMainLooper());
+    private final Runnable readinessTick = this::updateReadiness;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,6 +61,10 @@ public final class LoginActivity extends Activity {
             return;
         }
         setTitle(AuthCookieStore.displayName(platform) + " 로그인");
+        String requestedUrl = getIntent().getStringExtra(EXTRA_SESSION_URL);
+        initialUrl = AuthCookieStore.PORNHUB.equals(platform)
+                && AuthCookieStore.isTrustedLoginPage(requestedUrl, platform)
+                ? requestedUrl : AuthCookieStore.loginUrl(platform);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_SECURE);
         setContentView(createContentView());
         prepareLoginTransport();
@@ -58,7 +72,7 @@ public final class LoginActivity extends Activity {
 
     private void prepareLoginTransport() {
         if (!AuthCookieStore.PORNHUB.equals(platform) || !HttpsConnectionAssist.enabled(this)) {
-            webView.loadUrl(AuthCookieStore.loginUrl(platform));
+            webView.loadUrl(initialUrl);
             return;
         }
         if (!WebViewFeature.isFeatureSupported(WebViewFeature.PROXY_OVERRIDE)
@@ -85,7 +99,7 @@ public final class LoginActivity extends Activity {
                 ProxyController.getInstance().setProxyOverride(config.build(), this::runOnUiThread, () -> {
                     if (!isFinishing() && !isDestroyed() && webView != null) {
                         Log.i("YTDownHttps", "login assist active; certificate verification unchanged");
-                        webView.loadUrl(AuthCookieStore.loginUrl(platform));
+                        webView.loadUrl(initialUrl);
                     }
                 });
             } else {
@@ -147,9 +161,41 @@ public final class LoginActivity extends Activity {
         manager.setAcceptThirdPartyCookies(webView, true);
         webView.setWebViewClient(new WebViewClient() {
             @Override
+            public void onPageStarted(WebView view, String url, Bitmap favicon) {
+                if (AuthCookieStore.PORNHUB.equals(platform)) {
+                    pageReadiness.started(url);
+                    updateReadiness();
+                }
+            }
+
+            @Override
+            public void onPageFinished(WebView view, String url) {
+                if (AuthCookieStore.PORNHUB.equals(platform) && url != null && url.equals(view.getUrl())
+                        && pageReadiness.finished(url, SystemClock.elapsedRealtime())) {
+                    Log.i("YTDownLogin", "page loaded; minimum session wait started");
+                    updateReadiness();
+                }
+            }
+
+            @Override
+            public void onReceivedHttpError(WebView view, WebResourceRequest request,
+                                            WebResourceResponse response) {
+                if (AuthCookieStore.PORNHUB.equals(platform) && request.isForMainFrame()
+                        && response.getStatusCode() >= 400) {
+                    pageReadiness.invalidate();
+                    readinessHandler.removeCallbacks(readinessTick);
+                    doneButton.setEnabled(false);
+                    statusText.setText(R.string.login_connection_failed);
+                }
+            }
+
+            @Override
             public void onReceivedError(WebView view, WebResourceRequest request,
                                         WebResourceError error) {
                 if (request.isForMainFrame()) {
+                    pageReadiness.invalidate();
+                    readinessHandler.removeCallbacks(readinessTick);
+                    if (AuthCookieStore.PORNHUB.equals(platform)) doneButton.setEnabled(false);
                     statusText.setText(R.string.login_connection_failed);
                 }
             }
@@ -161,6 +207,8 @@ public final class LoginActivity extends Activity {
                 }
                 view.destroy();
                 if (webView == view) webView = null;
+                pageReadiness.invalidate();
+                readinessHandler.removeCallbacks(readinessTick);
                 saving = false;
                 doneButton.setEnabled(false);
                 statusText.setText(R.string.login_connection_failed);
@@ -190,6 +238,7 @@ public final class LoginActivity extends Activity {
 
         doneButton = new Button(this);
         doneButton.setText(R.string.login_done);
+        doneButton.setEnabled(!AuthCookieStore.PORNHUB.equals(platform));
         doneButton.setAllCaps(false);
         doneButton.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
         doneButton.setTextColor(Color.WHITE);
@@ -206,21 +255,37 @@ public final class LoginActivity extends Activity {
     private void saveAndFinish() {
         if (saving || webView == null) return;
         if (AuthCookieStore.PORNHUB.equals(platform)) {
+            if (!pageReadiness.ready(webView.getUrl(), SystemClock.elapsedRealtime())) {
+                Toast.makeText(this, R.string.login_page_settling, Toast.LENGTH_SHORT).show();
+                return;
+            }
             if (!AuthCookieStore.isTrustedLoginPage(webView.getUrl(), platform)) {
                 Toast.makeText(this, R.string.login_cookie_missing, Toast.LENGTH_SHORT).show();
                 return;
             }
             saving = true;
             doneButton.setEnabled(false);
+            final long checkedGeneration = pageReadiness.generation();
             // Inspect only the login-state marker, never credentials or form values.
             try {
                 webView.evaluateJavascript(
-                    "Boolean(document.querySelector('#profileMenuDropdown,.ph-icon-logout'))",
+                    "(()=>{const visible=e=>!!(e.offsetWidth||e.offsetHeight||e.getClientRects().length)"
+                            + "&&getComputedStyle(e).visibility!=='hidden';"
+                            + "const age=[...document.querySelectorAll('button,a,input[type=button],input[type=submit]')]"
+                            + ".some(e=>visible(e)&&/^\\s*(I am 18|I['’]m 18|18세 이상|I am of legal age)/i"
+                            + ".test(e.textContent||e.value||''));"
+                            + "const gates=[...document.querySelectorAll('[id]')].some(e=>visible(e)&&"
+                            + "/age.*(verif|check|disclaim|confirm)|(verif|confirm).*age|challenge-stage|challenge-running/i.test(e.id));"
+                            + "const password=[...document.querySelectorAll('input[type=password]')].some(visible);"
+                            + "return document.readyState==='complete'&&!age&&!gates&&!password&&"
+                            + "!!document.querySelector('#profileMenuDropdown,.ph-icon-logout');})()",
                     result -> {
                         if (isFinishing() || isDestroyed() || webView == null) return;
                         saving = false;
-                        doneButton.setEnabled(true);
+                        updateReadiness();
                         if ("true".equals(result)
+                                && checkedGeneration == pageReadiness.generation()
+                                && pageReadiness.ready(webView.getUrl(), SystemClock.elapsedRealtime())
                                 && AuthCookieStore.isTrustedLoginPage(webView.getUrl(), platform)) {
                             saveVerifiedSession(true);
                         } else {
@@ -229,12 +294,32 @@ public final class LoginActivity extends Activity {
                     });
             } catch (RuntimeException error) {
                 saving = false;
-                doneButton.setEnabled(true);
+                updateReadiness();
                 statusText.setText(R.string.login_connection_failed);
             }
             return;
         }
         saveVerifiedSession(false);
+    }
+
+    private void updateReadiness() {
+        readinessHandler.removeCallbacks(readinessTick);
+        if (!AuthCookieStore.PORNHUB.equals(platform) || webView == null
+                || doneButton == null || isFinishing() || isDestroyed()) return;
+        String url = webView.getUrl();
+        long remaining = pageReadiness.remaining(url, SystemClock.elapsedRealtime());
+        boolean ready = remaining == 0 && AuthCookieStore.isTrustedLoginPage(url, platform);
+        doneButton.setEnabled(ready && !saving);
+        if (ready) {
+            Log.i("YTDownLogin", "minimum session wait complete; manual confirmation required");
+            statusText.setText(R.string.login_page_settled);
+        } else if (remaining > 0) {
+            statusText.setText(getString(R.string.login_page_settling_seconds,
+                    (remaining + 999) / 1000));
+            readinessHandler.postDelayed(readinessTick, Math.min(remaining, 250));
+        } else {
+            statusText.setText(R.string.login_page_settling);
+        }
     }
 
     private void saveVerifiedSession(boolean browserLoginConfirmed) {
@@ -261,6 +346,8 @@ public final class LoginActivity extends Activity {
 
     @Override
     protected void onDestroy() {
+        pageReadiness.invalidate();
+        readinessHandler.removeCallbacks(readinessTick);
         if (webView != null) {
             webView.stopLoading();
             webView.destroy();
