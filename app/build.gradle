@@ -12,6 +12,7 @@ configurations {
 def preparePythonRuntime = tasks.register("preparePythonRuntime", Exec) {
     inputs.file(rootProject.file("tools/prepare_python_runtime.py"))
     inputs.file(rootProject.file("tools/python-launcher.c"))
+    inputs.file(rootProject.file("tools/prepare_curl_transport.py"))
     inputs.files(configurations.pythonRuntimeBase)
     inputs.property("abi", targetAbi)
     outputs.file(runtimeAar)
@@ -30,8 +31,8 @@ android {
         applicationId "com.local.ytdown"
         minSdk 24
         targetSdk 36
-        versionCode 54
-        versionName "1.9.22-beta.1"
+        versionCode 55
+        versionName "1.9.23-beta.1"
 
         ndk {
             abiFilters targetAbi

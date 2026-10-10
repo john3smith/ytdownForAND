@@ -1,5 +1,9 @@
 # Python 3.14.8 runtime (v1.9.22-beta.1)
 
+This records the Python-only v1.9.22 change. v1.9.23 subsequently adds the
+[browser transport runtime](CURL_TRANSPORT.md); its current dependencies and
+test limitations are documented there.
+
 This beta upgrades the app-private CPython runtime from 3.12 to **3.14.8**.
 It does not install a system Python on Android. The Windows development Python
 and Android app runtime are independent installations.

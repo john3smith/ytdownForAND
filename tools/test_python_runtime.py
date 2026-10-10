@@ -32,7 +32,7 @@ class RuntimePackagingTest(unittest.TestCase):
         self.assertNotIn('usr/lib/python3.12/os.py', payload)
 
     def test_rejects_traversal_and_absolute_paths(self):
-        for name in ('../secret', '/etc/passwd', 'prefix/../secret', 'prefix\\secret'):
+        for name in ('../secret', '/etc/passwd', 'prefix/../secret', 'prefix\\secret', 'C:/key', 'prefix/key:stream'):
             self.assertFalse(runtime.safe_member(name))
         self.assertTrue(runtime.safe_member('prefix/lib/python3.14/os.py'))
 

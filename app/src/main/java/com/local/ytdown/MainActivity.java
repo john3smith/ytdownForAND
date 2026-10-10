@@ -615,7 +615,7 @@ public final class MainActivity extends Activity {
                     getApplicationContext(), YoutubeDL.UpdateChannel._STABLE);
             String version = YoutubeDL.getInstance().versionName(getApplicationContext());
             engineReady = true;
-            logDownload("Python 런타임: 3.14.8 · Android 다운로드 라이브러리: 0.18.1");
+                logDownload("Python 런타임: 3.14.8 · curl_cffi: 0.16.3 · Android 다운로드 라이브러리: 0.18.1");
             logDownload("yt-dlp 준비 완료: " + version);
             runOnUiThread(() -> {
                 statusText.setText(getString(R.string.status_engine_ready, version));
@@ -1401,6 +1401,13 @@ public final class MainActivity extends Activity {
                 : photoError != null ? safeMessage(photoError) : getString(R.string.status_failed);
         if (unresolvedVideo) {
             failureDetail = "게시물의 영상 항목을 실제 동영상 파일로 저장하지 못했습니다.";
+        }
+        if (!success) {
+            String advice = DownloadFailureAdvice.forError(failureDetail);
+            if (advice != null) {
+                logDownload("실패 원인 안내: " + advice);
+                failureDetail = advice + "\n\n" + failureDetail;
+            }
         }
         if (success) {
             MediaScannerConnection.scanFile(this,

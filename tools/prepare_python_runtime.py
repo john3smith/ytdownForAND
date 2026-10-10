@@ -16,6 +16,7 @@ import subprocess
 import tarfile
 import urllib.request
 import zipfile
+import prepare_curl_transport
 
 VERSION = "3.14.8"
 BASE_SHA256 = "579b5fb480892b1abc2b218c2089699d52759cc8d7ba256bf876453f0365faef"
@@ -32,7 +33,8 @@ def sha256(path):
 
 def safe_member(name):
     path = PurePosixPath(name)
-    return not path.is_absolute() and ".." not in path.parts and "\\" not in name
+    return (not path.is_absolute() and ".." not in path.parts and "\\" not in name
+            and ":" not in name and "\x00" not in name)
 
 
 def acquire(root, abi):
@@ -165,8 +167,9 @@ def prepare(root, abi, base, output):
             # Existing upstream CA bundle preserves TLS validation.
             payload["usr/etc/tls/cert.pem"] = old.read("usr/etc/tls/cert.pem")
             retain_native_support(payload, old)
+        transport = prepare_curl_transport.prepare(root, abi, payload)
         manifest = {"python": VERSION, "abi": abi, "source": "https://www.python.org/downloads/release/python-3148/",
-                    "source_sha256": digest, "base_library": "0.18.1", "curl_cffi": None}
+                    "source_sha256": digest, "base_library": "0.18.1", **transport}
         payload["usr/python-runtime.json"] = json.dumps(manifest, sort_keys=True).encode()
         buffer = io.BytesIO()
         with zipfile.ZipFile(buffer, "w", compression=zipfile.ZIP_DEFLATED, compresslevel=9) as runtime:
