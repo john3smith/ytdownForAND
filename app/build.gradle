@@ -3,6 +3,24 @@ plugins {
 }
 
 def targetAbi = project.findProperty("targetAbi") ?: "arm64-v8a"
+def runtimeAar = rootProject.layout.buildDirectory.file("python-runtime/library-python3.14.8-${targetAbi}.aar")
+
+configurations {
+    pythonRuntimeBase { transitive = false }
+}
+
+def preparePythonRuntime = tasks.register("preparePythonRuntime", Exec) {
+    inputs.file(rootProject.file("tools/prepare_python_runtime.py"))
+    inputs.file(rootProject.file("tools/python-launcher.c"))
+    inputs.files(configurations.pythonRuntimeBase)
+    inputs.property("abi", targetAbi)
+    outputs.file(runtimeAar)
+    doFirst {
+        def python = project.findProperty("runtimePython") ?: "python"
+        commandLine python, rootProject.file("tools/prepare_python_runtime.py"), "--abi", targetAbi,
+                "--base", configurations.pythonRuntimeBase.singleFile, "--output", runtimeAar.get().asFile
+    }
+}
 
 android {
     namespace "com.local.ytdown"
@@ -12,8 +30,8 @@ android {
         applicationId "com.local.ytdown"
         minSdk 24
         targetSdk 36
-        versionCode 53
-        versionName "1.9.21-beta.1"
+        versionCode 54
+        versionName "1.9.22-beta.1"
 
         ndk {
             abiFilters targetAbi
@@ -45,7 +63,16 @@ android {
 dependencies {
     implementation "androidx.core:core:1.17.0"
     implementation "androidx.webkit:webkit:1.17.0"
-    implementation "io.github.junkfood02.youtubedl-android:library:0.18.1"
+    pythonRuntimeBase "io.github.junkfood02.youtubedl-android:library:0.18.1@aar"
+    implementation files(runtimeAar).builtBy(preparePythonRuntime)
+    // Preserve the upstream AAR's published dependencies after local Python-only repackaging.
+    implementation "io.github.junkfood02.youtubedl-android:common:0.18.1"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.7.22"
+    implementation "androidx.appcompat:appcompat:1.4.2"
+    implementation "androidx.core:core-ktx:1.8.0"
+    implementation "com.fasterxml.jackson.core:jackson-databind:2.11.1"
+    implementation "com.fasterxml.jackson.core:jackson-annotations:2.11.1"
+    implementation "commons-io:commons-io:2.5"
     implementation "io.github.junkfood02.youtubedl-android:ffmpeg:0.18.1"
     testImplementation "junit:junit:4.13.2"
     testImplementation "org.json:json:20250517"

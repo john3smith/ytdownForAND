@@ -615,6 +615,7 @@ public final class MainActivity extends Activity {
                     getApplicationContext(), YoutubeDL.UpdateChannel._STABLE);
             String version = YoutubeDL.getInstance().versionName(getApplicationContext());
             engineReady = true;
+            logDownload("Python 런타임: 3.14.8 · Android 다운로드 라이브러리: 0.18.1");
             logDownload("yt-dlp 준비 완료: " + version);
             runOnUiThread(() -> {
                 statusText.setText(getString(R.string.status_engine_ready, version));
