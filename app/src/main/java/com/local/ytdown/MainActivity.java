@@ -1309,6 +1309,7 @@ public final class MainActivity extends Activity {
         Map<String, String> filesBeforeVideoDownload =
                 DownloadArtifactTracker.snapshot(outputDirectory);
         AtomicBoolean alreadyDownloaded = new AtomicBoolean(false);
+        AtomicBoolean titleReceived = new AtomicBoolean(false);
         Function3<Float, Long, String, Unit> callback = (progress, eta, line) -> {
             if (!isDownloadActive(generation)) {
                 try {
@@ -1318,8 +1319,9 @@ public final class MainActivity extends Activity {
                 }
                 return Unit.INSTANCE;
             }
-            String extractedTitle = DownloadTitleParser.parse(line);
+            String extractedTitle = singlePass ? DownloadTitleParser.parse(line) : null;
             if (extractedTitle != null) {
+                titleReceived.set(true);
                 currentVideoTitle = extractedTitle;
                 runOnUiThread(() -> {
                     if (isDownloadActive(generation)) {
@@ -1387,6 +1389,13 @@ public final class MainActivity extends Activity {
                 return;
             }
             videoError = error;
+            if (singlePass && !titleReceived.get()) {
+                runOnUiThread(() -> {
+                    if (isDownloadActive(generation)) {
+                        videoTitleText.setText(R.string.video_title_unavailable);
+                    }
+                });
+            }
             logDownload((audioOnly ? "음원 추출 실패: " : "yt-dlp 동영상 다운로드 실패: ") + safeMessage(error));
         }
 
