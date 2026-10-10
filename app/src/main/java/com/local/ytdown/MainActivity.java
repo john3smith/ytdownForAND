@@ -53,7 +53,6 @@ import com.yausername.youtubedl_android.YoutubeDLResponse;
 import com.yausername.youtubedl_android.mapper.VideoInfo;
 
 import java.io.File;
-import java.net.URI;
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.List;
@@ -893,7 +892,8 @@ public final class MainActivity extends Activity {
     }
 
     private void enqueueOrStart(String url, String format) {
-        enqueueTask(new DownloadQueue.Task(url, format, false, audioOnlySwitch.isChecked()));
+        enqueueTask(new DownloadQueue.Task(DownloadUrlPolicy.normalize(url), format,
+                false, audioOnlySwitch.isChecked()));
     }
 
     private void enqueueTask(DownloadQueue.Task task) {
@@ -1766,25 +1766,7 @@ public final class MainActivity extends Activity {
     }
 
     private static boolean isSupportedUrl(String value) {
-        try {
-            URI uri = URI.create(value);
-            String host = uri.getHost();
-            String scheme = uri.getScheme();
-            if (host == null || scheme == null
-                    || !(scheme.equalsIgnoreCase("https") || scheme.equalsIgnoreCase("http"))) {
-                return false;
-            }
-            host = host.toLowerCase(Locale.US);
-            return host.equals("youtu.be") || host.equals("youtube.com")
-                    || host.endsWith(".youtube.com") || host.equals("youtube-nocookie.com")
-                    || host.endsWith(".youtube-nocookie.com")
-                    || host.equals("x.com") || host.endsWith(".x.com")
-                    || host.equals("twitter.com") || host.endsWith(".twitter.com")
-                    || host.equals("instagram.com") || host.endsWith(".instagram.com")
-                    || host.equals("instagr.am") || host.endsWith(".instagr.am");
-        } catch (IllegalArgumentException error) {
-            return false;
-        }
+        return DownloadUrlPolicy.isSupported(value);
     }
 
     private String selectedFormat() {
