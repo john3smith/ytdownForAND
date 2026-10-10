@@ -478,7 +478,9 @@ public final class MainActivity extends Activity {
         root.addView(logButton, logParams);
 
         TextView versionText = new TextView(this);
-        versionText.setText(getString(R.string.version_format, getAppVersionName()));
+        String appVersion = getAppVersionName();
+        versionText.setText(getString(appVersion.contains("-beta")
+                ? R.string.beta_version_format : R.string.version_format, appVersion));
         versionText.setTextColor(getColor(R.color.text_secondary));
         versionText.setTextSize(12);
         versionText.setGravity(Gravity.CENTER);

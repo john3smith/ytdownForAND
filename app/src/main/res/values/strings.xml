@@ -2,6 +2,7 @@
 <resources>
     <string name="app_name">YTDown</string>
     <string name="version_format">YTDown v%1$s</string>
+    <string name="beta_version_format">YTDown v%1$s · 베타</string>
     <string name="screen_title">사진 및 동영상 다운로드</string>
     <string name="info">i</string>
     <string name="link_label">링크</string>
