@@ -7,7 +7,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.function.BiConsumer;
 
-/** Browser-compatible HTTP headers, not TLS/browser impersonation. */
+/** Scoped browser compatibility; never changes certificate or authentication checks. */
 final class BrowserRequestHeaders {
     private BrowserRequestHeaders() { }
 
@@ -47,9 +47,15 @@ final class BrowserRequestHeaders {
     static boolean apply(String url, String webViewAgent, BiConsumer<String, String> option) {
         Map<String, String> headers = forUrl(url, webViewAgent);
         if (headers.isEmpty()) return false;
-        option.accept("--user-agent", headers.get("User-Agent"));
+        // curl_cffi supplies a coherent TLS/HTTP/User-Agent profile. Overriding it with
+        // the installed WebView's unrelated Chromium version creates a mismatch.
+        option.accept("--impersonate", "chrome");
         option.accept("--referer", headers.get("Referer"));
         option.accept("--add-headers", "Accept-Language:" + headers.get("Accept-Language"));
+        option.accept("--socket-timeout", "30");
+        option.accept("--retries", "3");
+        option.accept("--fragment-retries", "3");
+        option.accept("--extractor-retries", "2");
         return true;
     }
 }

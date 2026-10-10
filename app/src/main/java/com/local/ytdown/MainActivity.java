@@ -1229,7 +1229,12 @@ public final class MainActivity extends Activity {
             }
         }
 
-        try {
+        // This site uses short-lived session/media tokens. Extract once inside the
+        // cancellable download process instead of requesting the page twice.
+        boolean singlePass = AuthCookieStore.PORNHUB.equals(AuthCookieStore.platformForUrl(url));
+        if (singlePass) {
+            logDownload("*** 세션 유지 · 제목 확인과 다운로드를 한 번의 추출로 실행");
+        } else try {
             YoutubeDLRequest infoRequest = new YoutubeDLRequest(url);
             if (BrowserRequestHeaders.apply(url, browserDefaultUserAgent, infoRequest::addOption)) {
                 logDownload("*** Chrome 호환 헤더 적용 · 로그인 쿠키 유지");
@@ -1276,6 +1281,11 @@ public final class MainActivity extends Activity {
         }
         YoutubeDLRequest request = new YoutubeDLRequest(url);
         BrowserRequestHeaders.apply(url, browserDefaultUserAgent, request::addOption);
+        if (singlePass) {
+            request.addOption("--no-simulate");
+            request.addOption("--progress");
+            request.addOption("--print", "before_dl:" + DownloadTitleParser.MARKER + "%(title)j");
+        }
         if (proxyUrl != null) request.addOption("--proxy", proxyUrl);
         request.addOption("--yes-playlist");
         request.addOption("--no-mtime");
@@ -1306,6 +1316,18 @@ public final class MainActivity extends Activity {
                 } catch (Throwable ignored) {
                     // Cancellation may have already removed the process.
                 }
+                return Unit.INSTANCE;
+            }
+            String extractedTitle = DownloadTitleParser.parse(line);
+            if (extractedTitle != null) {
+                currentVideoTitle = extractedTitle;
+                runOnUiThread(() -> {
+                    if (isDownloadActive(generation)) {
+                        videoTitleText.setText(extractedTitle);
+                        videoTitleText.setTextColor(getColor(R.color.text_primary));
+                    }
+                });
+                showProgressNotification(currentProgress, false);
                 return Unit.INSTANCE;
             }
             if (!TextUtils.isEmpty(line)

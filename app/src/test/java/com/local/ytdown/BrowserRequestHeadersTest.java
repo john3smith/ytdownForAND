@@ -45,13 +45,15 @@ public class BrowserRequestHeadersTest {
     @Test public void downloaderOptionsPreserveCookieAndTlsConfiguration() {
         Map<String, String> options = new LinkedHashMap<>();
         assertTrue(BrowserRequestHeaders.apply("https://www.pornhub.com/", AGENT, options::put));
-        assertEquals(3, options.size());
-        assertEquals(BrowserRequestHeaders.chromeUserAgent(AGENT), options.get("--user-agent"));
+        assertEquals(7, options.size());
+        assertEquals("chrome", options.get("--impersonate"));
+        assertFalse(options.containsKey("--user-agent"));
+        assertEquals("30", options.get("--socket-timeout"));
+        assertEquals("3", options.get("--fragment-retries"));
         assertEquals("https://www.pornhub.com/", options.get("--referer"));
         assertEquals("Accept-Language:ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7", options.get("--add-headers"));
         assertFalse(options.containsKey("--no-check-certificates"));
         assertFalse(options.containsKey("--cookies"));
-        assertFalse(options.containsKey("--impersonate"));
     }
 
     @Test public void otherPlatformsAndUnavailableAgentKeepDefaults() {

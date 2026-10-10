@@ -3,6 +3,9 @@ package com.local.ytdown;
 import android.content.Context;
 import android.text.TextUtils;
 import android.webkit.CookieManager;
+import android.util.AtomicFile;
+import androidx.webkit.CookieManagerCompat;
+import androidx.webkit.WebViewFeature;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -110,29 +113,37 @@ final class AuthCookieStore {
             // Age-consent/guest cookies alone must never be labelled an account login.
             return hasSavedCookies(context, platform) ? file : null;
         }
-        LinkedHashMap<String, CookieEntry> entries = new LinkedHashMap<>();
+        LinkedHashMap<String, NetscapeCookie> entries = new LinkedHashMap<>();
+        CookieManager manager = CookieManager.getInstance();
+        long nowSeconds = System.currentTimeMillis() / 1000;
+        // Other platforms have legacy direct-media cookie readers. Keep their
+        // export format unchanged; the detailed format is scoped to this fix.
+        boolean detailed = PORNHUB.equals(platform)
+                && WebViewFeature.isFeatureSupported(WebViewFeature.GET_COOKIE_INFO);
         for (CookieSource source : sources(platform)) {
-            String raw = CookieManager.getInstance().getCookie(source.url);
+            if (detailed) {
+                for (String header : CookieManagerCompat.getCookieInfo(manager, source.url)) {
+                    NetscapeCookie entry = NetscapeCookie.parse(source.url, header, nowSeconds);
+                    if (entry != null) entries.put(entry.key(), entry);
+                }
+                continue;
+            }
+            String raw = manager.getCookie(source.url);
             if (TextUtils.isEmpty(raw)) {
                 continue;
             }
             for (String pair : raw.split(";\\s*")) {
-                int separator = pair.indexOf('=');
-                if (separator <= 0) {
-                    continue;
-                }
-                String name = pair.substring(0, separator).trim();
-                String value = pair.substring(separator + 1).trim();
-                if (!name.isEmpty()) {
-                    entries.put(source.domain + "\t" + name,
-                            new CookieEntry(source.domain, name, value));
-                }
+                NetscapeCookie entry = PORNHUB.equals(platform)
+                        ? NetscapeCookie.fallback(source.url, pair, nowSeconds)
+                        : NetscapeCookie.parse(source.url,
+                                pair + "; Domain=" + source.domain + "; Path=/; Secure", nowSeconds);
+                if (entry != null) entries.put(entry.key(), entry);
             }
         }
 
         boolean authenticated = PORNHUB.equals(platform)
                 && browserLoginConfirmed && !entries.isEmpty();
-        for (CookieEntry entry : entries.values()) {
+        for (NetscapeCookie entry : entries.values()) {
             if (isAuthenticationCookie(platform, entry.name)) {
                 authenticated = true;
                 break;
@@ -146,17 +157,17 @@ final class AuthCookieStore {
         if (directory != null && !directory.exists() && !directory.mkdirs()) {
             throw new IOException("로그인 정보 폴더를 만들 수 없습니다.");
         }
-        try (OutputStreamWriter writer = new OutputStreamWriter(
-                new FileOutputStream(file), StandardCharsets.UTF_8)) {
+        AtomicFile atomic = new AtomicFile(file);
+        FileOutputStream stream = atomic.startWrite();
+        try {
+            OutputStreamWriter writer = new OutputStreamWriter(stream, StandardCharsets.UTF_8);
             writer.write("# Netscape HTTP Cookie File\n");
-            for (CookieEntry entry : entries.values()) {
-                writer.write(entry.domain);
-                writer.write("\tTRUE\t/\tTRUE\t0\t");
-                writer.write(entry.name);
-                writer.write('\t');
-                writer.write(entry.value);
-                writer.write('\n');
-            }
+            for (NetscapeCookie entry : entries.values()) writer.write(entry.line());
+            writer.flush();
+            atomic.finishWrite(stream);
+        } catch (IOException | RuntimeException error) {
+            atomic.failWrite(stream);
+            throw error;
         }
         return file;
     }
@@ -168,7 +179,17 @@ final class AuthCookieStore {
 
     static void clearCookies(Context context, String platform) {
         CookieManager manager = CookieManager.getInstance();
+        boolean detailed = PORNHUB.equals(platform)
+                && WebViewFeature.isFeatureSupported(WebViewFeature.GET_COOKIE_INFO);
         for (CookieSource source : sources(platform)) {
+            if (detailed) {
+                for (String header : CookieManagerCompat.getCookieInfo(manager, source.url)) {
+                    NetscapeCookie entry = NetscapeCookie.parse(source.url, header,
+                            System.currentTimeMillis() / 1000);
+                    if (entry != null) manager.setCookie(source.url, entry.expirationHeader());
+                }
+                continue;
+            }
             String raw = manager.getCookie(source.url);
             if (TextUtils.isEmpty(raw)) {
                 continue;
@@ -179,6 +200,9 @@ final class AuthCookieStore {
                     continue;
                 }
                 String name = pair.substring(0, separator).trim();
+                // Older WebViews do not expose domain scope. Remove only this
+                // platform's observed names in both host-only and domain form.
+                manager.setCookie(source.url, name + "=; Max-Age=0; Path=/; Secure");
                 manager.setCookie(source.url,
                         name + "=; Max-Age=0; Domain=" + source.domain
                                 + "; Path=/; Secure; SameSite=None");
@@ -224,6 +248,8 @@ final class AuthCookieStore {
             case PORNHUB:
                 result.add(new CookieSource("https://pornhub.com/", ".pornhub.com"));
                 result.add(new CookieSource("https://www.pornhub.com/", ".pornhub.com"));
+                result.add(new CookieSource("https://www.pornhub.com/view_video.php", ".pornhub.com"));
+                result.add(new CookieSource("https://www.pornhub.com/login", ".pornhub.com"));
                 break;
             default:
                 throw new IllegalArgumentException("Unsupported platform: " + platform);
@@ -241,15 +267,4 @@ final class AuthCookieStore {
         }
     }
 
-    private static final class CookieEntry {
-        final String domain;
-        final String name;
-        final String value;
-
-        CookieEntry(String domain, String name, String value) {
-            this.domain = domain;
-            this.name = name;
-            this.value = value;
-        }
-    }
 }
