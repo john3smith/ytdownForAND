@@ -47,4 +47,22 @@ public class DownloadFormatSelectorTest {
         assertEquals(DownloadFormatSelector.outputTemplate(directory),
                 DownloadFormatSelector.outputTemplate(directory, false));
     }
+
+    @Test public void scopedStreamNamesSeparateFormatsWithoutChangingOtherDownloads() {
+        java.io.File directory = new java.io.File("downloads");
+        assertTrue(DownloadFormatSelector.outputTemplate(directory, false, true)
+                .endsWith("-%(format_id).30B.%(ext)s"));
+        assertEquals(DownloadFormatSelector.outputTemplate(directory, false),
+                DownloadFormatSelector.outputTemplate(directory, false, false));
+        assertEquals(DownloadFormatSelector.outputTemplate(directory, true),
+                DownloadFormatSelector.outputTemplate(directory, true, true));
+    }
+
+    @Test public void scopedStreamSelectorPreservesQualityCapsAndCustomChoices() {
+        assertEquals("best[ext=mp4][vcodec!=none]/best[vcodec!=none]",
+                DownloadFormatSelector.forStreamVideo(DownloadFormatSelector.forQualityPosition(0)));
+        assertTrue(DownloadFormatSelector.forStreamVideo(DownloadFormatSelector.forQualityPosition(1)).contains("height<=1080"));
+        assertTrue(DownloadFormatSelector.forStreamVideo(DownloadFormatSelector.forQualityPosition(2)).contains("height<=720"));
+        assertEquals("custom", DownloadFormatSelector.forStreamVideo("custom"));
+    }
 }

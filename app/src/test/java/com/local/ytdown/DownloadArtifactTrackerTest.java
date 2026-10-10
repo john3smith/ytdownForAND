@@ -61,4 +61,34 @@ public class DownloadArtifactTrackerTest {
         assertTrue(DownloadArtifactTracker.completedAudioFiles(directory, "YTDownAudio={}").isEmpty());
         assertTrue(DownloadArtifactTracker.completedAudioFiles(directory, "YTDownAudio=\"broken").isEmpty());
     }
+
+    @Test public void acceptsUnchangedFinalVideoWithConfirmedPath() throws Exception {
+        File directory = temporary.newFolder("videos");
+        File video = new File(directory, "saved.mp4");
+        Files.write(video.toPath(), new byte[]{1, 2, 3});
+        assertTrue(DownloadArtifactTracker.changedVideos(directory,
+                DownloadArtifactTracker.snapshot(directory)).isEmpty());
+        String event = DownloadArtifactTracker.VIDEO_PATH_MARKER + JSONObject.quote(video.getAbsolutePath());
+        assertEquals(1, DownloadArtifactTracker.completedVideoFiles(directory, event + "\n" + event).size());
+        assertEquals(video.getCanonicalFile(), DownloadArtifactTracker.completedVideoFiles(directory, event).get(0));
+    }
+
+    @Test public void rejectsUnfinishedOrUntrustedVideoPaths() throws Exception {
+        File directory = temporary.newFolder("videos");
+        for (String name : new String[]{"thumb.jpg", "video.mp4.part", "audio.m4a"}) {
+            File file = new File(directory, name);
+            Files.write(file.toPath(), new byte[]{1});
+            assertTrue(DownloadArtifactTracker.completedVideoFiles(directory,
+                    DownloadArtifactTracker.VIDEO_PATH_MARKER + JSONObject.quote(file.getAbsolutePath())).isEmpty());
+        }
+        File outside = temporary.newFile("outside.mp4");
+        Files.write(outside.toPath(), new byte[]{1});
+        assertTrue(DownloadArtifactTracker.completedVideoFiles(directory,
+                DownloadArtifactTracker.VIDEO_PATH_MARKER + JSONObject.quote(outside.getAbsolutePath())).isEmpty());
+        assertTrue(DownloadArtifactTracker.completedVideoFiles(directory, "YTDownVideo={}").isEmpty());
+        File empty = new File(directory, "empty.mp4");
+        assertTrue(empty.createNewFile());
+        assertTrue(DownloadArtifactTracker.completedVideoFiles(directory,
+                DownloadArtifactTracker.VIDEO_PATH_MARKER + JSONObject.quote(empty.getAbsolutePath())).isEmpty());
+    }
 }

@@ -955,7 +955,9 @@ public final class MainActivity extends Activity {
     }
 
     private void startDownload(DownloadQueue.Task task) {
-        File outputDirectory = new File(
+        boolean streamStaging = Build.VERSION.SDK_INT >= 29 && !task.audioOnly
+                && AuthCookieStore.PORNHUB.equals(AuthCookieStore.platformForUrl(task.url));
+        File outputDirectory = streamStaging ? new File(getCacheDir(), "stream-downloads") : new File(
                 Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),
                 "YTDown");
         if (!outputDirectory.exists() && !outputDirectory.mkdirs()) {
@@ -1287,6 +1289,19 @@ public final class MainActivity extends Activity {
             request.addOption("--print", "before_dl:" + DownloadTitleParser.MARKER + "%(title)j");
         }
         if (proxyUrl != null) request.addOption("--proxy", proxyUrl);
+        try {
+            if (FfmpegStreamDownloadOptions.apply(singlePass, audioOnly,
+                    new File(getApplicationInfo().nativeLibraryDir, "libffmpeg.so"),
+                    new File(getNoBackupFilesDir(),
+                            "youtubedl-android/packages/python/usr/etc/tls/cert.pem"),
+                    request::addOption)) {
+                logDownload("*** FFmpeg 직접 스트리밍 저장 · HTTPS 인증서 검증 유지");
+            }
+        } catch (java.io.IOException dependencyError) {
+            runOnUiThread(() -> finishDownload(generation, false,
+                    "FFmpeg 또는 HTTPS 인증서 파일을 확인할 수 없습니다. 앱을 다시 실행해 주세요."));
+            return;
+        }
         request.addOption("--yes-playlist");
         request.addOption("--no-mtime");
         if (audioOnly) {
@@ -1299,12 +1314,19 @@ public final class MainActivity extends Activity {
                     + DownloadArtifactTracker.AUDIO_PATH_MARKER + "%(filepath)j");
         } else {
             request.addOption("--merge-output-format", "mp4");
+            if (singlePass) {
+                request.addOption("--print", "after_move:"
+                        + DownloadArtifactTracker.VIDEO_PATH_MARKER + "%(filepath)j");
+            }
         }
         if (cookieFile != null && cookieFile.isFile()) {
             request.addOption("--cookies", cookieFile.getAbsolutePath());
         }
-        request.addOption("-f", format);
-        request.addOption("-o", DownloadFormatSelector.outputTemplate(outputDirectory, audioOnly));
+        request.addOption("-f", singlePass && !audioOnly
+                ? DownloadFormatSelector.forStreamVideo(format) : format);
+        // Do not mistake a saved stream of another quality for the selected format.
+        request.addOption("-o", DownloadFormatSelector.outputTemplate(
+                outputDirectory, audioOnly, singlePass && !audioOnly));
 
         Map<String, String> filesBeforeVideoDownload =
                 DownloadArtifactTracker.snapshot(outputDirectory);
@@ -1372,16 +1394,34 @@ public final class MainActivity extends Activity {
             }
             List<File> videoFiles = DownloadArtifactTracker.changedVideos(
                     outputDirectory, filesBeforeVideoDownload);
+            if (singlePass) {
+                List<File> completedFiles = DownloadArtifactTracker.completedVideoFiles(
+                        outputDirectory, response.getOut());
+                logDownload("최종 영상 경로 확인: " + completedFiles.size() + "개");
+                videoFiles = new java.util.ArrayList<>(videoFiles);
+                for (File completed : completedFiles) {
+                    boolean included = false;
+                    for (File changed : videoFiles) {
+                        if (changed.getAbsolutePath().equals(completed.getAbsolutePath())) included = true;
+                    }
+                    if (!included) videoFiles.add(completed);
+                }
+            }
             if (videoFiles.isEmpty() && !alreadyDownloaded.get()) {
                 throw new IllegalStateException(
                         "yt-dlp가 실제 동영상 파일을 만들지 않았습니다.");
             }
-            videoDownloaded = true;
-            ytDlpVideoCount = Math.max(videoFiles.size(), alreadyDownloaded.get() ? 1 : 0);
             for (File videoFile : videoFiles) {
+                if (singlePass && Build.VERSION.SDK_INT >= 29) {
+                    StreamVideoPublisher.publish(getApplicationContext(), videoFile,
+                            () -> !isDownloadActive(generation));
+                    logDownload("다운로드 폴더 저장·SHA-256 검증 완료: " + videoFile.length() + " bytes");
+                }
                 logDownload("실제 동영상 확인: " + videoFile.getName()
                         + " (" + videoFile.length() + " bytes)");
             }
+            videoDownloaded = true;
+            ytDlpVideoCount = Math.max(videoFiles.size(), alreadyDownloaded.get() ? 1 : 0);
             logDownload("yt-dlp 전체 동영상 항목 다운로드 완료: "
                     + ytDlpVideoCount + "개");
         } catch (Throwable error) {
@@ -1441,8 +1481,10 @@ public final class MainActivity extends Activity {
             }
         }
         if (success) {
-            MediaScannerConnection.scanFile(this,
-                    new String[]{outputDirectory.getAbsolutePath()}, null, null);
+            if (!singlePass || Build.VERSION.SDK_INT < 29) {
+                MediaScannerConnection.scanFile(this,
+                        new String[]{outputDirectory.getAbsolutePath()}, null, null);
+            }
             logDownload("전체 미디어 완료: 영상="
                     + (ytDlpVideoCount + directVideoCount) + "개, 사진=" + imageCount + "개");
         }

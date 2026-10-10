@@ -12,6 +12,7 @@ import org.json.JSONTokener;
 
 final class DownloadArtifactTracker {
     static final String AUDIO_PATH_MARKER = "YTDownAudio=";
+    static final String VIDEO_PATH_MARKER = "YTDownVideo=";
     private DownloadArtifactTracker() {
     }
 
@@ -57,19 +58,30 @@ final class DownloadArtifactTracker {
     /** Validate final post-processed paths, including a repeated download.
      * A success message or a thumbnail/intermediate MP4 is not an audio artifact. */
     static List<File> completedAudioFiles(File directory, String output) {
+        return completedFiles(directory, output, AUDIO_PATH_MARKER, true);
+    }
+
+    static List<File> completedVideoFiles(File directory, String output) {
+        return completedFiles(directory, output, VIDEO_PATH_MARKER, false);
+    }
+
+    private static List<File> completedFiles(File directory, String output,
+                                             String marker, boolean audioOnly) {
         List<File> completed = new ArrayList<>();
         if (output == null) return completed;
         try {
             File parent = directory.getCanonicalFile();
             for (String line : output.split("[\\r\\n]+")) {
                 line = line.trim();
-                if (!line.startsWith(AUDIO_PATH_MARKER)) continue;
+                if (!line.startsWith(marker)) continue;
                 try {
-                    Object decoded = new JSONTokener(line.substring(AUDIO_PATH_MARKER.length())).nextValue();
+                    Object decoded = new JSONTokener(line.substring(marker.length())).nextValue();
                     if (!(decoded instanceof String)) continue;
                     File file = new File((String) decoded).getCanonicalFile();
                     if (parent.equals(file.getParentFile()) && file.isFile()
-                            && file.length() > 0 && file.getName().endsWith("-audio.m4a")
+                            && file.length() > 0 && (audioOnly
+                                    ? file.getName().endsWith("-audio.m4a")
+                                    : isVideoFileName(file.getName()))
                             && !completed.contains(file)) {
                         completed.add(file);
                     }

@@ -31,9 +31,24 @@ final class DownloadFormatSelector {
                 : forQualityPosition(position);
     }
 
+    static String forStreamVideo(String selectedFormat) {
+        for (int position = 0; position < 3; position++) {
+            if (forQualityPosition(position).equals(selectedFormat)) {
+                String limit = position == 1 ? "[height<=1080]" : position == 2 ? "[height<=720]" : "";
+                return "best" + limit + "[ext=mp4][vcodec!=none]/best" + limit + "[vcodec!=none]";
+            }
+        }
+        return selectedFormat;
+    }
+
     static String outputTemplate(File outputDirectory, boolean audioOnly) {
+        return outputTemplate(outputDirectory, audioOnly, false);
+    }
+
+    static String outputTemplate(File outputDirectory, boolean audioOnly, boolean streamFormat) {
         return new File(outputDirectory,
                 "%(title).165B [%(id)s]-%(autonumber)03d"
-                        + (audioOnly ? "-audio" : "") + ".%(ext)s").getAbsolutePath();
+                        + (audioOnly ? "-audio" : streamFormat ? "-%(format_id).30B" : "")
+                        + ".%(ext)s").getAbsolutePath();
     }
 }
