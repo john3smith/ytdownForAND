@@ -13,6 +13,7 @@ final class DownloadQueue {
         final String format;
         final boolean account;
         final boolean audioOnly;
+        final boolean httpsAssist;
 
         Task(String url, String format) {
             this(url, format, false);
@@ -23,10 +24,15 @@ final class DownloadQueue {
         }
 
         Task(String url, String format, boolean account, boolean audioOnly) {
+            this(url, format, account, audioOnly, false);
+        }
+
+        Task(String url, String format, boolean account, boolean audioOnly, boolean httpsAssist) {
             this.url = url;
             this.format = format;
             this.account = account;
             this.audioOnly = audioOnly;
+            this.httpsAssist = httpsAssist;
         }
     }
 

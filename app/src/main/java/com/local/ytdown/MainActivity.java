@@ -92,6 +92,7 @@ public final class MainActivity extends Activity {
     private Switch immediateDownloadSwitch;
     private Switch wifiOnlySwitch;
     private Switch audioOnlySwitch;
+    private Switch httpsAssistSwitch;
     private ProgressBar progressBar;
     private TextView videoTitleText;
     private TextView percentText;
@@ -354,6 +355,15 @@ public final class MainActivity extends Activity {
             if (qualitySpinner != null) qualitySpinner.setEnabled(!checked);
         });
         root.addView(audioOnlySwitch, matchWrap(dp(12)));
+
+        httpsAssistSwitch = new Switch(this);
+        httpsAssistSwitch.setText(R.string.https_assist);
+        httpsAssistSwitch.setTextColor(getColor(R.color.text_primary));
+        httpsAssistSwitch.setChecked(HttpsConnectionAssist.enabled(this));
+        httpsAssistSwitch.setOnCheckedChangeListener((button, checked) ->
+                getSharedPreferences(UI_PREFERENCES, MODE_PRIVATE).edit()
+                        .putBoolean(HttpsConnectionAssist.PREFERENCE, checked).apply());
+        root.addView(httpsAssistSwitch, matchWrap(dp(12)));
 
         TextView qualityLabel = new TextView(this);
         qualityLabel.setText(R.string.quality_label);
@@ -673,7 +683,8 @@ public final class MainActivity extends Activity {
             return;
         }
 
-        enqueueTask(new DownloadQueue.Task(url, selectedFormat(), true, audioOnlySwitch.isChecked()));
+        enqueueTask(new DownloadQueue.Task(url, selectedFormat(), true, audioOnlySwitch.isChecked(),
+                httpsAssistSwitch.isChecked()));
     }
 
     private void startAccountDownload(DownloadQueue.Task task) {
@@ -852,7 +863,8 @@ public final class MainActivity extends Activity {
         statusText.setText(getString(R.string.bulk_attempting,
                 bulkAttempted + 1, bulkTotal));
         startDownload(new DownloadQueue.Task(url, format, false,
-                accountTask != null && accountTask.audioOnly));
+                accountTask != null && accountTask.audioOnly,
+                accountTask != null && accountTask.httpsAssist));
     }
 
     private void finishBulkDiscovery(boolean success, String detail) {
@@ -896,7 +908,7 @@ public final class MainActivity extends Activity {
 
     private void enqueueOrStart(String url, String format) {
         enqueueTask(new DownloadQueue.Task(DownloadUrlPolicy.normalize(url), format,
-                false, audioOnlySwitch.isChecked()));
+                false, audioOnlySwitch.isChecked(), httpsAssistSwitch.isChecked()));
     }
 
     private void enqueueTask(DownloadQueue.Task task) {
@@ -982,7 +994,8 @@ public final class MainActivity extends Activity {
         }
         File downloadCookieFile = cookieFile;
         activeDownloadFuture = executor.submit(() -> executeDownload(
-                task.url, outputDirectory, task.format, task.audioOnly, downloadCookieFile, generation));
+                task.url, outputDirectory, task.format, task.audioOnly, task.httpsAssist,
+                downloadCookieFile, generation));
     }
 
     private void startNextQueuedDownload() {
@@ -1131,7 +1144,38 @@ public final class MainActivity extends Activity {
     }
 
     private void executeDownload(String url, File outputDirectory, String format,
-                                 boolean audioOnly, File cookieFile, long generation) {
+                                 boolean audioOnly, boolean httpsAssist, File cookieFile, long generation) {
+        if (!isDownloadActive(generation)) return;
+        HttpsConnectionAssist.Lease lease = null;
+        try {
+            boolean maskedPlatform = AuthCookieStore.PORNHUB.equals(AuthCookieStore.platformForUrl(url));
+            if (maskedPlatform && (cookieFile == null || !cookieFile.isFile())) {
+                String detail = getString(R.string.masked_login_required);
+                logDownload(detail);
+                runOnUiThread(() -> finishDownload(generation, false, detail));
+                return;
+            }
+            if (httpsAssist && maskedPlatform) {
+                lease = HttpsConnectionAssist.acquire();
+                logDownload("*** HTTPS 연결 보조 ON · 인증서 검증 유지");
+            }
+            executeDownloadWithTransport(url, outputDirectory, format, audioOnly,
+                    cookieFile, generation, lease == null ? null : lease.proxyUrl());
+        } catch (Exception error) {
+            String detail = getString(R.string.https_assist_failed);
+            logDownload(detail);
+            runOnUiThread(() -> finishDownload(generation, false, detail));
+        } finally {
+            if (lease != null) {
+                logDownload("HTTPS 연결 보조 종료: TLS 분할=" + lease.fragmentedCount()
+                        + ", 연결 오류=" + lease.failureCount());
+                lease.close();
+            }
+        }
+    }
+
+    private void executeDownloadWithTransport(String url, File outputDirectory, String format,
+                                 boolean audioOnly, File cookieFile, long generation, String proxyUrl) {
         if (!isDownloadActive(generation)) {
             return;
         }
@@ -1177,6 +1221,7 @@ public final class MainActivity extends Activity {
 
         try {
             YoutubeDLRequest infoRequest = new YoutubeDLRequest(url);
+            if (proxyUrl != null) infoRequest.addOption("--proxy", proxyUrl);
             if (cookieFile != null && cookieFile.isFile()) {
                 infoRequest.addOption("--cookies", cookieFile.getAbsolutePath());
             }
@@ -1217,6 +1262,7 @@ public final class MainActivity extends Activity {
             return;
         }
         YoutubeDLRequest request = new YoutubeDLRequest(url);
+        if (proxyUrl != null) request.addOption("--proxy", proxyUrl);
         request.addOption("--yes-playlist");
         request.addOption("--no-mtime");
         if (audioOnly) {

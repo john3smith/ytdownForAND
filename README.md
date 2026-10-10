@@ -34,7 +34,7 @@ YouTube, X(트위터), Instagram 링크를 입력하거나 다른 앱에서 공�
 
 ## 설치
 
-`YTDown-v1.9.19-arm64-debug.apk`를 Android 휴대폰으로 옮긴 뒤 설치합니다. Play 스토어 외부 APK 설치 권한이 필요합니다.
+`YTDown-v1.9.20-arm64-debug.apk`를 Android 휴대폰으로 옮긴 뒤 설치합니다. Play 스토어 외부 APK 설치 권한이 필요합니다.
 
 앱을 열면 다운로드 전에 최신 stable `yt-dlp`를 확인하고 자동으로 업데이트합니다.
 다른 앱의 공유 메뉴에서 링크를 보내면 영상 이름을 확인한 뒤 다운로드를 자동으로 시작합니다.

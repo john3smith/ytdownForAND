@@ -43,6 +43,10 @@
     <string name="queue_cancel_item">이 항목 취소</string>
     <string name="queue_item_cancelled">대기 항목을 취소했습니다.</string>
     <string name="wifi_only">Wi-Fi에서만 다운로드 시작</string>
+    <string name="https_assist">*** HTTPS 연결 보조</string>
+    <string name="https_assist_failed">HTTPS 연결 보조를 시작하지 못했습니다. 설정을 끈 후 재시도하거나 로그를 확인해 주세요.</string>
+    <string name="https_assist_webview_unsupported">현재 Android System WebView는 HTTPS 연결 보조를 지원하지 않습니다. WebView를 업데이트하거나 토글을 끄고 로그인해 주세요.</string>
+    <string name="masked_login_required">*** 나이 확인과 계정 로그인을 먼저 완료해 주세요.</string>
     <string name="audio_only">음원만 추출 (M4A)</string>
     <string name="usage_audio_addendum">\n\n음원만 추출은 기본 OFF입니다. 켜면 사진과 동영상 대신 M4A 음원만 저장하며 영상 화질 설정은 적용되지 않습니다. 공유·대기열·계정 다운로드는 등록 당시의 음원 설정을 유지합니다. 사진 전용 게시물이나 소리 없는 영상에는 추출할 음원이 없습니다.</string>
     <string name="wifi_waiting">Wi-Fi 연결을 기다리는 중 · 대기열 %1$d개</string>

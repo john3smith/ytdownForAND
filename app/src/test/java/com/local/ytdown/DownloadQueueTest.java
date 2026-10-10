@@ -8,6 +8,18 @@ import org.junit.Test;
 
 public class DownloadQueueTest {
     @Test
+    public void httpsAssistDefaultsOffAndIsCapturedPerQueuedTask() {
+        DownloadQueue queue = new DownloadQueue();
+        DownloadQueue.Task assisted = new DownloadQueue.Task("https://www.pornhub.com/view_video.php?viewkey=a", "best", false, false, true);
+        DownloadQueue.Task direct = new DownloadQueue.Task("https://youtu.be/example", "best");
+        assertTrue(queue.offer(assisted, null));
+        assertTrue(queue.offer(direct, null));
+        assertTrue(queue.poll().httpsAssist);
+        assertFalse(queue.poll().httpsAssist);
+        assertFalse(new DownloadQueue.Task("url", "format", true, true).httpsAssist);
+    }
+
+    @Test
     public void tasksDefaultToVideoAndKeepTheirOwnAudioModeInQueue() {
         DownloadQueue queue = new DownloadQueue();
         DownloadQueue.Task audioAccount = new DownloadQueue.Task("https://x.com/account", "audio", true, true);

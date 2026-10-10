@@ -22,6 +22,10 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+import androidx.webkit.ProxyConfig;
+import androidx.webkit.ProxyController;
+import androidx.webkit.WebViewFeature;
+import android.util.Log;
 
 import java.io.File;
 
@@ -33,6 +37,8 @@ public final class LoginActivity extends Activity {
     private TextView statusText;
     private Button doneButton;
     private boolean saving;
+    private HttpsConnectionAssist.Lease httpsLease;
+    private boolean proxyOwned;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,7 +53,65 @@ public final class LoginActivity extends Activity {
         setTitle(AuthCookieStore.displayName(platform) + " 로그인");
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_SECURE);
         setContentView(createContentView());
-        webView.loadUrl(AuthCookieStore.loginUrl(platform));
+        prepareLoginTransport();
+    }
+
+    private void prepareLoginTransport() {
+        if (!AuthCookieStore.PORNHUB.equals(platform) || !HttpsConnectionAssist.enabled(this)) {
+            webView.loadUrl(AuthCookieStore.loginUrl(platform));
+            return;
+        }
+        if (!WebViewFeature.isFeatureSupported(WebViewFeature.PROXY_OVERRIDE)
+                || !WebViewFeature.isFeatureSupported(WebViewFeature.PROXY_OVERRIDE_REVERSE_BYPASS)) {
+            statusText.setText(R.string.https_assist_webview_unsupported);
+            return;
+        }
+        try {
+            httpsLease = HttpsConnectionAssist.acquire();
+            ProxyConfig.Builder config = new ProxyConfig.Builder()
+                    .addProxyRule(httpsLease.proxyUrl(), ProxyConfig.MATCH_HTTPS);
+            if (WebViewFeature.isFeatureSupported(WebViewFeature.PROXY_OVERRIDE_REVERSE_BYPASS)) {
+                config.setReverseBypassEnabled(true);
+            } else {
+                releaseLoginTransport();
+                statusText.setText(R.string.https_assist_webview_unsupported);
+                return;
+            }
+            for (String domain : HttpsRelayPolicy.DOMAINS) {
+                config.addBypassRule(domain).addBypassRule("*." + domain);
+            }
+            if (WebViewFeature.isFeatureSupported(WebViewFeature.PROXY_OVERRIDE)) {
+                proxyOwned = true;
+                ProxyController.getInstance().setProxyOverride(config.build(), this::runOnUiThread, () -> {
+                    if (!isFinishing() && !isDestroyed() && webView != null) {
+                        Log.i("YTDownHttps", "login assist active; certificate verification unchanged");
+                        webView.loadUrl(AuthCookieStore.loginUrl(platform));
+                    }
+                });
+            } else {
+                releaseLoginTransport();
+                statusText.setText(R.string.https_assist_webview_unsupported);
+            }
+        } catch (Exception error) {
+            releaseLoginTransport();
+            statusText.setText(R.string.https_assist_failed);
+        }
+    }
+
+    private void releaseLoginTransport() {
+        HttpsConnectionAssist.Lease lease = httpsLease;
+        httpsLease = null;
+        if (lease == null) return;
+        Log.i("YTDownHttps", "login assist closed: split=" + lease.fragmentedCount()
+                + " failures=" + lease.failureCount());
+        if (proxyOwned) {
+            proxyOwned = false;
+            try {
+                if (WebViewFeature.isFeatureSupported(WebViewFeature.PROXY_OVERRIDE)) {
+                    ProxyController.getInstance().clearProxyOverride(this::runOnUiThread, lease::close);
+                } else lease.close();
+            } catch (RuntimeException error) { lease.close(); }
+        } else lease.close();
     }
 
     private View createContentView() {
@@ -198,6 +262,7 @@ public final class LoginActivity extends Activity {
             webView.destroy();
             webView = null;
         }
+        releaseLoginTransport();
         super.onDestroy();
     }
 }
