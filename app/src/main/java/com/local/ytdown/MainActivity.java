@@ -551,6 +551,8 @@ public final class MainActivity extends Activity {
                 return AuthCookieStore.X;
             case 2:
                 return AuthCookieStore.INSTAGRAM;
+            case 3:
+                return AuthCookieStore.PORNHUB;
             default:
                 return AuthCookieStore.YOUTUBE;
         }
@@ -559,7 +561,8 @@ public final class MainActivity extends Activity {
     private void refreshLoginStatus() {
         StringBuilder names = new StringBuilder();
         for (String platform : new String[]{
-                AuthCookieStore.YOUTUBE, AuthCookieStore.X, AuthCookieStore.INSTAGRAM}) {
+                AuthCookieStore.YOUTUBE, AuthCookieStore.X, AuthCookieStore.INSTAGRAM,
+                AuthCookieStore.PORNHUB}) {
             if (!AuthCookieStore.hasSavedCookies(this, platform)) {
                 continue;
             }
