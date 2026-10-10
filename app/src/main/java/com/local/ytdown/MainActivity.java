@@ -33,6 +33,7 @@ import android.text.TextUtils;
 import android.view.Gravity;
 import android.view.View;
 import android.view.WindowManager;
+import android.webkit.WebSettings;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
@@ -133,6 +134,7 @@ public final class MainActivity extends Activity {
     private boolean serviceReceiverRegistered;
     private long lastCancelButtonPressAt;
     private volatile boolean activityDestroyed;
+    private String browserDefaultUserAgent;
     private final BroadcastReceiver downloadServiceReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -148,6 +150,11 @@ public final class MainActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        try {
+            browserDefaultUserAgent = WebSettings.getDefaultUserAgent(this);
+        } catch (RuntimeException unavailable) {
+            Log.w(TAG, "Browser headers unavailable; retaining downloader defaults");
+        }
         createNotificationChannel();
         setContentView(createContentView());
         registerNetworkCallback();
@@ -1221,6 +1228,9 @@ public final class MainActivity extends Activity {
 
         try {
             YoutubeDLRequest infoRequest = new YoutubeDLRequest(url);
+            if (BrowserRequestHeaders.apply(url, browserDefaultUserAgent, infoRequest::addOption)) {
+                logDownload("*** Chrome 호환 헤더 적용 · 로그인 쿠키 유지");
+            }
             if (proxyUrl != null) infoRequest.addOption("--proxy", proxyUrl);
             if (cookieFile != null && cookieFile.isFile()) {
                 infoRequest.addOption("--cookies", cookieFile.getAbsolutePath());
@@ -1262,6 +1272,7 @@ public final class MainActivity extends Activity {
             return;
         }
         YoutubeDLRequest request = new YoutubeDLRequest(url);
+        BrowserRequestHeaders.apply(url, browserDefaultUserAgent, request::addOption);
         if (proxyUrl != null) request.addOption("--proxy", proxyUrl);
         request.addOption("--yes-playlist");
         request.addOption("--no-mtime");

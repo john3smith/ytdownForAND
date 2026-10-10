@@ -132,6 +132,10 @@ public final class LoginActivity extends Activity {
 
         webView = new WebView(this);
         WebSettings settings = webView.getSettings();
+        if (AuthCookieStore.PORNHUB.equals(platform)) {
+            String browserAgent = BrowserRequestHeaders.chromeUserAgent(settings.getUserAgentString());
+            if (browserAgent != null) settings.setUserAgentString(browserAgent);
+        }
         settings.setJavaScriptEnabled(true);
         settings.setDomStorageEnabled(true);
         settings.setDatabaseEnabled(true);
