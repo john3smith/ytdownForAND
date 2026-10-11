@@ -1,5 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="view_current_webpage">현재 웹페이지 보기</string>
+    <string name="webpage_invalid_url">확인할 https:// 웹페이지 주소를 입력해 주세요.</string>
+    <string name="webpage_loading">웹페이지를 불러오는 중…</string>
+    <string name="webpage_loaded">페이지 열림 · 다운로드는 시작하지 않습니다.</string>
+    <string name="webpage_refresh">새로고침</string>
+    <string name="webpage_load_failed">페이지를 열지 못했습니다. 네트워크 또는 사이트 접속 상태를 확인해 주세요.</string>
+    <string name="webpage_certificate_failed">인증서를 확인할 수 없어 연결을 중단했습니다.</string>
+    <string name="webpage_navigation_blocked">HTTPS 웹페이지만 앱 안에서 열 수 있습니다.</string>
     <string name="app_name">YTDown</string>
     <string name="version_format">YTDown v%1$s</string>
     <string name="beta_version_format">YTDown v%1$s · 베타</string>

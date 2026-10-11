@@ -29,6 +29,9 @@
             android:name=".LoginActivity"
             android:exported="false" />
         <activity
+            android:name=".WebPageActivity"
+            android:exported="false" />
+        <activity
             android:name=".MainActivity"
             android:configChanges="keyboardHidden|orientation|screenLayout|screenSize|smallestScreenSize"
             android:exported="true"

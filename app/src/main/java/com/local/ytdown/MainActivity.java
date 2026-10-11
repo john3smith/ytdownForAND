@@ -336,6 +336,13 @@ public final class MainActivity extends Activity {
         urlParams.bottomMargin = dp(20);
         root.addView(urlInput, urlParams);
 
+        Button webPageButton = commandButton(R.string.view_current_webpage, false);
+        LinearLayout.LayoutParams webPageParams = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, dp(48));
+        webPageParams.bottomMargin = dp(12);
+        root.addView(webPageButton, webPageParams);
+        webPageButton.setOnClickListener(view -> openCurrentWebPage());
+
         wifiOnlySwitch = new Switch(this);
         wifiOnlySwitch.setText(R.string.wifi_only);
         wifiOnlySwitch.setTextColor(getColor(R.color.text_primary));
@@ -561,6 +568,18 @@ public final class MainActivity extends Activity {
             intent.putExtra(LoginActivity.EXTRA_SESSION_URL, sessionUrl);
         }
         startActivityForResult(intent, LOGIN_REQUEST);
+    }
+
+    private void openCurrentWebPage() {
+        String url = urlInput.getText().toString().trim();
+        if (!WebPageUrlPolicy.isAllowed(url)) {
+            urlInput.setError(getString(R.string.webpage_invalid_url));
+            urlInput.requestFocus();
+            return;
+        }
+        Intent intent = new Intent(this, WebPageActivity.class);
+        intent.putExtra(WebPageActivity.EXTRA_URL, url);
+        startActivity(intent);
     }
 
     private void clearSelectedLogin() {
