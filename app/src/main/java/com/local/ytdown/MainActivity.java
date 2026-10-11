@@ -110,6 +110,8 @@ public final class MainActivity extends Activity {
     private volatile boolean downloading;
     private volatile boolean engineReady;
     private volatile int currentProgress;
+    private volatile boolean currentProgressIndeterminate;
+    private volatile long lastStreamNotificationAt;
     private volatile int lastNotificationProgress = -1;
     private volatile String currentVideoTitle;
     private volatile String activeUrl;
@@ -1012,6 +1014,9 @@ public final class MainActivity extends Activity {
         progressBar.setProgress(0);
         percentText.setText(getString(R.string.percent_format, 0));
         currentProgress = 0;
+        currentProgressIndeterminate = false;
+        progressBar.setIndeterminate(false);
+        lastStreamNotificationAt = 0;
         lastNotificationProgress = -1;
         currentVideoTitle = getString(R.string.video_title_loading);
         startKeepAlive(currentVideoTitle);
@@ -1312,6 +1317,9 @@ public final class MainActivity extends Activity {
             request.addOption("--no-quiet");
             request.addOption("--progress");
             request.addOption("--print", "before_dl:" + DownloadTitleParser.MARKER + "%(title)j");
+            if (!audioOnly) {
+                request.addOption("--print", FfmpegProgressTracker.DURATION_TEMPLATE);
+            }
         }
         if (proxyUrl != null) request.addOption("--proxy", proxyUrl);
         try {
@@ -1357,6 +1365,7 @@ public final class MainActivity extends Activity {
                 DownloadArtifactTracker.snapshot(outputDirectory);
         AtomicBoolean alreadyDownloaded = new AtomicBoolean(false);
         AtomicBoolean titleReceived = new AtomicBoolean(false);
+        FfmpegProgressTracker streamProgress = new FfmpegProgressTracker();
         Function3<Float, Long, String, Unit> callback = (progress, eta, line) -> {
             if (!isDownloadActive(generation)) {
                 try {
@@ -1382,6 +1391,15 @@ public final class MainActivity extends Activity {
             if (!TextUtils.isEmpty(line)
                     && line.toLowerCase(Locale.US).contains("already been downloaded")) {
                 alreadyDownloaded.set(true);
+            }
+            if (singlePass && !audioOnly) {
+                if (FfmpegProgressTracker.isProtocolLine(line)) {
+                    FfmpegProgressTracker.Snapshot snapshot = streamProgress.accept(line);
+                    if (snapshot != null) updateStreamDownloadProgress(snapshot, generation);
+                }
+                // The library returns its last yt-dlp percentage (-1 for external FFmpeg).
+                // Do not let unrelated title/path/status lines overwrite the stream timeline.
+                return Unit.INSTANCE;
             }
             int value = Math.max(0, Math.min(100, Math.round(progress)));
             updateDownloadProgress(value, line, generation);
@@ -1579,6 +1597,7 @@ public final class MainActivity extends Activity {
             return;
         }
         currentProgress = value;
+        currentProgressIndeterminate = false;
         if (value != lastNotificationProgress) {
             lastNotificationProgress = value;
             showProgressNotification(value, false);
@@ -1587,11 +1606,42 @@ public final class MainActivity extends Activity {
             if (!isDownloadActive(generation)) {
                 return;
             }
+            progressBar.setIndeterminate(false);
             progressBar.setProgress(value);
             percentText.setText(getString(R.string.percent_format, value));
             if (!TextUtils.isEmpty(detail)) {
                 statusText.setText(shortStatus(detail));
             }
+        });
+    }
+
+    private void updateStreamDownloadProgress(FfmpegProgressTracker.Snapshot snapshot,
+                                               long generation) {
+        if (!isDownloadActive(generation)) return;
+        boolean indeterminate = snapshot.percent < 0;
+        boolean changed = currentProgressIndeterminate != indeterminate
+                || currentProgress != Math.max(0, snapshot.percent);
+        currentProgressIndeterminate = indeterminate;
+        currentProgress = Math.max(0, snapshot.percent);
+        String elapsed = android.text.format.DateUtils.formatElapsedTime(snapshot.elapsedSeconds);
+        String size = android.text.format.Formatter.formatShortFileSize(this, snapshot.bytes);
+        String detail = indeterminate
+                ? getString(R.string.stream_progress_unknown, elapsed, size)
+                : getString(R.string.stream_progress_known, elapsed,
+                        android.text.format.DateUtils.formatElapsedTime(snapshot.durationSeconds), size);
+        long now = SystemClock.elapsedRealtime();
+        if (changed || now - lastStreamNotificationAt >= 1000) {
+            lastStreamNotificationAt = now;
+            lastNotificationProgress = currentProgress;
+            showProgressNotification(currentProgress, indeterminate);
+        }
+        runOnUiThread(() -> {
+            if (!isDownloadActive(generation)) return;
+            progressBar.setIndeterminate(indeterminate);
+            if (!indeterminate) progressBar.setProgress(snapshot.percent);
+            percentText.setText(indeterminate ? getString(R.string.stream_progress_no_duration)
+                    : getString(R.string.percent_format, snapshot.percent));
+            statusText.setText(detail);
         });
     }
 
@@ -1669,6 +1719,7 @@ public final class MainActivity extends Activity {
         }
         setDownloadingUi(false);
         if (success) {
+            progressBar.setIndeterminate(false);
             progressBar.setProgress(100);
             percentText.setText(getString(R.string.percent_format, 100));
             statusText.setText(R.string.status_complete);
@@ -1714,6 +1765,10 @@ public final class MainActivity extends Activity {
     }
 
     private void setDownloadingUi(boolean active) {
+        if (!active) {
+            currentProgressIndeterminate = false;
+            progressBar.setIndeterminate(false);
+        }
         downloadButton.setEnabled(engineReady);
         bulkDownloadButton.setEnabled(engineReady);
         cancelButton.setEnabled(active || bulkMode);
@@ -1896,8 +1951,11 @@ public final class MainActivity extends Activity {
                         ? getString(R.string.notification_downloading)
                         : getString(R.string.notification_downloading_queued,
                                 downloadQueue.size()))
-                .setContentText(currentVideoTitle)
-                .setProgress(100, progress, indeterminate)
+                .setContentText(currentVideoTitle + " · "
+                        + (indeterminate || currentProgressIndeterminate
+                        ? getString(R.string.notification_downloading)
+                        : getString(R.string.percent_format, progress)))
+                .setProgress(100, progress, indeterminate || currentProgressIndeterminate)
                 .setOngoing(true)
                 .build();
         getSystemService(NotificationManager.class)

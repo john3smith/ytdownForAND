@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="stream_progress_known">스트리밍 저장 중 · %1$s / %2$s · %3$s</string>
+    <string name="stream_progress_unknown">스트리밍 저장 중 · %1$s 저장 · %2$s · 전체 길이 정보 없음</string>
+    <string name="stream_progress_no_duration">저장 중</string>
     <string name="view_current_webpage">현재 웹페이지 보기</string>
     <string name="webpage_invalid_url">확인할 https:// 웹페이지 주소를 입력해 주세요.</string>
     <string name="webpage_loading">웹페이지를 불러오는 중…</string>

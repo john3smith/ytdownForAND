@@ -4,6 +4,25 @@ plugins {
 
 def targetAbi = project.findProperty("targetAbi") ?: "arm64-v8a"
 def runtimeAar = rootProject.layout.buildDirectory.file("python-runtime/library-python3.14.8-${targetAbi}.aar")
+def progressTestAssets = layout.buildDirectory.dir("generated/progress-test-assets")
+def generateProgressTestTls = tasks.register("generateProgressTestTls") {
+    outputs.dir(progressTestAssets)
+    doLast {
+        def folder = progressTestAssets.get().asFile
+        folder.mkdirs()
+        def keytool = new File(System.getProperty("java.home"), "bin/keytool" + (System.getProperty("os.name").startsWith("Windows") ? ".exe" : ""))
+        def store = new File(folder, "fixture.p12")
+        // Isolated generated test credentials; never packaged in the production APK or committed.
+        if (!store.exists()) {
+            exec { commandLine keytool, "-genkeypair", "-alias", "fixture", "-keyalg", "RSA",
+                    "-keysize", "2048", "-validity", "365", "-dname", "CN=localhost",
+                    "-ext", "SAN=ip:127.0.0.1", "-ext", "bc=ca:true", "-keystore", store,
+                    "-storetype", "PKCS12", "-storepass", "synthetic-test-only", "-noprompt" }
+        }
+        exec { commandLine keytool, "-exportcert", "-rfc", "-alias", "fixture", "-keystore", store,
+                "-storepass", "synthetic-test-only", "-file", new File(folder, "fixture-ca.pem") }
+    }
+}
 
 configurations {
     pythonRuntimeBase { transitive = false }
@@ -24,6 +43,7 @@ def preparePythonRuntime = tasks.register("preparePythonRuntime", Exec) {
 }
 
 android {
+    sourceSets { androidTest { assets.srcDir(progressTestAssets) } }
     namespace "com.local.ytdown"
     compileSdk 36
 
@@ -31,8 +51,9 @@ android {
         applicationId "com.local.ytdown"
         minSdk 24
         targetSdk 36
-        versionCode 64
-        versionName "1.9.26-beta.3"
+        versionCode 65
+        versionName "1.9.26-beta.4"
+        testInstrumentationRunner "com.local.ytdown.StreamProgressInstrumentation"
 
         ndk {
             abiFilters targetAbi
@@ -59,6 +80,11 @@ android {
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
     }
+}
+
+tasks.configureEach {
+    if (name in ["mergeDebugAndroidTestAssets", "lintAnalyzeDebugAndroidTest",
+                 "generateDebugAndroidTestLintModel"]) dependsOn(generateProgressTestTls)
 }
 
 dependencies {
