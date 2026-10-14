@@ -101,6 +101,7 @@ public final class MainActivity extends Activity {
     private TextView queueStatusText;
     private Button queueListButton;
     private AlertDialog queueDialog;
+    private IncompleteFilesDialog incompleteFilesDialog;
     private ConnectivityManager connectivityManager;
     private ConnectivityManager.NetworkCallback networkCallback;
     private TextView loginStatusText;
@@ -485,6 +486,15 @@ public final class MainActivity extends Activity {
                 LinearLayout.LayoutParams.MATCH_PARENT, dp(52));
         logParams.topMargin = dp(16);
         root.addView(logButton, logParams);
+
+        Button incompleteButton = commandButton(R.string.incomplete_files, false);
+        incompleteButton.setId(R.id.incomplete_files);
+        root.addView(incompleteButton, matchWrap(dp(8)));
+        incompleteButton.setOnClickListener(v -> {
+            if (incompleteFilesDialog == null) incompleteFilesDialog = new IncompleteFilesDialog(
+                    this, executor, () -> downloading || bulkMode || downloadQueue.size() > 0);
+            incompleteFilesDialog.show();
+        });
 
         TextView versionText = new TextView(this);
         String appVersion = getAppVersionName();
@@ -1034,9 +1044,9 @@ public final class MainActivity extends Activity {
                     + (cookieFile != null && cookieFile.isFile() ? "적용됨" : "없음"));
         }
         File downloadCookieFile = cookieFile;
-        activeDownloadFuture = executor.submit(() -> executeDownload(
+        activeDownloadFuture = executor.submit(() -> { synchronized (IncompleteFiles.IO_LOCK) { executeDownload(
                 task.url, outputDirectory, task.format, task.audioOnly, task.httpsAssist,
-                downloadCookieFile, generation));
+                downloadCookieFile, generation); } });
     }
 
     private void startNextQueuedDownload() {
@@ -2070,6 +2080,7 @@ public final class MainActivity extends Activity {
     @Override
     protected void onDestroy() {
         activityDestroyed = true;
+        if (incompleteFilesDialog != null) incompleteFilesDialog.dismiss();
         if (serviceReceiverRegistered) {
             unregisterReceiver(downloadServiceReceiver);
             serviceReceiverRegistered = false;

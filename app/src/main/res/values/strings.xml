@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="incomplete_files">미완료 파일 조회 / 삭제</string>
     <string name="stream_progress_known">스트리밍 저장 중 · %1$s / %2$s · %3$s</string>
     <string name="stream_progress_unknown">스트리밍 저장 중 · %1$s 저장 · %2$s · 전체 길이 정보 없음</string>
     <string name="stream_progress_no_duration">저장 중</string>
