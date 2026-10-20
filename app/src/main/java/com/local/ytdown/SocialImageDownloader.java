@@ -1621,20 +1621,8 @@ final class SocialImageDownloader {
                 long received = 0;
                 try (InputStream input = new BufferedInputStream(connection.getInputStream());
                      BufferedOutputStream output = new BufferedOutputStream(destinationStream)) {
-                    byte[] buffer = new byte[64 * 1024];
-                    int count;
-                    while ((count = input.read(buffer)) != -1) {
-                        if (listener.isCancelled()) {
-                            throw new InterruptedException("다운로드가 취소되었습니다.");
-                        }
-                        output.write(buffer, 0, count);
-                        received += count;
-                        double itemProgress = length > 0
-                                ? Math.min(1.0, (double) received / length) : 0;
-                        int progress = (int) Math.round(
-                                ((index + itemProgress) / urls.size()) * 100.0);
-                        listener.onProgress(progress);
-                    }
+                    received = MediaTransfer.copy(input, output, length, index, urls.size(),
+                            listener::isCancelled, listener::onProgress);
                 }
                 int[] bounds = readImageBounds(context, destinationUri, destination);
                 listener.onLog("사진 검증: " + bounds[0] + "x" + bounds[1]
@@ -1737,20 +1725,8 @@ final class SocialImageDownloader {
             long received = 0;
             try (InputStream input = new BufferedInputStream(connection.getInputStream());
                  BufferedOutputStream output = new BufferedOutputStream(destinationStream)) {
-                byte[] buffer = new byte[64 * 1024];
-                int count;
-                while ((count = input.read(buffer)) != -1) {
-                    if (listener.isCancelled()) {
-                        throw new InterruptedException("다운로드가 취소되었습니다.");
-                    }
-                    output.write(buffer, 0, count);
-                    received += count;
-                    double itemProgress = length > 0
-                            ? Math.min(1.0, (double) received / length) : 0;
-                    int progress = (int) Math.round(
-                            ((index + itemProgress) / urls.size()) * 100.0);
-                    listener.onProgress(progress);
-                }
+                received = MediaTransfer.copy(input, output, length, index, urls.size(),
+                        listener::isCancelled, listener::onProgress);
                 complete = true;
             } finally {
                 connection.disconnect();
