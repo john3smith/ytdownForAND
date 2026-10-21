@@ -35,3 +35,9 @@ english-vocabulary-record.json
 telegram-outbox/
 codex-progress-logs/
 .tools/
+
+# Store signing and local publisher configuration
+store-signing.properties
+store-local.properties
+*.p12
+*.pfx

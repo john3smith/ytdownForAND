@@ -72,7 +72,9 @@ android {
             useLegacyPackaging true
         }
         resources {
-            excludes += ["META-INF/DEPENDENCIES", "META-INF/LICENSE*", "META-INF/NOTICE*"]
+            // Retain upstream license/notice text; merge duplicate resource paths.
+            excludes += ["META-INF/DEPENDENCIES"]
+            merges += ["META-INF/LICENSE*", "META-INF/NOTICE*"]
         }
     }
 
@@ -104,3 +106,5 @@ dependencies {
     testImplementation "junit:junit:4.13.2"
     testImplementation "org.json:json:20250517"
 }
+
+apply from: rootProject.file("gradle/store-release.gradle")

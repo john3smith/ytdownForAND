@@ -10,6 +10,11 @@ final class DownloadUrlPolicy {
     private DownloadUrlPolicy() {
     }
 
+    static boolean isRestrictedForStore(String value) {
+        URI uri = parse(value);
+        return uri != null && isHost(uri.getHost().toLowerCase(Locale.US), "pornhub.com");
+    }
+
     static boolean isSupported(String value) {
         URI uri = parse(value);
         if (uri == null) return false;

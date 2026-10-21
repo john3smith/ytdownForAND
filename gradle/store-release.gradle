@@ -1,0 +1,68 @@
+// Dedicated store build. Existing debug/release signing identities are unchanged.
+def storeValue = { String name -> providers.environmentVariable(name).orNull ?: "" }
+def suffixChoice = storeValue("STORE_APP_ID_SUFFIX")
+def publisher = storeValue("STORE_PUBLISHER_NAME")
+def support = storeValue("STORE_SUPPORT_EMAIL")
+def privacyUrl = storeValue("STORE_PRIVACY_URL")
+def xmlText = { String value -> value.replace("&", "&amp;").replace("<", "&lt;").replace("'", "\\'") }
+android {
+    defaultConfig {
+        resValue "bool", "store_distribution", "false"
+        resValue "string", "store_publisher_name", xmlText(publisher ?: "출시 준비 중 · 판매자 정보 미확정")
+        resValue "string", "store_support_email", xmlText(support ?: "출시 전 고객지원 연락처 확정 필요")
+        resValue "string", "store_privacy_url", xmlText(privacyUrl)
+    }
+    signingConfigs {
+        storeProduction {
+            if (storeValue("STORE_KEYSTORE")) storeFile file(storeValue("STORE_KEYSTORE"))
+            storePassword storeValue("STORE_STORE_PASSWORD")
+            keyAlias storeValue("STORE_KEY_ALIAS")
+            keyPassword storeValue("STORE_KEY_PASSWORD")
+            enableV1Signing true
+            enableV2Signing true
+        }
+    }
+    buildTypes {
+        storeRelease {
+            initWith release
+            matchingFallbacks = ["release"]
+            debuggable false
+            resValue "bool", "store_distribution", "true"
+            signingConfig signingConfigs.storeProduction
+            applicationIdSuffix suffixChoice && suffixChoice != "same" ? suffixChoice : ".storepreview"
+            // Explicit "same" preserves the existing application ID only after migration is chosen.
+            if (suffixChoice == "same") applicationIdSuffix ""
+        }
+    }
+}
+def validateStore = tasks.register("validateStoreConfiguration") {
+    doLast {
+        def required = ["STORE_APP_ID_SUFFIX", "STORE_PUBLISHER_NAME", "STORE_SUPPORT_EMAIL", "STORE_PRIVACY_URL",
+                        "STORE_KEYSTORE", "STORE_STORE_PASSWORD", "STORE_KEY_ALIAS", "STORE_KEY_PASSWORD"]
+        def missing = required.findAll { !storeValue(it) }
+        if (missing) throw new GradleException("Store build blocked. Missing configuration names: " + missing.join(", "))
+        if (!(suffixChoice == "same" || suffixChoice ==~ /(?:\.[A-Za-z][A-Za-z0-9_]*)+/))
+            throw new GradleException("STORE_APP_ID_SUFFIX must be 'same' or a dot-prefixed application ID suffix.")
+        if (!(support ==~ /[^\s@]+@[^\s@]+\.[^\s@]+/)) throw new GradleException("A valid support email is required.")
+        def uri = new URI(privacyUrl)
+        if (uri.scheme != "https" || !uri.host || uri.userInfo || uri.host in ["example.com", "example.org", "localhost"])
+            throw new GradleException("A published HTTPS privacy policy URL is required.")
+        def keyFile = file(storeValue("STORE_KEYSTORE"))
+        if (!keyFile.isFile()) throw new GradleException("Store keystore file is missing.")
+        // Read only the public certificate for identity validation; never print key material/passwords.
+        def keyStore = java.security.KeyStore.getInstance(keyFile, storeValue("STORE_STORE_PASSWORD").toCharArray())
+        def alias = storeValue("STORE_KEY_ALIAS")
+        def certificate = keyStore.getCertificate(alias)
+        if (!keyStore.isKeyEntry(alias) || !(certificate instanceof java.security.cert.X509Certificate))
+            throw new GradleException("Store signing alias must contain a private key and X509 certificate.")
+        certificate.checkValidity()
+        if (alias.equalsIgnoreCase("androiddebugkey") || certificate.subjectX500Principal.name.toLowerCase().contains("android debug"))
+            throw new GradleException("Debug signing certificates are not accepted for the store build.")
+        def key = keyStore.getKey(alias, storeValue("STORE_KEY_PASSWORD").toCharArray())
+        if (!(key instanceof java.security.PrivateKey)) throw new GradleException("Signing private key is unavailable.")
+        def readiness = new groovy.json.JsonSlurper().parse(rootProject.file("store/readiness.json"))
+        if (readiness.externalRightsReviewRequired)
+            throw new GradleException("This app's external service/native dependency rights review is unresolved; see store/README.md.")
+    }
+}
+tasks.matching { it.name == "preStoreReleaseBuild" }.configureEach { dependsOn(validateStore) }

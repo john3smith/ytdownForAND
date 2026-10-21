@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Store variant omits the adult-service login entry. -->
+    <string-array name="login_platforms">
+        <item>YouTube</item>
+        <item>X (Twitter)</item>
+        <item>Instagram</item>
+    </string-array>
+</resources>

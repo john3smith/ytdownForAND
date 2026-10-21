@@ -42,7 +42,7 @@ public final class WebPageActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         String url = getIntent().getStringExtra(EXTRA_URL);
-        if (!WebPageUrlPolicy.isAllowed(url)) {
+        if (!isAllowedForBuild(url)) {
             finish();
             return;
         }
@@ -102,7 +102,7 @@ public final class WebPageActivity extends Activity {
         webView.setWebViewClient(new WebViewClient() {
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
-                if (WebPageUrlPolicy.isAllowed(request.getUrl().toString())) return false;
+                if (isAllowedForBuild(request.getUrl().toString())) return false;
                 status.setText(R.string.webpage_navigation_blocked);
                 return true;
             }
@@ -219,6 +219,12 @@ public final class WebPageActivity extends Activity {
         CookieManager.getInstance().flush();
         disposeWebView();
         super.onDestroy();
+    }
+
+    private boolean isAllowedForBuild(String url) {
+        return WebPageUrlPolicy.isAllowed(url)
+                && !(getResources().getBoolean(R.bool.store_distribution)
+                    && DownloadUrlPolicy.isRestrictedForStore(url));
     }
 
     private int dp(int value) {

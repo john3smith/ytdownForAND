@@ -208,7 +208,13 @@ public final class MainActivity extends Activity {
         LinearLayout root = new LinearLayout(this);
         root.setOrientation(LinearLayout.VERTICAL);
         root.setPadding(padding, dp(24), padding, padding);
+        root.setOnApplyWindowInsetsListener((view, insets) -> {
+            view.setPadding(padding, dp(24) + insets.getSystemWindowInsetTop(),
+                    padding, padding + insets.getSystemWindowInsetBottom());
+            return insets;
+        });
         root.setBackgroundColor(getColor(R.color.background));
+        StoreInfo.addButton(this, root);
 
         LinearLayout titleRow = new LinearLayout(this);
         titleRow.setOrientation(LinearLayout.HORIZONTAL);
@@ -584,7 +590,9 @@ public final class MainActivity extends Activity {
 
     private void openCurrentWebPage() {
         String url = urlInput.getText().toString().trim();
-        if (!WebPageUrlPolicy.isAllowed(url)) {
+        if (!WebPageUrlPolicy.isAllowed(url)
+                || (getResources().getBoolean(R.bool.store_distribution)
+                    && DownloadUrlPolicy.isRestrictedForStore(url))) {
             urlInput.setError(getString(R.string.webpage_invalid_url));
             urlInput.requestFocus();
             return;
@@ -2009,8 +2017,10 @@ public final class MainActivity extends Activity {
         }
     }
 
-    private static boolean isSupportedUrl(String value) {
-        return DownloadUrlPolicy.isSupported(value);
+    private boolean isSupportedUrl(String value) {
+        return DownloadUrlPolicy.isSupported(value)
+                && !(getResources().getBoolean(R.bool.store_distribution)
+                    && DownloadUrlPolicy.isRestrictedForStore(value));
     }
 
     private String selectedFormat() {
