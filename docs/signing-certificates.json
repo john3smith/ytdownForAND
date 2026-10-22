@@ -1,0 +1,9 @@
+{
+  "format": 1,
+  "rotation_min_sdk": 33,
+  "legacy_certificate_sha256": "97a629dccea6d8cc04480c762dd88b8d31c9eba5fc06ba9e95df130fbab01765",
+  "release_certificate_sha256": "4e26066d4723b2b838a5b5629859f9396501f1cf96cb179d45a7d398ffaf4cb9",
+  "package": "com.local.ytdown",
+  "version_introduced": "1.9.30",
+  "legacy_signature_permission": true
+}

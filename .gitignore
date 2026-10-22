@@ -41,3 +41,11 @@ store-signing.properties
 store-local.properties
 *.p12
 *.pfx
+
+# Private signing material must never enter source history.
+*.p12
+*.pfx
+*.dpapi
+*.jks
+*.keystore
+lineage.bin

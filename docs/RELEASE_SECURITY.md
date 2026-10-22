@@ -1,28 +1,40 @@
-# Release signing gate
+# Release signing and Android 13 migration
 
-`release` explicitly disables debugging and does not select a development key.
-`assembleRelease` produces an **unsigned build input**, not an installable release.
-Never publish debug/unsigned APKs as the security-fixed release.
+Version 1.9.30 uses an independently generated ytdownForAND production
+identity on Android 13 (API 33) and later. Android 7
+through 12L retains the legacy signature for update compatibility. Debugging is
+disabled on every supported Android version. APK Signature Scheme v3.1 and an
+old-to-new signing lineage preserve in-place updates; never uninstall or clear
+data to work around a signature mismatch.
 
-Before distributing, use the owner's approved production identity. A new key
-requires an explicit migration decision and an old-to-new signing lineage to
-preserve updates. Do not uninstall or clear user data to bypass signatures.
-Do not generate a key implicitly on a build, or put keys/passwords in this repo.
+Keys are stored outside the repository in `%LOCALAPPDATA%/ytdownForAND/Signing`.
+Access is limited to the current Windows account and SYSTEM. Keystore passwords
+are protected using Windows DPAPI CurrentUser and supplied only through child
+process environment variables. Private keys, passwords, and lineage files are
+not included in Git or release assets. Do not copy DPAPI state alone to another
+account and assume recovery will work; arrange an owner-controlled encrypted
+recovery backup before moving or reinstalling this Windows account.
 
-After signing, run `tools/verify_release_apk.py APK --package APPLICATION_ID
---release-sha256 EXPECTED_PRODUCTION_CERTIFICATE_SHA256` with the Android JDK and
-build-tools paths. For an approved API 33 rotation, additionally pass
-`--legacy-sha256 EXPECTED_LEGACY_CERTIFICATE_SHA256 --rotation-api 33`.
-The expected fingerprints must come from the owner's trusted key record, not
-from the candidate APK. Every supported API boundary is cryptographically
-checked. Debuggable APKs and an Android Debug certificate active on modern
-Android are rejected. Older-Android compatibility signing is reported explicitly.
-The verifier also checks package, alignment, test-only flags and common secret
-file types. This is not a complete secret scanner or app-store approval.
+The approved key setup is explicit and idempotent:
+`python tools/sign_release.py init`. Normal builds never create a key.
+`python tools/sign_release.py status` verifies stored material and access control.
+`assembleRelease` builds an unsigned input. Then run
+`python tools/sign_release.py sign --input INPUT.apk --output NEW_VERSION.apk`.
+The signer refuses overwrite, unexpected packages, debugging and misalignment;
+it verifies the API-specific certificate at API 24/26/28/32/33/35/36.
+Use `tools/verify_release_apk.py` with the trusted public fingerprints in
+`docs/signing-certificates.json` for an independent final delivery check.
 
-Key creation/migration and publication remain pending until the owner chooses
-the signing identity. Existing historical releases are not overwritten.
-Store-specific publisher, privacy, and external-rights gates remain in effect.
+The lineage grants installed-data and signature-permission migration. The
+signature-permission capability is required to retain AndroidX's existing
+DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION during an in-place update. This retains
+legacy-key trust for signature permissions; it does not enable old-key APK
+rollback. Shared-UID, rollback and auth capabilities are disabled. This does not turn an
+old Android system into a modern signing verifier. The legacy development key
+remains a compatibility limitation on Android 12L and earlier.
+
+Existing historical releases are unchanged. This signing migration does not
+itself approve app-store submission or resolve other store/business gates.
 
 Official references:
 - https://developer.android.com/tools/apksigner
