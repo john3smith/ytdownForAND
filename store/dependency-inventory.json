@@ -1,5 +1,5 @@
 {
-  "scope": "Resolved Android runtime dependencies; host build/test tools excluded",
+  "scope": "Resolved v1.9.29 release runtime dependencies; local repackaged AAR recorded separately",
   "dependencies": [
     {
       "module": "androidx.webkit:webkit:1.17.0",
@@ -855,83 +855,139 @@
       }
     },
     {
-      "module": "com.fasterxml.jackson.core:jackson-databind:2.11.1",
-      "artifact": "jackson-databind-2.11.1.jar",
-      "sha256": "b486be39d9ff4ae8bc7782792f2ea70f3a7bdaee5bd13780d295d7674231afd6",
+      "module": "com.fasterxml.jackson.core:jackson-databind:2.22.4",
+      "artifact": "jackson-databind-2.22.4.jar",
+      "sha256": "d4cbf8947087f305869826801913abdc50735a1fab2074a1993e7bc67ca974a3",
       "embedded_notices": [
         {
           "path": "META-INF/LICENSE",
-          "sha256": "d2706a35658d83c27d7d5f357f5ba63877fd8694a3f6aee48b87036a41118c8a"
+          "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
         },
         {
           "path": "META-INF/NOTICE",
-          "sha256": "41c338db0adac3ea540c53845bd4cec40d437e843b22c84ae08375a4d6442543"
+          "sha256": "612b14bc77c944ce229cbba0d14919162cfea8ed802cbf06a8e865e032d03201"
         }
       ],
       "license_metadata": {
-        "module": "com.fasterxml.jackson.core:jackson-databind:2.11.1",
-        "pom_url": "https://repo.maven.apache.org/maven2/com/fasterxml/jackson/core/jackson-databind/2.11.1/jackson-databind-2.11.1.pom",
+        "module": "com.fasterxml.jackson.core:jackson-databind:2.22.4",
+        "pom_url": "https://repo.maven.apache.org/maven2/com/fasterxml/jackson/core/jackson-databind/2.22.4/jackson-databind-2.22.4.pom",
         "licenses": [
           {
             "name": "The Apache Software License, Version 2.0",
-            "url": "http://www.apache.org/licenses/LICENSE-2.0.txt",
-            "distribution": "repo"
+            "url": "https://www.apache.org/licenses/LICENSE-2.0.txt"
           }
-        ],
-        "source_url": "http://github.com/FasterXML/jackson-databind"
+        ]
       }
     },
     {
-      "module": "com.fasterxml.jackson.core:jackson-annotations:2.11.1",
-      "artifact": "jackson-annotations-2.11.1.jar",
-      "sha256": "045e61b0b4a347d12b86cf2d0e776dea6a79204ae12095c2b08906d29e594a5a",
+      "module": "com.fasterxml.jackson.core:jackson-core:2.22.4",
+      "artifact": "jackson-core-2.22.4.jar",
+      "sha256": "2d30c375cddea9657a1e1ef97547a2694b663b355facb4de53a097782b312d1a",
+      "embedded_notices": [
+        {
+          "path": "META-INF/FastDoubleParser-LICENSE",
+          "sha256": "59067508e44346bf93dc9c5e4d673a67ecd77988c2020bb5e0f8667eb199f396"
+        },
+        {
+          "path": "META-INF/FastDoubleParser-ThirdParty-LICENSE",
+          "sha256": "dbc36f9422a40d58d1a214080583667cfd37d61c2fae1657d981edda2a60727f"
+        },
+        {
+          "path": "META-INF/LICENSE",
+          "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+        },
+        {
+          "path": "META-INF/Schubfach-LICENSE",
+          "sha256": "12d39a6615219d73202300715e365bec2b958f858d1e837c8f2dace57f905969"
+        },
+        {
+          "path": "META-INF/NOTICE",
+          "sha256": "e6aef1c0f4cf5b0f802c16b31fce309b3c3737450b93c40d6291bf6540aae3d1"
+        }
+      ],
+      "license_metadata": {
+        "module": "com.fasterxml.jackson.core:jackson-core:2.22.4",
+        "pom_url": "https://repo.maven.apache.org/maven2/com/fasterxml/jackson/core/jackson-core/2.22.4/jackson-core-2.22.4.pom",
+        "licenses": [
+          {
+            "name": "The Apache Software License, Version 2.0",
+            "url": "https://www.apache.org/licenses/LICENSE-2.0.txt"
+          }
+        ]
+      }
+    },
+    {
+      "module": "com.fasterxml.jackson.core:jackson-annotations:2.22",
+      "artifact": "jackson-annotations-2.22.jar",
+      "sha256": "21ddb598807d3a51a876704eb979d9296e1c6a6f47ab1826ff88c6d6a127a2d0",
       "embedded_notices": [
         {
           "path": "META-INF/LICENSE",
-          "sha256": "42e5c0211418c291f9dfbdf995deafbf11e99fc50e64b37bcf0ac770add16a7d"
+          "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+        },
+        {
+          "path": "META-INF/NOTICE",
+          "sha256": "612b14bc77c944ce229cbba0d14919162cfea8ed802cbf06a8e865e032d03201"
         }
       ],
       "license_metadata": {
-        "module": "com.fasterxml.jackson.core:jackson-annotations:2.11.1",
-        "pom_url": "https://repo.maven.apache.org/maven2/com/fasterxml/jackson/core/jackson-annotations/2.11.1/jackson-annotations-2.11.1.pom",
+        "module": "com.fasterxml.jackson.core:jackson-annotations:2.22",
+        "pom_url": "https://repo.maven.apache.org/maven2/com/fasterxml/jackson/core/jackson-annotations/2.22/jackson-annotations-2.22.pom",
         "licenses": [
           {
             "name": "The Apache Software License, Version 2.0",
-            "url": "http://www.apache.org/licenses/LICENSE-2.0.txt",
-            "distribution": "repo"
+            "url": "https://www.apache.org/licenses/LICENSE-2.0.txt"
           }
-        ],
-        "source_url": "http://github.com/FasterXML/jackson-annotations"
+        ]
       }
     },
     {
-      "module": "commons-io:commons-io:2.5",
-      "artifact": "commons-io-2.5.jar",
-      "sha256": "a10418348d234968600ccb1d988efcbbd08716e1d96936ccc1880e7d22513474",
+      "module": "org.apache.commons:commons-compress:1.28.0",
+      "artifact": "commons-compress-1.28.0.jar",
+      "sha256": "e1522945218456f3649a39bc4afd70ce4bd466221519dba7d378f2141a4642ca",
       "embedded_notices": [
         {
           "path": "META-INF/LICENSE.txt",
-          "sha256": "8c6db340475136df3c1201d458fa5755698eace76e510471ecc9d857d6083dac"
+          "sha256": "51b88fd3e9e24edcdce1dd145a4fca2dcd12911407f00b06dfa6ff600f9733c1"
         },
         {
           "path": "META-INF/NOTICE.txt",
-          "sha256": "a8098fc1a33869116622271fd624f4dec9fc2c8e3ae185d5d0e35d91ed83c305"
+          "sha256": "0d98967f0ab328af8d9d536aa9a5c684b5dd665657245f6ee6b5915affe811c0"
         }
       ],
       "license_metadata": {
-        "module": "commons-io:commons-io:2.5",
-        "pom_url": "https://repo.maven.apache.org/maven2/commons-io/commons-io/2.5/commons-io-2.5.pom",
+        "module": "org.apache.commons:commons-compress:1.28.0",
+        "pom_url": "https://repo.maven.apache.org/maven2/org/apache/commons/commons-compress/1.28.0/commons-compress-1.28.0.pom",
         "licenses": [
           {
-            "name": "Apache License, Version 2.0",
-            "url": "http://www.apache.org/licenses/LICENSE-2.0.txt"
+            "name": "Apache-2.0",
+            "url": "https://www.apache.org/licenses/LICENSE-2.0.txt"
           }
-        ],
-        "source_url": "http://svn.apache.org/viewvc/commons/proper/io/tags/commons-io-2.5",
-        "inherited_license_poms": [
-          "https://repo.maven.apache.org/maven2/commons-io/commons-io/2.5/commons-io-2.5.pom",
-          "https://repo.maven.apache.org/maven2/org/apache/commons/commons-parent/39/commons-parent-39.pom",
-          "https://repo.maven.apache.org/maven2/org/apache/apache/16/apache-16.pom"
+        ]
+      }
+    },
+    {
+      "module": "commons-io:commons-io:2.22.0",
+      "artifact": "commons-io-2.22.0.jar",
+      "sha256": "2b9a7b1f726fb86216dbd2c8321eabe0221dbd5b1be81c18e1cb53811b104758",
+      "embedded_notices": [
+        {
+          "path": "META-INF/LICENSE.txt",
+          "sha256": "c1d1a38c99c48ccad170890ade6066e2e240bb6ce59861d4eb7f672eddd2a4c6"
+        },
+        {
+          "path": "META-INF/NOTICE.txt",
+          "sha256": "85394d154ee5c7b48057f0a29329b6d4c80d2513d4c02b233a69207c522763cf"
+        }
+      ],
+      "license_metadata": {
+        "module": "commons-io:commons-io:2.22.0",
+        "pom_url": "https://repo.maven.apache.org/maven2/commons-io/commons-io/2.22.0/commons-io-2.22.0.pom",
+        "licenses": [
+          {
+            "name": "Apache-2.0",
+            "url": "https://www.apache.org/licenses/LICENSE-2.0.txt"
+          }
         ]
       }
     },
@@ -975,61 +1031,53 @@
       }
     },
     {
-      "module": "org.apache.commons:commons-compress:1.12",
-      "artifact": "commons-compress-1.12.jar",
-      "sha256": "2c1542faf343185b7cab9c3d55c8ae5471d6d095d3887a4adefdbdf2984dc0b6",
+      "module": "commons-codec:commons-codec:1.19.0",
+      "artifact": "commons-codec-1.19.0.jar",
+      "sha256": "5c3881e4f556855e9c532927ee0c9dfde94cc66760d5805c031a59887070af5f",
       "embedded_notices": [
         {
-          "path": "META-INF/NOTICE.txt",
-          "sha256": "fb98d56fb27bf6785c574d7d5b462b159af129049be5aeec046652306b72b332"
+          "path": "META-INF/LICENSE.txt",
+          "sha256": "b1d2870f1a00e4d7f56576e5f0870cba109e041f8af66866cf5b499478e654e7"
         },
         {
-          "path": "META-INF/LICENSE.txt",
-          "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4"
+          "path": "META-INF/NOTICE.txt",
+          "sha256": "b64933ee1d36d14659156223a2604edadb60bffdd465d5368ff422d7689db5fb"
         }
       ],
       "license_metadata": {
-        "module": "org.apache.commons:commons-compress:1.12",
-        "pom_url": "https://repo.maven.apache.org/maven2/org/apache/commons/commons-compress/1.12/commons-compress-1.12.pom",
+        "module": "commons-codec:commons-codec:1.19.0",
+        "pom_url": "https://repo.maven.apache.org/maven2/commons-codec/commons-codec/1.19.0/commons-codec-1.19.0.pom",
         "licenses": [
           {
-            "name": "Apache License, Version 2.0",
-            "url": "http://www.apache.org/licenses/LICENSE-2.0.txt"
+            "name": "Apache-2.0",
+            "url": "https://www.apache.org/licenses/LICENSE-2.0.txt"
           }
-        ],
-        "source_url": "https://git-wip-us.apache.org/repos/asf?p=commons-compress.git",
-        "inherited_license_poms": [
-          "https://repo.maven.apache.org/maven2/org/apache/commons/commons-compress/1.12/commons-compress-1.12.pom",
-          "https://repo.maven.apache.org/maven2/org/apache/commons/commons-parent/39/commons-parent-39.pom",
-          "https://repo.maven.apache.org/maven2/org/apache/apache/16/apache-16.pom"
         ]
       }
     },
     {
-      "module": "com.fasterxml.jackson.core:jackson-core:2.11.1",
-      "artifact": "jackson-core-2.11.1.jar",
-      "sha256": "25461dbfb431cb48e30118a0277671de8e8a56a3b1198492e24b2fb605d7575e",
+      "module": "org.apache.commons:commons-lang3:3.18.0",
+      "artifact": "commons-lang3-3.18.0.jar",
+      "sha256": "4eeeae8d20c078abb64b015ec158add383ac581571cddc45c68f0c9ae0230720",
       "embedded_notices": [
         {
-          "path": "META-INF/LICENSE",
-          "sha256": "ad819feaca26ebefb84db3be5de18acdb20b3b41d5652aadee0c7c150fa32d89"
+          "path": "META-INF/LICENSE.txt",
+          "sha256": "b1d2870f1a00e4d7f56576e5f0870cba109e041f8af66866cf5b499478e654e7"
         },
         {
-          "path": "META-INF/NOTICE",
-          "sha256": "a91bdf9a76f27b157f0c4952f66739af7d37a9bab9bca757518777cf8cbeb1c0"
+          "path": "META-INF/NOTICE.txt",
+          "sha256": "64bc8696af3f6c770521412b85d3a733fa44b2ef5b0f4bd739e0c4d02eca492a"
         }
       ],
       "license_metadata": {
-        "module": "com.fasterxml.jackson.core:jackson-core:2.11.1",
-        "pom_url": "https://repo.maven.apache.org/maven2/com/fasterxml/jackson/core/jackson-core/2.11.1/jackson-core-2.11.1.pom",
+        "module": "org.apache.commons:commons-lang3:3.18.0",
+        "pom_url": "https://repo.maven.apache.org/maven2/org/apache/commons/commons-lang3/3.18.0/commons-lang3-3.18.0.pom",
         "licenses": [
           {
-            "name": "The Apache Software License, Version 2.0",
-            "url": "http://www.apache.org/licenses/LICENSE-2.0.txt",
-            "distribution": "repo"
+            "name": "Apache-2.0",
+            "url": "https://www.apache.org/licenses/LICENSE-2.0.txt"
           }
-        ],
-        "source_url": "http://github.com/FasterXML/jackson-core"
+        ]
       }
     },
     {
@@ -1097,5 +1145,6 @@
     "org.jspecify:jspecify:1.0.0",
     "org.jetbrains:annotations:23.0.0"
   ],
-  "native_payload_review_complete": false
+  "native_payload_review_complete": false,
+  "desugaring": "com.android.tools:desugar_jdk_libs:2.1.5"
 }

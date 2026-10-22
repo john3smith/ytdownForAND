@@ -51,8 +51,8 @@ android {
         applicationId "com.local.ytdown"
         minSdk 24
         targetSdk 36
-        versionCode 67
-        versionName "1.9.28"
+        versionCode 68
+        versionName "1.9.29"
         testInstrumentationRunner "com.local.ytdown.StreamProgressInstrumentation"
 
         ndk {
@@ -62,6 +62,9 @@ android {
 
     buildTypes {
         release {
+            debuggable false
+            // Compatibility delivery uses the installed key; storeRelease requires a production key.
+            signingConfig signingConfigs.debug
             minifyEnabled false
             proguardFiles getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
         }
@@ -79,6 +82,7 @@ android {
     }
 
     compileOptions {
+        coreLibraryDesugaringEnabled true
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
     }
@@ -99,12 +103,16 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.7.22"
     implementation "androidx.appcompat:appcompat:1.4.2"
     implementation "androidx.core:core-ktx:1.8.0"
-    implementation "com.fasterxml.jackson.core:jackson-databind:2.11.1"
-    implementation "com.fasterxml.jackson.core:jackson-annotations:2.11.1"
-    implementation "commons-io:commons-io:2.5"
+    implementation enforcedPlatform("com.fasterxml.jackson:jackson-bom:2.22.4")
+    implementation "com.fasterxml.jackson.core:jackson-databind"
+    implementation "com.fasterxml.jackson.core:jackson-annotations"
+    implementation "commons-io:commons-io:2.22.0"
+    implementation "org.apache.commons:commons-compress:1.28.0"
+    coreLibraryDesugaring "com.android.tools:desugar_jdk_libs:2.1.5"
     implementation "io.github.junkfood02.youtubedl-android:ffmpeg:0.18.1"
     testImplementation "junit:junit:4.13.2"
     testImplementation "org.json:json:20250517"
 }
 
 apply from: rootProject.file("gradle/store-release.gradle")
+apply from: rootProject.file("gradle/security-inventory.gradle")

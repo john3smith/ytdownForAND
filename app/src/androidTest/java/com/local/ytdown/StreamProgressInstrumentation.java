@@ -36,6 +36,16 @@ public final class StreamProgressInstrumentation extends Instrumentation {
         Uri published = null;
         try {
             Context context = getTargetContext();
+            // Instrumentation.start() can race Application.onCreate during payload extraction.
+            // Launch/wait for the existing engine-ready UI before invoking native tools.
+            Intent intent = new Intent(context, MainActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            activity = (MainActivity) startActivitySync(intent);
+            final MainActivity target = activity;
+            long deadline = SystemClock.elapsedRealtime() + 30000;
+            while (!Boolean.TRUE.equals(field(target, "engineReady")) && SystemClock.elapsedRealtime() < deadline) {
+                SystemClock.sleep(100);
+            }
+            if (!Boolean.TRUE.equals(field(target, "engineReady"))) throw new AssertionError("Engine not ready");
             if (YTDownApplication.getInitializationError() != null) {
                 throw new AssertionError("Download engine initialization failed");
             }
@@ -72,14 +82,6 @@ public final class StreamProgressInstrumentation extends Instrumentation {
             } finally { source.release(); }
             server = new FixtureServer(fixture, getContext());
             server.start();
-            Intent intent = new Intent(context, MainActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            activity = (MainActivity) startActivitySync(intent);
-            final MainActivity target = activity;
-            long deadline = SystemClock.elapsedRealtime() + 30000;
-            while (!Boolean.TRUE.equals(field(target, "engineReady")) && SystemClock.elapsedRealtime() < deadline) {
-                SystemClock.sleep(100);
-            }
-            if (!Boolean.TRUE.equals(field(target, "engineReady"))) throw new AssertionError("Engine not ready");
             final long generation = ((Number) field(target, "downloadGeneration")).longValue();
             runOnMainSync(() -> {
                 try {

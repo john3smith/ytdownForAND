@@ -1,0 +1,18 @@
+// Export the actual resolved release artifacts; private build paths stay in build/ only.
+tasks.register('securityRuntimeInventory') {
+    doLast {
+        def artifacts = configurations.releaseRuntimeClasspath.resolvedConfiguration.resolvedArtifacts.collect { a ->
+            [module: a.moduleVersion.id.toString(), file: a.file.absolutePath,
+             sha256: java.security.MessageDigest.getInstance('SHA-256').digest(a.file.bytes).encodeHex().toString()]
+        }
+        def required = ['com.fasterxml.jackson.core:jackson-databind:2.22.4',
+                        'com.fasterxml.jackson.core:jackson-core:2.22.4',
+                        'commons-io:commons-io:2.22.0', 'org.apache.commons:commons-compress:1.28.0']
+        required.each { expected ->
+            if (!artifacts.any { it.module == expected }) throw new GradleException('Security dependency drift: ' + expected)
+        }
+        def output = rootProject.file('build/security-runtime-artifacts.json')
+        output.parentFile.mkdirs()
+        output.text = groovy.json.JsonOutput.prettyPrint(groovy.json.JsonOutput.toJson(artifacts))
+    }
+}

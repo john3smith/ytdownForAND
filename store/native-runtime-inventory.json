@@ -1,0 +1,1551 @@
+{
+  "scope": "Exact repackaged Python/native support payloads. Version/API review does not establish all native license or security conditions.",
+  "runtimes": [
+    {
+      "abi": "arm64-v8a",
+      "aar_sha256": "e6f2e766e2f59851eca3c87f2d83a1c93e260f137fb99752f7fa99461d669b82",
+      "payload_sha256": "9133bd86af05c5781470bebe478f3fc635e1f35431388e4e81188fd468f5fb69",
+      "manifest": {
+        "abi": "arm64-v8a",
+        "base_library": "0.18.1",
+        "cffi": "2.1.1",
+        "curl_cffi": "0.16.3",
+        "libcurl": "2.2.2",
+        "libcurl_sha256": "460a44dc6515cce77d7bbb477a284ea95f612c917ff8d85cd9a7f932a04e9809",
+        "python": "3.14.8",
+        "source": "https://www.python.org/downloads/release/python-3148/",
+        "source_sha256": "11324313957da3736f44e90257304d288864321a4dd376ed0cc35a54eacf9a33",
+        "sources_sha256": {
+          "certifi": "62f22742b58a1a33014a2b6b706588a8d7e2a88ae7bd1a6ebe8c992928483775",
+          "cffi": "dd31f52ea1086513bb9df30f8fcee9b8918323ae067a3d5b78bc826a000712be",
+          "curl_cffi": "d15d0c2a35f2d75bec430c28946c2a833f421c85773bdb0795182cc5c515665b",
+          "libffi_headers": "bc9842a18898bfacb0ed1252c4febcc7e78fa139fd27fdc7a3e30d9d9356119b",
+          "pycparser": "e5c6e8d3fbad53479cab09ac03729e0a9faf2bee3db8208a550daf5af81a5934"
+        }
+      },
+      "binary_files": [
+        {
+          "file": "usr/lib/engines-3/afalg.so",
+          "sha256": "f0d68aa8e3875b317acea5ff8610eda9ac042076a4768bfe17de85591aa36861"
+        },
+        {
+          "file": "usr/lib/engines-3/capi.so",
+          "sha256": "d007096a850434ecc75d00a9bfc81f2ef23c53681e4201470c69990f546b5b1a"
+        },
+        {
+          "file": "usr/lib/engines-3/loader_attic.so",
+          "sha256": "6e1ea352ad96cb4900d9fcdab36e3a34efde9ebc0ef0b2abdc6c40a1c2d564b2"
+        },
+        {
+          "file": "usr/lib/engines-3/padlock.so",
+          "sha256": "0776694bc2ab17dad56f7bb3712e4cdc6f207f4d6ab327a2b98d471f76d11b2e"
+        },
+        {
+          "file": "usr/lib/libandroid-posix-semaphore.so",
+          "sha256": "bee8c749ff4a87c06c4f6316a380f179f607de7d904418a20d879eea74be345e"
+        },
+        {
+          "file": "usr/lib/libandroid-support.so",
+          "sha256": "739cf829511d71dafd6c67fdbb70f3f0c6048642ea2e1967790ee961fde14430"
+        },
+        {
+          "file": "usr/lib/libbz2.so",
+          "sha256": "667055cac259f6a9404a24a6e927f410e2f41141709d27d5cce0071cbf525407"
+        },
+        {
+          "file": "usr/lib/libbz2.so.1.0",
+          "sha256": "667055cac259f6a9404a24a6e927f410e2f41141709d27d5cce0071cbf525407"
+        },
+        {
+          "file": "usr/lib/libbz2.so.1.0.8",
+          "sha256": "667055cac259f6a9404a24a6e927f410e2f41141709d27d5cce0071cbf525407"
+        },
+        {
+          "file": "usr/lib/libc++_shared.so",
+          "sha256": "f9992c4ba6b7c5a716e3a202fceb1ce029d6a2b0605838ac6b3219f489dd7970"
+        },
+        {
+          "file": "usr/lib/libcrypt.so",
+          "sha256": "bf078ced08880508974c8ab9d68d12d320842e422fb6ec496f5b892e5d701262"
+        },
+        {
+          "file": "usr/lib/libcrypto.so",
+          "sha256": "e13734377377603cda9c2ea6d6171fc4d639d8a0768050a8a22cdaa3b40f0ece"
+        },
+        {
+          "file": "usr/lib/libcrypto.so.3",
+          "sha256": "e99b83f2381e5e358beb3810416ae0eb83bdb6d45b7e5258ecd72ecc8511fd4b"
+        },
+        {
+          "file": "usr/lib/libcrypto_python.so",
+          "sha256": "e13734377377603cda9c2ea6d6171fc4d639d8a0768050a8a22cdaa3b40f0ece"
+        },
+        {
+          "file": "usr/lib/libcurses.so",
+          "sha256": "947e4d73a2e84b353d644daa5be2122025e5f59f4875558286eea6f19895b939"
+        },
+        {
+          "file": "usr/lib/libcurses.so.6",
+          "sha256": "947e4d73a2e84b353d644daa5be2122025e5f59f4875558286eea6f19895b939"
+        },
+        {
+          "file": "usr/lib/libcurses.so.6.5",
+          "sha256": "947e4d73a2e84b353d644daa5be2122025e5f59f4875558286eea6f19895b939"
+        },
+        {
+          "file": "usr/lib/libexpat.so",
+          "sha256": "76f428ce6890c332ddc727084b20659564ef4b3d6abb7b5433be56a4576bedb6"
+        },
+        {
+          "file": "usr/lib/libexpat.so.1",
+          "sha256": "76f428ce6890c332ddc727084b20659564ef4b3d6abb7b5433be56a4576bedb6"
+        },
+        {
+          "file": "usr/lib/libexpat.so.1.11.1",
+          "sha256": "76f428ce6890c332ddc727084b20659564ef4b3d6abb7b5433be56a4576bedb6"
+        },
+        {
+          "file": "usr/lib/libffi.so",
+          "sha256": "8855ba6dc12e9abf40729481a7a99aa391ac7b2e77bad4fbe0bb51cd66216c0e"
+        },
+        {
+          "file": "usr/lib/libform.so",
+          "sha256": "b6ced4df0ade378a040bc2f4a092217ff116c8e0ccdd20c05b60052564d18a16"
+        },
+        {
+          "file": "usr/lib/libform.so.6",
+          "sha256": "b6ced4df0ade378a040bc2f4a092217ff116c8e0ccdd20c05b60052564d18a16"
+        },
+        {
+          "file": "usr/lib/libform.so.6.5",
+          "sha256": "b6ced4df0ade378a040bc2f4a092217ff116c8e0ccdd20c05b60052564d18a16"
+        },
+        {
+          "file": "usr/lib/libformw.so",
+          "sha256": "b6ced4df0ade378a040bc2f4a092217ff116c8e0ccdd20c05b60052564d18a16"
+        },
+        {
+          "file": "usr/lib/libformw.so.6",
+          "sha256": "b6ced4df0ade378a040bc2f4a092217ff116c8e0ccdd20c05b60052564d18a16"
+        },
+        {
+          "file": "usr/lib/libformw.so.6.5",
+          "sha256": "b6ced4df0ade378a040bc2f4a092217ff116c8e0ccdd20c05b60052564d18a16"
+        },
+        {
+          "file": "usr/lib/libgdbm.so",
+          "sha256": "38a4de2bf30accf30a5c304e334cfc8711418fa49237d38664336493e5b3ba67"
+        },
+        {
+          "file": "usr/lib/libgdbm_compat.so",
+          "sha256": "f6c80e0bb1dcdf470d64a89f114fc21a7e018a520232fd635c261843f0573b18"
+        },
+        {
+          "file": "usr/lib/libhistory.so",
+          "sha256": "60a77e2dacd83c89bb5c7cfad008a648039f6cf18f37fa5131c6406a6fe4871c"
+        },
+        {
+          "file": "usr/lib/libhistory.so.8",
+          "sha256": "60a77e2dacd83c89bb5c7cfad008a648039f6cf18f37fa5131c6406a6fe4871c"
+        },
+        {
+          "file": "usr/lib/libhistory.so.8.3",
+          "sha256": "60a77e2dacd83c89bb5c7cfad008a648039f6cf18f37fa5131c6406a6fe4871c"
+        },
+        {
+          "file": "usr/lib/liblzma.so.5",
+          "sha256": "e391529fe9964ae3ce5ae6da670ebff43c8fcc886d268347a80862996134d6f0"
+        },
+        {
+          "file": "usr/lib/liblzma.so.5.8.1",
+          "sha256": "e391529fe9964ae3ce5ae6da670ebff43c8fcc886d268347a80862996134d6f0"
+        },
+        {
+          "file": "usr/lib/libmenu.so",
+          "sha256": "345e8fde699940fd1a780f68cae348457bc50c0aada2c25ba9c9b03b2e7cc01c"
+        },
+        {
+          "file": "usr/lib/libmenu.so.6",
+          "sha256": "345e8fde699940fd1a780f68cae348457bc50c0aada2c25ba9c9b03b2e7cc01c"
+        },
+        {
+          "file": "usr/lib/libmenu.so.6.5",
+          "sha256": "345e8fde699940fd1a780f68cae348457bc50c0aada2c25ba9c9b03b2e7cc01c"
+        },
+        {
+          "file": "usr/lib/libmenuw.so",
+          "sha256": "345e8fde699940fd1a780f68cae348457bc50c0aada2c25ba9c9b03b2e7cc01c"
+        },
+        {
+          "file": "usr/lib/libmenuw.so.6",
+          "sha256": "345e8fde699940fd1a780f68cae348457bc50c0aada2c25ba9c9b03b2e7cc01c"
+        },
+        {
+          "file": "usr/lib/libmenuw.so.6.5",
+          "sha256": "345e8fde699940fd1a780f68cae348457bc50c0aada2c25ba9c9b03b2e7cc01c"
+        },
+        {
+          "file": "usr/lib/libncurses.so",
+          "sha256": "947e4d73a2e84b353d644daa5be2122025e5f59f4875558286eea6f19895b939"
+        },
+        {
+          "file": "usr/lib/libncurses.so.6",
+          "sha256": "947e4d73a2e84b353d644daa5be2122025e5f59f4875558286eea6f19895b939"
+        },
+        {
+          "file": "usr/lib/libncurses.so.6.5",
+          "sha256": "947e4d73a2e84b353d644daa5be2122025e5f59f4875558286eea6f19895b939"
+        },
+        {
+          "file": "usr/lib/libncursesw.so",
+          "sha256": "947e4d73a2e84b353d644daa5be2122025e5f59f4875558286eea6f19895b939"
+        },
+        {
+          "file": "usr/lib/libncursesw.so.6",
+          "sha256": "947e4d73a2e84b353d644daa5be2122025e5f59f4875558286eea6f19895b939"
+        },
+        {
+          "file": "usr/lib/libncursesw.so.6.5",
+          "sha256": "947e4d73a2e84b353d644daa5be2122025e5f59f4875558286eea6f19895b939"
+        },
+        {
+          "file": "usr/lib/libpanel.so",
+          "sha256": "eae0b30b3fbd587156fe0c20d09288ee41c0da0ce61e95ba90f38a14c96e79d3"
+        },
+        {
+          "file": "usr/lib/libpanel.so.6",
+          "sha256": "eae0b30b3fbd587156fe0c20d09288ee41c0da0ce61e95ba90f38a14c96e79d3"
+        },
+        {
+          "file": "usr/lib/libpanel.so.6.5",
+          "sha256": "eae0b30b3fbd587156fe0c20d09288ee41c0da0ce61e95ba90f38a14c96e79d3"
+        },
+        {
+          "file": "usr/lib/libpanelw.so",
+          "sha256": "eae0b30b3fbd587156fe0c20d09288ee41c0da0ce61e95ba90f38a14c96e79d3"
+        },
+        {
+          "file": "usr/lib/libpanelw.so.6",
+          "sha256": "eae0b30b3fbd587156fe0c20d09288ee41c0da0ce61e95ba90f38a14c96e79d3"
+        },
+        {
+          "file": "usr/lib/libpanelw.so.6.5",
+          "sha256": "eae0b30b3fbd587156fe0c20d09288ee41c0da0ce61e95ba90f38a14c96e79d3"
+        },
+        {
+          "file": "usr/lib/libpython3.14.so",
+          "sha256": "655816679dcd5e36e48187515c9435ad330688c1b2f2ffb40fc4f1a3f3e17bf4"
+        },
+        {
+          "file": "usr/lib/libpython3.so",
+          "sha256": "dc03985487f45969d02010cf6ae1b2796d22f0df7685b66cdf4227928bf88eb7"
+        },
+        {
+          "file": "usr/lib/libreadline.so",
+          "sha256": "14acf18f2ac07d84d00bdba7645acf8274749570d9a2b8b23f451f697c89b813"
+        },
+        {
+          "file": "usr/lib/libreadline.so.8",
+          "sha256": "14acf18f2ac07d84d00bdba7645acf8274749570d9a2b8b23f451f697c89b813"
+        },
+        {
+          "file": "usr/lib/libreadline.so.8.3",
+          "sha256": "14acf18f2ac07d84d00bdba7645acf8274749570d9a2b8b23f451f697c89b813"
+        },
+        {
+          "file": "usr/lib/libsqlite3.so",
+          "sha256": "e8c9c26012244a175013d17188a65300abedb946bd959b5b59fc19b63dfb92b9"
+        },
+        {
+          "file": "usr/lib/libsqlite3.so.0",
+          "sha256": "e8c9c26012244a175013d17188a65300abedb946bd959b5b59fc19b63dfb92b9"
+        },
+        {
+          "file": "usr/lib/libsqlite3.so.3.50.4",
+          "sha256": "8683753748f60f4f135c6efd28e1c708a36a3401498371aa1a8730a30cb14c51"
+        },
+        {
+          "file": "usr/lib/libsqlite3_python.so",
+          "sha256": "e8c9c26012244a175013d17188a65300abedb946bd959b5b59fc19b63dfb92b9"
+        },
+        {
+          "file": "usr/lib/libssl.so",
+          "sha256": "c54e3be0d21c43d908b0891d8c8775785f4045c168d21105b7284f8895383944"
+        },
+        {
+          "file": "usr/lib/libssl.so.3",
+          "sha256": "4fb936d4d41591f0aece711e78c32e51150650cd3d7827c38a65b44db6ed1f48"
+        },
+        {
+          "file": "usr/lib/libssl_python.so",
+          "sha256": "c54e3be0d21c43d908b0891d8c8775785f4045c168d21105b7284f8895383944"
+        },
+        {
+          "file": "usr/lib/libtermcap.so",
+          "sha256": "947e4d73a2e84b353d644daa5be2122025e5f59f4875558286eea6f19895b939"
+        },
+        {
+          "file": "usr/lib/libtermcap.so.6",
+          "sha256": "947e4d73a2e84b353d644daa5be2122025e5f59f4875558286eea6f19895b939"
+        },
+        {
+          "file": "usr/lib/libtermcap.so.6.5",
+          "sha256": "947e4d73a2e84b353d644daa5be2122025e5f59f4875558286eea6f19895b939"
+        },
+        {
+          "file": "usr/lib/libtic.so",
+          "sha256": "947e4d73a2e84b353d644daa5be2122025e5f59f4875558286eea6f19895b939"
+        },
+        {
+          "file": "usr/lib/libtic.so.6",
+          "sha256": "947e4d73a2e84b353d644daa5be2122025e5f59f4875558286eea6f19895b939"
+        },
+        {
+          "file": "usr/lib/libtic.so.6.5",
+          "sha256": "947e4d73a2e84b353d644daa5be2122025e5f59f4875558286eea6f19895b939"
+        },
+        {
+          "file": "usr/lib/libtinfo.so",
+          "sha256": "947e4d73a2e84b353d644daa5be2122025e5f59f4875558286eea6f19895b939"
+        },
+        {
+          "file": "usr/lib/libtinfo.so.6",
+          "sha256": "947e4d73a2e84b353d644daa5be2122025e5f59f4875558286eea6f19895b939"
+        },
+        {
+          "file": "usr/lib/libtinfo.so.6.5",
+          "sha256": "947e4d73a2e84b353d644daa5be2122025e5f59f4875558286eea6f19895b939"
+        },
+        {
+          "file": "usr/lib/libz.so",
+          "sha256": "48e2185711efd2aaecbcef631660ad1dda03cfdfe936341e591fefcecd6cbc2d"
+        },
+        {
+          "file": "usr/lib/libz.so.1",
+          "sha256": "48e2185711efd2aaecbcef631660ad1dda03cfdfe936341e591fefcecd6cbc2d"
+        },
+        {
+          "file": "usr/lib/libz.so.1.3.1",
+          "sha256": "48e2185711efd2aaecbcef631660ad1dda03cfdfe936341e591fefcecd6cbc2d"
+        },
+        {
+          "file": "usr/lib/ossl-modules/legacy.so",
+          "sha256": "70ce54057032e71342ab33dcee7fb9ecf8cec7fc170941080930f3ad79c22428"
+        },
+        {
+          "file": "usr/lib/python3.14/lib-dynload/_asyncio.cpython-314-aarch64-linux-android.so",
+          "sha256": "e7ca5c385033af6acd877615b544cdfc2c72dd96b221e0fa8055b80f2f6b7edb"
+        },
+        {
+          "file": "usr/lib/python3.14/lib-dynload/_bisect.cpython-314-aarch64-linux-android.so",
+          "sha256": "9b885de1c1d9469d6c0287aa8b2bf256ed5b9815d60e4be146e0568ccdebfc36"
+        },
+        {
+          "file": "usr/lib/python3.14/lib-dynload/_blake2.cpython-314-aarch64-linux-android.so",
+          "sha256": "f95be1b3c73ea116d829a3f7a10ddb4d5bd28dfdbfb029dd330f89fa9aeebd83"
+        },
+        {
+          "file": "usr/lib/python3.14/lib-dynload/_bz2.cpython-314-aarch64-linux-android.so",
+          "sha256": "934d178edb046dd6c026d4fc728abf8501d3a46abf7ddc6f948312e21e85b4f9"
+        },
+        {
+          "file": "usr/lib/python3.14/lib-dynload/_codecs_cn.cpython-314-aarch64-linux-android.so",
+          "sha256": "fce0eb4244ad351b4fca3821361bf7d601f3e4da7d2fab438eab700bfaab582f"
+        },
+        {
+          "file": "usr/lib/python3.14/lib-dynload/_codecs_hk.cpython-314-aarch64-linux-android.so",
+          "sha256": "df437ff6eba53cd252f745cce6166adfeb4b58dc7a66a9e6c55847406b32b633"
+        },
+        {
+          "file": "usr/lib/python3.14/lib-dynload/_codecs_iso2022.cpython-314-aarch64-linux-android.so",
+          "sha256": "fa8630cd7c32d64453893f13f28c2cf27e8b47f0c951b06d3df223d018f3b132"
+        },
+        {
+          "file": "usr/lib/python3.14/lib-dynload/_codecs_jp.cpython-314-aarch64-linux-android.so",
+          "sha256": "46fd0b62d48c93c90f63a89982a83c4197fe989c9b3b322fb4751a0ae58c4004"
+        },
+        {
+          "file": "usr/lib/python3.14/lib-dynload/_codecs_kr.cpython-314-aarch64-linux-android.so",
+          "sha256": "7941c483c6e5a494d2dcaaf724d067610aa774046603b3a9d2dead45f0d67c91"
+        },
+        {
+          "file": "usr/lib/python3.14/lib-dynload/_codecs_tw.cpython-314-aarch64-linux-android.so",
+          "sha256": "11d9dd2ae3a1d5a34db96c675f2db43ce489d3d302e7d6bc1f0d492964480f5c"
+        },
+        {
+          "file": "usr/lib/python3.14/lib-dynload/_csv.cpython-314-aarch64-linux-android.so",
+          "sha256": "a7c069e95f552c843c79984d19c83dec30905e1e50aa898fa567df75d03af76b"
+        },
+        {
+          "file": "usr/lib/python3.14/lib-dynload/_ctypes.cpython-314-aarch64-linux-android.so",
+          "sha256": "dabc48bcfaac67c285f171595915e964d9e1be0e323b31ba40e12c10d5827f2d"
+        },
+        {
+          "file": "usr/lib/python3.14/lib-dynload/_ctypes_test.cpython-314-aarch64-linux-android.so",
+          "sha256": "ad044d96c6b8cc214811993fe4b96dbda9eb0fbfb4a710a9619d56e89bc120ca"
+        },
+        {
+          "file": "usr/lib/python3.14/lib-dynload/_decimal.cpython-314-aarch64-linux-android.so",
+          "sha256": "74ec3163f186206e8e533f75f0c23c97eb37b5a22f81aa2463394641e787e666"
+        },
+        {
+          "file": "usr/lib/python3.14/lib-dynload/_elementtree.cpython-314-aarch64-linux-android.so",
+          "sha256": "21a1fff784115d868c694cd2dd5bc1af1f8dc10423973d318cf4241cc11f8f2b"
+        },
+        {
+          "file": "usr/lib/python3.14/lib-dynload/_hashlib.cpython-314-aarch64-linux-android.so",
+          "sha256": "1a6194fea12e95b84dfc344019d6635fc908415a41b13d1c250f2f435d9675a7"
+        },
+        {
+          "file": "usr/lib/python3.14/lib-dynload/_heapq.cpython-314-aarch64-linux-android.so",
+          "sha256": "44f18f29c2838592d9850f6f68eb68d357fdab72dea5017f1bc8f87ed051275b"
+        },
+        {
+          "file": "usr/lib/python3.14/lib-dynload/_hmac.cpython-314-aarch64-linux-android.so",
+          "sha256": "3260d0606b09773a2952f27f04411723e4cda75b653c97a7a14495f5e91ffe9c"
+        },
+        {
+          "file": "usr/lib/python3.14/lib-dynload/_interpchannels.cpython-314-aarch64-linux-android.so",
+          "sha256": "8280d4347519c03131ca3bcc671d17ec3578cf57a176d78e40ec208c6f09986f"
+        },
+        {
+          "file": "usr/lib/python3.14/lib-dynload/_interpqueues.cpython-314-aarch64-linux-android.so",
+          "sha256": "ac1726f2dbc135db9920623364667769e12ba2c6fe6f344b324918e7becc989f"
+        },
+        {
+          "file": "usr/lib/python3.14/lib-dynload/_interpreters.cpython-314-aarch64-linux-android.so",
+          "sha256": "659c4d2814ce6efe06f4fc990d599cda5e70f26862b968a6641526c42f5aacd2"
+        },
+        {
+          "file": "usr/lib/python3.14/lib-dynload/_json.cpython-314-aarch64-linux-android.so",
+          "sha256": "160aac8cc6f07f0147f69ce0798d4b1f0a0db37b7cfee043514ea35ae4492a30"
+        },
+        {
+          "file": "usr/lib/python3.14/lib-dynload/_lsprof.cpython-314-aarch64-linux-android.so",
+          "sha256": "85c5ae7b8c8d267f48f3adc2df12d73efc91f714b88ff03711c0d5a85b38cf11"
+        },
+        {
+          "file": "usr/lib/python3.14/lib-dynload/_lzma.cpython-314-aarch64-linux-android.so",
+          "sha256": "68acd8c38b4eaf08cdbe4ddb01dd8368ca3b50b4237a93050cb7a5bd19f776b8"
+        },
+        {
+          "file": "usr/lib/python3.14/lib-dynload/_md5.cpython-314-aarch64-linux-android.so",
+          "sha256": "9179e755633278091c20479aa3a34877d44afb63998cf9643971f5697bc2ff1c"
+        },
+        {
+          "file": "usr/lib/python3.14/lib-dynload/_multibytecodec.cpython-314-aarch64-linux-android.so",
+          "sha256": "7e285dae588f3fa7cb1e1f7b8bac0bbd3fad5afd0d81cc327b81fe31374df921"
+        },
+        {
+          "file": "usr/lib/python3.14/lib-dynload/_pickle.cpython-314-aarch64-linux-android.so",
+          "sha256": "7d9f1bb33699e950b7db9f01cff2225fc37999736b4c4c0566bf19bbe84b821d"
+        },
+        {
+          "file": "usr/lib/python3.14/lib-dynload/_posixsubprocess.cpython-314-aarch64-linux-android.so",
+          "sha256": "bc1d327153c69449acba1ea3871fdacdcd13a253a117e4535d4a347a8e55fb15"
+        },
+        {
+          "file": "usr/lib/python3.14/lib-dynload/_queue.cpython-314-aarch64-linux-android.so",
+          "sha256": "ded4f84ab893a47edab6a4d5f2db4213c9c1356937b741043e5465783556a64c"
+        },
+        {
+          "file": "usr/lib/python3.14/lib-dynload/_random.cpython-314-aarch64-linux-android.so",
+          "sha256": "fadc8223ec2fe2d496c5c64635857524412209580edd48feddd52914c64f7441"
+        },
+        {
+          "file": "usr/lib/python3.14/lib-dynload/_remote_debugging.cpython-314-aarch64-linux-android.so",
+          "sha256": "4bc02361427a36ca30bd7cc85aac25996387e165d6d30dff9cd013801194b0fa"
+        },
+        {
+          "file": "usr/lib/python3.14/lib-dynload/_sha1.cpython-314-aarch64-linux-android.so",
+          "sha256": "76ecb7e716c2cc0e0d2ff1b78339c19b06cf09eb99b49ee8cd33f42e5e648f6a"
+        },
+        {
+          "file": "usr/lib/python3.14/lib-dynload/_sha2.cpython-314-aarch64-linux-android.so",
+          "sha256": "553b92792b1ef030a51a64bf84ab6bd8f1b821318953535229f15fed3490bd98"
+        },
+        {
+          "file": "usr/lib/python3.14/lib-dynload/_sha3.cpython-314-aarch64-linux-android.so",
+          "sha256": "ad4a9d85586a65ecefbe84e9d27b53e5ae37e1ff95627baf1771c80afeb61f91"
+        },
+        {
+          "file": "usr/lib/python3.14/lib-dynload/_socket.cpython-314-aarch64-linux-android.so",
+          "sha256": "dc99bde2466637cd6b51a9eddb96927f37e95f16980dadaa5dbab99cf3d1aeee"
+        },
+        {
+          "file": "usr/lib/python3.14/lib-dynload/_sqlite3.cpython-314-aarch64-linux-android.so",
+          "sha256": "abadb6b4ec5c0534614cecca8edf751c3b399f8839cdcc885af6c0774944ee7b"
+        },
+        {
+          "file": "usr/lib/python3.14/lib-dynload/_ssl.cpython-314-aarch64-linux-android.so",
+          "sha256": "5356be3d9e96c28c58a150bb22112587f1f2aa47dd75104f8db04618648ccb52"
+        },
+        {
+          "file": "usr/lib/python3.14/lib-dynload/_statistics.cpython-314-aarch64-linux-android.so",
+          "sha256": "88293699b20f6d31090119411e7d9c5aa66a3765fb968694a449eeacafe0c174"
+        },
+        {
+          "file": "usr/lib/python3.14/lib-dynload/_struct.cpython-314-aarch64-linux-android.so",
+          "sha256": "14486d8970d998eda97c17b6b9de430975d66b640fe9b46715d9079254855d9a"
+        },
+        {
+          "file": "usr/lib/python3.14/lib-dynload/_testbuffer.cpython-314-aarch64-linux-android.so",
+          "sha256": "dfb64b74bc6bb317029e3d387fccacbf9ad371d96a9965ef7fe63e7d52a18262"
+        },
+        {
+          "file": "usr/lib/python3.14/lib-dynload/_testcapi.cpython-314-aarch64-linux-android.so",
+          "sha256": "d13781977b8212995ac69acaad9f58d2262a09cde2a408d6180401c008baf3a0"
+        },
+        {
+          "file": "usr/lib/python3.14/lib-dynload/_testclinic.cpython-314-aarch64-linux-android.so",
+          "sha256": "eac5b6fd88b24a91a157b5722a7235d0a986991a2fbea640eb731cac623cdc5f"
+        },
+        {
+          "file": "usr/lib/python3.14/lib-dynload/_testclinic_limited.cpython-314-aarch64-linux-android.so",
+          "sha256": "96f09c3f14468bbc7e554f4d7cf25035307639c994c83d442be0bb6111b87fe7"
+        },
+        {
+          "file": "usr/lib/python3.14/lib-dynload/_testimportmultiple.cpython-314-aarch64-linux-android.so",
+          "sha256": "bb05f5ddaec2090d07bc520ba63cb2b83ef22db63e9a0b166eed3c31d1317d74"
+        },
+        {
+          "file": "usr/lib/python3.14/lib-dynload/_testinternalcapi.cpython-314-aarch64-linux-android.so",
+          "sha256": "3e1251743ae13d41b2b398542583d901e03c34f8c106f3406357c32422b74b47"
+        },
+        {
+          "file": "usr/lib/python3.14/lib-dynload/_testlimitedcapi.cpython-314-aarch64-linux-android.so",
+          "sha256": "f1181b0a7ca49ea5f75587c17304a91ac5e711ee4c0db7a4fea184a31ad5171e"
+        },
+        {
+          "file": "usr/lib/python3.14/lib-dynload/_testmultiphase.cpython-314-aarch64-linux-android.so",
+          "sha256": "aaef9131e72e95dc9f44a146c9301f39854a62cfea6a113027ac2c49b00a585b"
+        },
+        {
+          "file": "usr/lib/python3.14/lib-dynload/_testsinglephase.cpython-314-aarch64-linux-android.so",
+          "sha256": "850d05a06212629dca669c2b49c40496e4440a8ce6ba0c64ceeab78b6601e79d"
+        },
+        {
+          "file": "usr/lib/python3.14/lib-dynload/_xxtestfuzz.cpython-314-aarch64-linux-android.so",
+          "sha256": "35fa28dca252262658840703211fd0e1cfd3e33f8696096c371e040412893f43"
+        },
+        {
+          "file": "usr/lib/python3.14/lib-dynload/_zoneinfo.cpython-314-aarch64-linux-android.so",
+          "sha256": "78b42f4304c39bc3bafe45cf51bbcbda50ab90296543b9f0719b0961badc0d9a"
+        },
+        {
+          "file": "usr/lib/python3.14/lib-dynload/_zstd.cpython-314-aarch64-linux-android.so",
+          "sha256": "c420110fad2f59d2be5466cb3e55c42204abee8131da4bd621757075556db09c"
+        },
+        {
+          "file": "usr/lib/python3.14/lib-dynload/array.cpython-314-aarch64-linux-android.so",
+          "sha256": "0d4243b86bad004ffdf57f52ef5f58169a0fc40a3f10c99c4aa8054a5ee07b41"
+        },
+        {
+          "file": "usr/lib/python3.14/lib-dynload/binascii.cpython-314-aarch64-linux-android.so",
+          "sha256": "d90b13e67647f6828ec93a441e14507a8ce7ba708d4fc94b92124f5b178dcdb0"
+        },
+        {
+          "file": "usr/lib/python3.14/lib-dynload/cmath.cpython-314-aarch64-linux-android.so",
+          "sha256": "9cc25c519ff0c01451c7f03ca3b4dcf22b890285eaae989b6f03b610b3ef3c6d"
+        },
+        {
+          "file": "usr/lib/python3.14/lib-dynload/fcntl.cpython-314-aarch64-linux-android.so",
+          "sha256": "00544ebb34a9d7872ca7201af170392e246a7877315a9d351bc3139d3fb0677a"
+        },
+        {
+          "file": "usr/lib/python3.14/lib-dynload/math.cpython-314-aarch64-linux-android.so",
+          "sha256": "373b3bdc168a7d2b1d9b87d91da90bc2a19ee9b547fd8ff5ca685c122441284f"
+        },
+        {
+          "file": "usr/lib/python3.14/lib-dynload/mmap.cpython-314-aarch64-linux-android.so",
+          "sha256": "2bfa5fbfde667ee7fe89680f27dde6cdd315ec2b3cb039a636be5686b68099be"
+        },
+        {
+          "file": "usr/lib/python3.14/lib-dynload/pyexpat.cpython-314-aarch64-linux-android.so",
+          "sha256": "23189dded223115f51c4e56875025b9806e154b5c05c1b54e93e76c1f4dd37b2"
+        },
+        {
+          "file": "usr/lib/python3.14/lib-dynload/resource.cpython-314-aarch64-linux-android.so",
+          "sha256": "e96e5bef2c6cc553bf4148453198879c8e6a94aa243b4993d5c7095332a3748c"
+        },
+        {
+          "file": "usr/lib/python3.14/lib-dynload/select.cpython-314-aarch64-linux-android.so",
+          "sha256": "83082513ac140b7d9a2966b88e6ef2f08d8b29796e66c33ae9c28786ba5db336"
+        },
+        {
+          "file": "usr/lib/python3.14/lib-dynload/syslog.cpython-314-aarch64-linux-android.so",
+          "sha256": "38f30364553113e75decb9f9ad6f298ecc543181a6d46dcc5f247bfa33d5bbe3"
+        },
+        {
+          "file": "usr/lib/python3.14/lib-dynload/termios.cpython-314-aarch64-linux-android.so",
+          "sha256": "08dc631a6e93236f339e26284dafcedf573a5f97eb32f07860ce7b381dae7b93"
+        },
+        {
+          "file": "usr/lib/python3.14/lib-dynload/unicodedata.cpython-314-aarch64-linux-android.so",
+          "sha256": "1068318bf8dc933497793d878a1a0098cbdb6769ea4c99057355bf4f94e092b5"
+        },
+        {
+          "file": "usr/lib/python3.14/lib-dynload/xxlimited.cpython-314-aarch64-linux-android.so",
+          "sha256": "24521eae69c20c997cf95fa68a8d12895d064abd8ab66be199bd46b443f1e66e"
+        },
+        {
+          "file": "usr/lib/python3.14/lib-dynload/xxlimited_35.cpython-314-aarch64-linux-android.so",
+          "sha256": "b7da8e474bdfe350721b7df825ff2a1033a72e18ecaca99c3a29533ddbaa9ada"
+        },
+        {
+          "file": "usr/lib/python3.14/lib-dynload/xxsubtype.cpython-314-aarch64-linux-android.so",
+          "sha256": "6d0b0f5e8909ae2d176f9b731a0997dd06da6959f082777533500ef193a25fe9"
+        },
+        {
+          "file": "usr/lib/python3.14/lib-dynload/zlib.cpython-314-aarch64-linux-android.so",
+          "sha256": "d480532553fcf499b77351a08535e36a2824a0b8633688612e1f59838c11bf69"
+        },
+        {
+          "file": "usr/lib/python3.14/site-packages/Cryptodome/Cipher/_ARC4.abi3.so",
+          "sha256": "357767aaef314e1dd2379b7a4a0dca0ebb77c6e3139e3c46bd6d67dcae6e89e8"
+        },
+        {
+          "file": "usr/lib/python3.14/site-packages/Cryptodome/Cipher/_Salsa20.abi3.so",
+          "sha256": "0fa4a27c6fdcbcf07f122e0ba257b9b044c084db405de910a49af38c20e57274"
+        },
+        {
+          "file": "usr/lib/python3.14/site-packages/Cryptodome/Cipher/_chacha20.abi3.so",
+          "sha256": "16a131d595c53dc66418177955758cb1e4bbe5c75fcb4a52e79bff5c3d785ae7"
+        },
+        {
+          "file": "usr/lib/python3.14/site-packages/Cryptodome/Cipher/_pkcs1_decode.abi3.so",
+          "sha256": "f4d4276689868591600fd257b9e9fbc0a6aa42eb53478f76121b12aed73c0289"
+        },
+        {
+          "file": "usr/lib/python3.14/site-packages/Cryptodome/Cipher/_raw_aes.abi3.so",
+          "sha256": "5cca9816984f79f3350f15f2c17f419ed3abc29498bf3c625e4ce8739eface76"
+        },
+        {
+          "file": "usr/lib/python3.14/site-packages/Cryptodome/Cipher/_raw_arc2.abi3.so",
+          "sha256": "b406f8653e4807b0e61065709f9b86905db5e2716d83b7a05b8aaf7ce9fb3f57"
+        },
+        {
+          "file": "usr/lib/python3.14/site-packages/Cryptodome/Cipher/_raw_blowfish.abi3.so",
+          "sha256": "5876b91bb4dfcf9ad5abce708795482fd6a0f86ba47b319deda980d67c9103b3"
+        },
+        {
+          "file": "usr/lib/python3.14/site-packages/Cryptodome/Cipher/_raw_cast.abi3.so",
+          "sha256": "831d6194d6adab602871bf5ba7394a91dea517ecc68e4c3ddb7e732ca89fb706"
+        },
+        {
+          "file": "usr/lib/python3.14/site-packages/Cryptodome/Cipher/_raw_cbc.abi3.so",
+          "sha256": "1c5d185ebe177309c945b9e1d367b7a3a495b6d64d04ef8625bc60c73fa53307"
+        },
+        {
+          "file": "usr/lib/python3.14/site-packages/Cryptodome/Cipher/_raw_cfb.abi3.so",
+          "sha256": "52fe80bf594baee6d25bc7a3f774207cda98d7da85ac9b995b7894b3c95759dd"
+        },
+        {
+          "file": "usr/lib/python3.14/site-packages/Cryptodome/Cipher/_raw_ctr.abi3.so",
+          "sha256": "e9322f4778ffa9b8e46f64e5e13b807f1ec77443e9704b4e542f7e087f818710"
+        },
+        {
+          "file": "usr/lib/python3.14/site-packages/Cryptodome/Cipher/_raw_des.abi3.so",
+          "sha256": "64794119c70ec438fc297bb3806cd3438c672d35631016d8b6667d5e0946f9f1"
+        },
+        {
+          "file": "usr/lib/python3.14/site-packages/Cryptodome/Cipher/_raw_des3.abi3.so",
+          "sha256": "2dec1333c17d6ec7f8ffb5f869379eb190902a17d48a2cf873170a69ae2accfa"
+        },
+        {
+          "file": "usr/lib/python3.14/site-packages/Cryptodome/Cipher/_raw_ecb.abi3.so",
+          "sha256": "f523ed29fbc3b65caa621ff92330fd7ad400b6b7c495e89c283180b6163b7cf2"
+        },
+        {
+          "file": "usr/lib/python3.14/site-packages/Cryptodome/Cipher/_raw_eksblowfish.abi3.so",
+          "sha256": "36fa3dd87a22500d41f28a627b8a772177c926fa289ce47fa6896abdaad48f1b"
+        },
+        {
+          "file": "usr/lib/python3.14/site-packages/Cryptodome/Cipher/_raw_ocb.abi3.so",
+          "sha256": "5e607433ac3ba262b34fa0bdebce35a4f5733110481d33ee4b8fbb77af2691fe"
+        },
+        {
+          "file": "usr/lib/python3.14/site-packages/Cryptodome/Cipher/_raw_ofb.abi3.so",
+          "sha256": "62291c945201923360c0672e06aaf67279790b0a6c9b0ed68c4465cb20a21cd2"
+        },
+        {
+          "file": "usr/lib/python3.14/site-packages/Cryptodome/Hash/_BLAKE2b.abi3.so",
+          "sha256": "594bab0898acc150e4e5be7ab2c69e32c5f7cde91433116d80066ba87f7fae25"
+        },
+        {
+          "file": "usr/lib/python3.14/site-packages/Cryptodome/Hash/_BLAKE2s.abi3.so",
+          "sha256": "e79d82fc67af50e2dee1e4715226baf2d4f76ebd91e713ffe6b2bb05a70ef064"
+        },
+        {
+          "file": "usr/lib/python3.14/site-packages/Cryptodome/Hash/_MD2.abi3.so",
+          "sha256": "27ab6058255489429425bd1ff4954646d453c76ce117a805f32103724c13134d"
+        },
+        {
+          "file": "usr/lib/python3.14/site-packages/Cryptodome/Hash/_MD4.abi3.so",
+          "sha256": "a120c5b48a10d9e0c764dd20f337c8df2c728337b9f0a3de16c734b5fe9ad029"
+        },
+        {
+          "file": "usr/lib/python3.14/site-packages/Cryptodome/Hash/_MD5.abi3.so",
+          "sha256": "4cf924b2c07b4e04b3bf31fd30755b9f91dd6934d54eee37df58ca96fc5b7eb1"
+        },
+        {
+          "file": "usr/lib/python3.14/site-packages/Cryptodome/Hash/_RIPEMD160.abi3.so",
+          "sha256": "a702a99ebb58060ca4fe5413cba7c1596dd1870bbcd2bb5a589de3e25bede9f7"
+        },
+        {
+          "file": "usr/lib/python3.14/site-packages/Cryptodome/Hash/_SHA1.abi3.so",
+          "sha256": "da95284e9d8244aa690d9c491fbe9b6d001fe3bdabd89ee99d7f4673e587eb0e"
+        },
+        {
+          "file": "usr/lib/python3.14/site-packages/Cryptodome/Hash/_SHA224.abi3.so",
+          "sha256": "4decf98d253717b9061c3c1ef73820c81a7eadc903e3ac4f44421a96bcee2e1b"
+        },
+        {
+          "file": "usr/lib/python3.14/site-packages/Cryptodome/Hash/_SHA256.abi3.so",
+          "sha256": "6175ff6447e41ba9cfdc44b2dde33bd2f1c3d3101ed8fdad84cc4730cdd9cd69"
+        },
+        {
+          "file": "usr/lib/python3.14/site-packages/Cryptodome/Hash/_SHA384.abi3.so",
+          "sha256": "fc0e597cfc73338b4dc173bcb416cde6d86ee4b8f75031deac383896406d2612"
+        },
+        {
+          "file": "usr/lib/python3.14/site-packages/Cryptodome/Hash/_SHA512.abi3.so",
+          "sha256": "7db5c028a200cd706ce04078a441ad0cf8f25cfb8cbbf69b29145d1843d47d54"
+        },
+        {
+          "file": "usr/lib/python3.14/site-packages/Cryptodome/Hash/_ghash_portable.abi3.so",
+          "sha256": "d2ecaaf2a0c324b46f78965e045421053477b481dccf29499390e47852af7488"
+        },
+        {
+          "file": "usr/lib/python3.14/site-packages/Cryptodome/Hash/_keccak.abi3.so",
+          "sha256": "2077e5746eda5d01bfb3cf01d9dde9799842f24e625a49a16921eec57e3d5bfc"
+        },
+        {
+          "file": "usr/lib/python3.14/site-packages/Cryptodome/Hash/_poly1305.abi3.so",
+          "sha256": "1c654052642a599edd7484b8abf1e89b7b80fea9476594b0348173b17c967974"
+        },
+        {
+          "file": "usr/lib/python3.14/site-packages/Cryptodome/Math/_modexp.abi3.so",
+          "sha256": "e611de844316904d86f1c6afd3f8a6b48b2477a474eb59dae3869b49b72e2141"
+        },
+        {
+          "file": "usr/lib/python3.14/site-packages/Cryptodome/Protocol/_scrypt.abi3.so",
+          "sha256": "532a8254827e98eb7084ae295fd296c8e3c69452bbc67ebbe4800afa8b1cb2de"
+        },
+        {
+          "file": "usr/lib/python3.14/site-packages/Cryptodome/PublicKey/_curve25519.abi3.so",
+          "sha256": "e73df87b8a42ac6aceba8816b5f73dc3f0fe173947784366b31d1b5bfee8475f"
+        },
+        {
+          "file": "usr/lib/python3.14/site-packages/Cryptodome/PublicKey/_curve448.abi3.so",
+          "sha256": "b038dff2673dd11107c4e13cb941f1344da614050c6d4bc2fc4ff40c6b4eca9d"
+        },
+        {
+          "file": "usr/lib/python3.14/site-packages/Cryptodome/PublicKey/_ec_ws.abi3.so",
+          "sha256": "849c46f893ae9fc6b0b0d8d6a7b2e312e749f753869a932204b443d09188981d"
+        },
+        {
+          "file": "usr/lib/python3.14/site-packages/Cryptodome/PublicKey/_ed25519.abi3.so",
+          "sha256": "18d36ae51e3f283ae44182fdcd6379d6503aaace7fea9eab2785f2b897f04106"
+        },
+        {
+          "file": "usr/lib/python3.14/site-packages/Cryptodome/PublicKey/_ed448.abi3.so",
+          "sha256": "6d3b5cde1f1bb4ac8c642102cf1e3d61f0e0dac51894df0215fcbaa293e14fd9"
+        },
+        {
+          "file": "usr/lib/python3.14/site-packages/Cryptodome/Util/_cpuid_c.abi3.so",
+          "sha256": "bbcd3295af045900edde0697dc74254c75c76d9927d5378f0f86b2b1d590f839"
+        },
+        {
+          "file": "usr/lib/python3.14/site-packages/Cryptodome/Util/_strxor.abi3.so",
+          "sha256": "af4ba7ec99db9d049cbc45ea625709780238283d24e590c464a0661268a7e5d3"
+        },
+        {
+          "file": "usr/lib/python3.14/site-packages/_cffi_backend.so",
+          "sha256": "6c8046c21322841ea8b062579b7ed5a70aed42cc0cb7473641844859c31c127d"
+        },
+        {
+          "file": "usr/lib/python3.14/site-packages/curl_cffi/_wrapper.so",
+          "sha256": "3e60de1d03d4c8fed9b94f290f7357c6ec20b8cd7c30a0cb4ebc02e62610bc66"
+        }
+      ]
+    },
+    {
+      "abi": "x86_64",
+      "aar_sha256": "0610e0406dbb6cf66899cc39ba5a59a736da662988a41b633dad6734ebc11451",
+      "payload_sha256": "55153bd24f3d53806238477763f99f5df9e375ce0dd06e7077160bb9b90e91e4",
+      "manifest": {
+        "abi": "x86_64",
+        "base_library": "0.18.1",
+        "cffi": "2.1.1",
+        "curl_cffi": "0.16.3",
+        "libcurl": "2.2.2",
+        "libcurl_sha256": "4f5b48d90507593e80b250aaaf725ea01f7ea441589491e21e78240f657e118f",
+        "python": "3.14.8",
+        "source": "https://www.python.org/downloads/release/python-3148/",
+        "source_sha256": "58eb3b2d76ef57e076985a0a6b093cf08906d65ea4ab78cccc6d894d4250c972",
+        "sources_sha256": {
+          "certifi": "62f22742b58a1a33014a2b6b706588a8d7e2a88ae7bd1a6ebe8c992928483775",
+          "cffi": "dd31f52ea1086513bb9df30f8fcee9b8918323ae067a3d5b78bc826a000712be",
+          "curl_cffi": "d15d0c2a35f2d75bec430c28946c2a833f421c85773bdb0795182cc5c515665b",
+          "libffi_headers": "bc9842a18898bfacb0ed1252c4febcc7e78fa139fd27fdc7a3e30d9d9356119b",
+          "pycparser": "e5c6e8d3fbad53479cab09ac03729e0a9faf2bee3db8208a550daf5af81a5934"
+        }
+      },
+      "binary_files": [
+        {
+          "file": "usr/lib/engines-3/afalg.so",
+          "sha256": "93db38c096251b86dbfb6b575acaf943576f0f7a72c542d0c1f1065d90937ea6"
+        },
+        {
+          "file": "usr/lib/engines-3/capi.so",
+          "sha256": "5d5fad7333193ab4ecea5981491552c3d95a472ecbf7a2eadc92c913716fa893"
+        },
+        {
+          "file": "usr/lib/engines-3/loader_attic.so",
+          "sha256": "bd5db704dcf4da5603b6506c05d9d86832f5255df32dd64aa20e2fc990d8f4a7"
+        },
+        {
+          "file": "usr/lib/engines-3/padlock.so",
+          "sha256": "c1dbf9e9fd24be3e68a12dc2c1856a0233a06f25989b33bf20bb4e1f12aa70fa"
+        },
+        {
+          "file": "usr/lib/libandroid-posix-semaphore.so",
+          "sha256": "e6ba93f2bdf2fa266f1a96ccae1debdd565893d3a9ca23173070b2a72bf15e6e"
+        },
+        {
+          "file": "usr/lib/libandroid-support.so",
+          "sha256": "f0f44e60090b07b3536729993fad94bb6127ff1c6f70188f5c6dab6a33b85dda"
+        },
+        {
+          "file": "usr/lib/libbz2.so",
+          "sha256": "743cba463316dc74866c916a55c9bbb3eb8337c4cf2ef8c054d0a2be5856b79a"
+        },
+        {
+          "file": "usr/lib/libbz2.so.1.0",
+          "sha256": "743cba463316dc74866c916a55c9bbb3eb8337c4cf2ef8c054d0a2be5856b79a"
+        },
+        {
+          "file": "usr/lib/libbz2.so.1.0.8",
+          "sha256": "743cba463316dc74866c916a55c9bbb3eb8337c4cf2ef8c054d0a2be5856b79a"
+        },
+        {
+          "file": "usr/lib/libc++_shared.so",
+          "sha256": "cd110349c4a6d0a3efb4aee6beb1a621e243d2a9bc5566c96fbe0c38c9ca9d39"
+        },
+        {
+          "file": "usr/lib/libcrypt.so",
+          "sha256": "b0e91c252c243efd626d720adbc02331e84ca425c7b418eb65b5cf167196725f"
+        },
+        {
+          "file": "usr/lib/libcrypto.so",
+          "sha256": "6ea087b40b65deb40cc9b1763e823b5a89f23a7570e723411968329099fc51dd"
+        },
+        {
+          "file": "usr/lib/libcrypto.so.3",
+          "sha256": "16f2b5947663a8691d1194ee2fc883266e6f4735f129c36401f63f541f6206bf"
+        },
+        {
+          "file": "usr/lib/libcrypto_python.so",
+          "sha256": "6ea087b40b65deb40cc9b1763e823b5a89f23a7570e723411968329099fc51dd"
+        },
+        {
+          "file": "usr/lib/libcurses.so",
+          "sha256": "180b6723ec53eb3a1132c264d1898cf6b67db99458a64b6ae7531db77d97aadf"
+        },
+        {
+          "file": "usr/lib/libcurses.so.6",
+          "sha256": "180b6723ec53eb3a1132c264d1898cf6b67db99458a64b6ae7531db77d97aadf"
+        },
+        {
+          "file": "usr/lib/libcurses.so.6.5",
+          "sha256": "180b6723ec53eb3a1132c264d1898cf6b67db99458a64b6ae7531db77d97aadf"
+        },
+        {
+          "file": "usr/lib/libexpat.so",
+          "sha256": "dae7f15c9ba5edf9d1a91ca21eec3c637622b226c176a5831496755e93ce5efe"
+        },
+        {
+          "file": "usr/lib/libexpat.so.1",
+          "sha256": "dae7f15c9ba5edf9d1a91ca21eec3c637622b226c176a5831496755e93ce5efe"
+        },
+        {
+          "file": "usr/lib/libexpat.so.1.11.1",
+          "sha256": "dae7f15c9ba5edf9d1a91ca21eec3c637622b226c176a5831496755e93ce5efe"
+        },
+        {
+          "file": "usr/lib/libffi.so",
+          "sha256": "65d0338bb40ea17aa8a6cfd3d2291e5429deb3c5bdc96e094aafc6319e0c9eca"
+        },
+        {
+          "file": "usr/lib/libform.so",
+          "sha256": "955c91b66332473263fdfb47abd538302bf85b1feaa04e7bd2660b4cc8922869"
+        },
+        {
+          "file": "usr/lib/libform.so.6",
+          "sha256": "955c91b66332473263fdfb47abd538302bf85b1feaa04e7bd2660b4cc8922869"
+        },
+        {
+          "file": "usr/lib/libform.so.6.5",
+          "sha256": "955c91b66332473263fdfb47abd538302bf85b1feaa04e7bd2660b4cc8922869"
+        },
+        {
+          "file": "usr/lib/libformw.so",
+          "sha256": "955c91b66332473263fdfb47abd538302bf85b1feaa04e7bd2660b4cc8922869"
+        },
+        {
+          "file": "usr/lib/libformw.so.6",
+          "sha256": "955c91b66332473263fdfb47abd538302bf85b1feaa04e7bd2660b4cc8922869"
+        },
+        {
+          "file": "usr/lib/libformw.so.6.5",
+          "sha256": "955c91b66332473263fdfb47abd538302bf85b1feaa04e7bd2660b4cc8922869"
+        },
+        {
+          "file": "usr/lib/libgdbm.so",
+          "sha256": "828b03aefbbe3e2404c90ab141abbb650d667e0f0240f709a31899270ac8c2eb"
+        },
+        {
+          "file": "usr/lib/libgdbm_compat.so",
+          "sha256": "6e34cebf96c6241db6a8e7b9f3b753e7c3afa2a01040236bd2f60da39fbd50ff"
+        },
+        {
+          "file": "usr/lib/libhistory.so",
+          "sha256": "fb8412b790f13003d2c33af49de1607914aa2ae74a50605558330032185e31c6"
+        },
+        {
+          "file": "usr/lib/libhistory.so.8",
+          "sha256": "fb8412b790f13003d2c33af49de1607914aa2ae74a50605558330032185e31c6"
+        },
+        {
+          "file": "usr/lib/libhistory.so.8.3",
+          "sha256": "fb8412b790f13003d2c33af49de1607914aa2ae74a50605558330032185e31c6"
+        },
+        {
+          "file": "usr/lib/liblzma.so.5",
+          "sha256": "9d578a6484ccbe8251ad1e63793bb0bbb5f6f97d042d356135b2e72ae00257e5"
+        },
+        {
+          "file": "usr/lib/liblzma.so.5.8.1",
+          "sha256": "9d578a6484ccbe8251ad1e63793bb0bbb5f6f97d042d356135b2e72ae00257e5"
+        },
+        {
+          "file": "usr/lib/libmenu.so",
+          "sha256": "e0f7890bf1db80bc664df05b35f6208ed277b5c0422b4a088fb1be16e5020fda"
+        },
+        {
+          "file": "usr/lib/libmenu.so.6",
+          "sha256": "e0f7890bf1db80bc664df05b35f6208ed277b5c0422b4a088fb1be16e5020fda"
+        },
+        {
+          "file": "usr/lib/libmenu.so.6.5",
+          "sha256": "e0f7890bf1db80bc664df05b35f6208ed277b5c0422b4a088fb1be16e5020fda"
+        },
+        {
+          "file": "usr/lib/libmenuw.so",
+          "sha256": "e0f7890bf1db80bc664df05b35f6208ed277b5c0422b4a088fb1be16e5020fda"
+        },
+        {
+          "file": "usr/lib/libmenuw.so.6",
+          "sha256": "e0f7890bf1db80bc664df05b35f6208ed277b5c0422b4a088fb1be16e5020fda"
+        },
+        {
+          "file": "usr/lib/libmenuw.so.6.5",
+          "sha256": "e0f7890bf1db80bc664df05b35f6208ed277b5c0422b4a088fb1be16e5020fda"
+        },
+        {
+          "file": "usr/lib/libncurses.so",
+          "sha256": "180b6723ec53eb3a1132c264d1898cf6b67db99458a64b6ae7531db77d97aadf"
+        },
+        {
+          "file": "usr/lib/libncurses.so.6",
+          "sha256": "180b6723ec53eb3a1132c264d1898cf6b67db99458a64b6ae7531db77d97aadf"
+        },
+        {
+          "file": "usr/lib/libncurses.so.6.5",
+          "sha256": "180b6723ec53eb3a1132c264d1898cf6b67db99458a64b6ae7531db77d97aadf"
+        },
+        {
+          "file": "usr/lib/libncursesw.so",
+          "sha256": "180b6723ec53eb3a1132c264d1898cf6b67db99458a64b6ae7531db77d97aadf"
+        },
+        {
+          "file": "usr/lib/libncursesw.so.6",
+          "sha256": "180b6723ec53eb3a1132c264d1898cf6b67db99458a64b6ae7531db77d97aadf"
+        },
+        {
+          "file": "usr/lib/libncursesw.so.6.5",
+          "sha256": "180b6723ec53eb3a1132c264d1898cf6b67db99458a64b6ae7531db77d97aadf"
+        },
+        {
+          "file": "usr/lib/libpanel.so",
+          "sha256": "167f10ee7db567358dae1d93399a0c431ae32d3da2297fa998dd689dd52ff199"
+        },
+        {
+          "file": "usr/lib/libpanel.so.6",
+          "sha256": "167f10ee7db567358dae1d93399a0c431ae32d3da2297fa998dd689dd52ff199"
+        },
+        {
+          "file": "usr/lib/libpanel.so.6.5",
+          "sha256": "167f10ee7db567358dae1d93399a0c431ae32d3da2297fa998dd689dd52ff199"
+        },
+        {
+          "file": "usr/lib/libpanelw.so",
+          "sha256": "167f10ee7db567358dae1d93399a0c431ae32d3da2297fa998dd689dd52ff199"
+        },
+        {
+          "file": "usr/lib/libpanelw.so.6",
+          "sha256": "167f10ee7db567358dae1d93399a0c431ae32d3da2297fa998dd689dd52ff199"
+        },
+        {
+          "file": "usr/lib/libpanelw.so.6.5",
+          "sha256": "167f10ee7db567358dae1d93399a0c431ae32d3da2297fa998dd689dd52ff199"
+        },
+        {
+          "file": "usr/lib/libpython3.14.so",
+          "sha256": "ca958c758319ec25bceffe3803d902b0fa384e0a7e8b82b4b2ab4b8e94e8217f"
+        },
+        {
+          "file": "usr/lib/libpython3.so",
+          "sha256": "249e0ab3c0d31dd1e4ef400bcc8479660a73d534f17733ab1fece99aa29d464e"
+        },
+        {
+          "file": "usr/lib/libreadline.so",
+          "sha256": "6652004dcf7c606b885b7877203c11e4f1f48e93e8063ef13dff6285eb5d9252"
+        },
+        {
+          "file": "usr/lib/libreadline.so.8",
+          "sha256": "6652004dcf7c606b885b7877203c11e4f1f48e93e8063ef13dff6285eb5d9252"
+        },
+        {
+          "file": "usr/lib/libreadline.so.8.3",
+          "sha256": "6652004dcf7c606b885b7877203c11e4f1f48e93e8063ef13dff6285eb5d9252"
+        },
+        {
+          "file": "usr/lib/libsqlite3.so",
+          "sha256": "03fbc586626baa1952bdfba93f43ae4f11f965c613d329784742f4dd4f97917a"
+        },
+        {
+          "file": "usr/lib/libsqlite3.so.0",
+          "sha256": "03fbc586626baa1952bdfba93f43ae4f11f965c613d329784742f4dd4f97917a"
+        },
+        {
+          "file": "usr/lib/libsqlite3.so.3.50.4",
+          "sha256": "067f39d032fa490a1352027bc53bbc7834a602999f863eabb1a0d6a700159d7c"
+        },
+        {
+          "file": "usr/lib/libsqlite3_python.so",
+          "sha256": "03fbc586626baa1952bdfba93f43ae4f11f965c613d329784742f4dd4f97917a"
+        },
+        {
+          "file": "usr/lib/libssl.so",
+          "sha256": "3f33b8221d4a8efe0f0891d95b3e29f38225e35a9e4ce725c1d9a7601cf13ef9"
+        },
+        {
+          "file": "usr/lib/libssl.so.3",
+          "sha256": "702c44a7f1a26284676d730e8a11876f6ea509304038f101c96ab7d272577d1c"
+        },
+        {
+          "file": "usr/lib/libssl_python.so",
+          "sha256": "3f33b8221d4a8efe0f0891d95b3e29f38225e35a9e4ce725c1d9a7601cf13ef9"
+        },
+        {
+          "file": "usr/lib/libtermcap.so",
+          "sha256": "180b6723ec53eb3a1132c264d1898cf6b67db99458a64b6ae7531db77d97aadf"
+        },
+        {
+          "file": "usr/lib/libtermcap.so.6",
+          "sha256": "180b6723ec53eb3a1132c264d1898cf6b67db99458a64b6ae7531db77d97aadf"
+        },
+        {
+          "file": "usr/lib/libtermcap.so.6.5",
+          "sha256": "180b6723ec53eb3a1132c264d1898cf6b67db99458a64b6ae7531db77d97aadf"
+        },
+        {
+          "file": "usr/lib/libtic.so",
+          "sha256": "180b6723ec53eb3a1132c264d1898cf6b67db99458a64b6ae7531db77d97aadf"
+        },
+        {
+          "file": "usr/lib/libtic.so.6",
+          "sha256": "180b6723ec53eb3a1132c264d1898cf6b67db99458a64b6ae7531db77d97aadf"
+        },
+        {
+          "file": "usr/lib/libtic.so.6.5",
+          "sha256": "180b6723ec53eb3a1132c264d1898cf6b67db99458a64b6ae7531db77d97aadf"
+        },
+        {
+          "file": "usr/lib/libtinfo.so",
+          "sha256": "180b6723ec53eb3a1132c264d1898cf6b67db99458a64b6ae7531db77d97aadf"
+        },
+        {
+          "file": "usr/lib/libtinfo.so.6",
+          "sha256": "180b6723ec53eb3a1132c264d1898cf6b67db99458a64b6ae7531db77d97aadf"
+        },
+        {
+          "file": "usr/lib/libtinfo.so.6.5",
+          "sha256": "180b6723ec53eb3a1132c264d1898cf6b67db99458a64b6ae7531db77d97aadf"
+        },
+        {
+          "file": "usr/lib/libz.so",
+          "sha256": "79b5027606bd8c592ec12effd7520816fe00f5f3ac574f9370979350ee5dcbb0"
+        },
+        {
+          "file": "usr/lib/libz.so.1",
+          "sha256": "79b5027606bd8c592ec12effd7520816fe00f5f3ac574f9370979350ee5dcbb0"
+        },
+        {
+          "file": "usr/lib/libz.so.1.3.1",
+          "sha256": "79b5027606bd8c592ec12effd7520816fe00f5f3ac574f9370979350ee5dcbb0"
+        },
+        {
+          "file": "usr/lib/ossl-modules/legacy.so",
+          "sha256": "1a1ca23c879d94e8320c1270ed9ba1e4b2fe60ada28625d88f1aeb45ef3c5c5a"
+        },
+        {
+          "file": "usr/lib/python3.14/lib-dynload/_asyncio.cpython-314-x86_64-linux-android.so",
+          "sha256": "c83d417439ed70d6efb62bc0813eb810aa9a9478966f4a3d3023a5e725b6c898"
+        },
+        {
+          "file": "usr/lib/python3.14/lib-dynload/_bisect.cpython-314-x86_64-linux-android.so",
+          "sha256": "dd9c9144b69a274ed681a3b410bd6350be95d560aa18b10f387283e13492a312"
+        },
+        {
+          "file": "usr/lib/python3.14/lib-dynload/_blake2.cpython-314-x86_64-linux-android.so",
+          "sha256": "df23d4f42b10f22f7864fbe568b0d2a77cde767744fc2e7812022da80f9013ec"
+        },
+        {
+          "file": "usr/lib/python3.14/lib-dynload/_bz2.cpython-314-x86_64-linux-android.so",
+          "sha256": "2b47daec3cd57ef0fff1e2bee7f583bad4f568fe522948a2ec7723ed788460b4"
+        },
+        {
+          "file": "usr/lib/python3.14/lib-dynload/_codecs_cn.cpython-314-x86_64-linux-android.so",
+          "sha256": "0b6642fd79eaa32b8cb69aac2b4d07775f81399d53cd6671a25d60e4ecd01062"
+        },
+        {
+          "file": "usr/lib/python3.14/lib-dynload/_codecs_hk.cpython-314-x86_64-linux-android.so",
+          "sha256": "9f7e76d1a86726b8df2b3d171ef2b4a12bd3351ee5020f8e6398e10964723a6e"
+        },
+        {
+          "file": "usr/lib/python3.14/lib-dynload/_codecs_iso2022.cpython-314-x86_64-linux-android.so",
+          "sha256": "1307ab8a5e94e70465cab04dab04cdd967f0b67cff8ccc266cffd0959a03d167"
+        },
+        {
+          "file": "usr/lib/python3.14/lib-dynload/_codecs_jp.cpython-314-x86_64-linux-android.so",
+          "sha256": "68dbf5c14dc91ccbfd644b439edff89314280f32e5d45fc663cb6762baa8766d"
+        },
+        {
+          "file": "usr/lib/python3.14/lib-dynload/_codecs_kr.cpython-314-x86_64-linux-android.so",
+          "sha256": "5d228828b33132e0eb6cc9cc65ff927197690b4e3107614682f063980af87a13"
+        },
+        {
+          "file": "usr/lib/python3.14/lib-dynload/_codecs_tw.cpython-314-x86_64-linux-android.so",
+          "sha256": "90692e5908fe8d8793ca45ecdb88e440db896158b0005d7ed271b1209bb88dda"
+        },
+        {
+          "file": "usr/lib/python3.14/lib-dynload/_csv.cpython-314-x86_64-linux-android.so",
+          "sha256": "588f2c24a0e0bbe545f9d14d805306551e6730276a2d21ea91431f254bc0d402"
+        },
+        {
+          "file": "usr/lib/python3.14/lib-dynload/_ctypes.cpython-314-x86_64-linux-android.so",
+          "sha256": "49c0bf4f128630ba8e31a77c899bc3f7eecf050ae02e259e676408aed96a17f7"
+        },
+        {
+          "file": "usr/lib/python3.14/lib-dynload/_ctypes_test.cpython-314-x86_64-linux-android.so",
+          "sha256": "6dfbb53b4cfb4ff9a9a734af97814632537e27703fa5e7696267f5b508ad96be"
+        },
+        {
+          "file": "usr/lib/python3.14/lib-dynload/_decimal.cpython-314-x86_64-linux-android.so",
+          "sha256": "9362d00cf03bc92ef3b00d1a87a3a74c5dd98e6cd5ee6491780ac20c60ff6884"
+        },
+        {
+          "file": "usr/lib/python3.14/lib-dynload/_elementtree.cpython-314-x86_64-linux-android.so",
+          "sha256": "f7e6812d787b693ad9a14faadf3c7bdecedd421411215a148937a1bfc9e7fbc1"
+        },
+        {
+          "file": "usr/lib/python3.14/lib-dynload/_hashlib.cpython-314-x86_64-linux-android.so",
+          "sha256": "b2b81f03cde7a13432c7ed3160f93105da3ab731c5abbfa708713853639428e1"
+        },
+        {
+          "file": "usr/lib/python3.14/lib-dynload/_heapq.cpython-314-x86_64-linux-android.so",
+          "sha256": "d2f8ffdaa0b2604f9940624c465a9461de504e935f37a1984f287234b266564c"
+        },
+        {
+          "file": "usr/lib/python3.14/lib-dynload/_hmac.cpython-314-x86_64-linux-android.so",
+          "sha256": "88e7bae3a070a7a189a6fd4b68fb7274e09eef6fc1a4a6c8c38fbf40712c46e5"
+        },
+        {
+          "file": "usr/lib/python3.14/lib-dynload/_interpchannels.cpython-314-x86_64-linux-android.so",
+          "sha256": "9a36d53271f1451a1d9836801b8ff6341e40481cfdf4400219b8b263c02e6ef7"
+        },
+        {
+          "file": "usr/lib/python3.14/lib-dynload/_interpqueues.cpython-314-x86_64-linux-android.so",
+          "sha256": "c47bfa320d715df450f19fe6729e879132087f5ba7948e2e1a2812ecc605993c"
+        },
+        {
+          "file": "usr/lib/python3.14/lib-dynload/_interpreters.cpython-314-x86_64-linux-android.so",
+          "sha256": "32e04cc9248053749095e88235ea4e618c0015fc351b308e340d82768eb33389"
+        },
+        {
+          "file": "usr/lib/python3.14/lib-dynload/_json.cpython-314-x86_64-linux-android.so",
+          "sha256": "f6e6392c3b8a4400b4459342578ab6075bf2fd47f70a36cd150f2e62f118df5c"
+        },
+        {
+          "file": "usr/lib/python3.14/lib-dynload/_lsprof.cpython-314-x86_64-linux-android.so",
+          "sha256": "4a20d6c4149a6a9f7beb6f7c41805209da14a02aea12cf1ddd692299e0c0510b"
+        },
+        {
+          "file": "usr/lib/python3.14/lib-dynload/_lzma.cpython-314-x86_64-linux-android.so",
+          "sha256": "e129a6654d3d565e2b567d03a37dc5f5b733fd93689957807514e657709dd215"
+        },
+        {
+          "file": "usr/lib/python3.14/lib-dynload/_md5.cpython-314-x86_64-linux-android.so",
+          "sha256": "b5a60e0c8a9a30e2ba84aa0584af37bda593948e0512810450e2e4989afcf9c6"
+        },
+        {
+          "file": "usr/lib/python3.14/lib-dynload/_multibytecodec.cpython-314-x86_64-linux-android.so",
+          "sha256": "057a1bc3760fcd7490730e54e99fb3ebcb43d1f66e1244c3b1942f55ddb072f4"
+        },
+        {
+          "file": "usr/lib/python3.14/lib-dynload/_pickle.cpython-314-x86_64-linux-android.so",
+          "sha256": "b23aac079667789af86eb23248f8cd3e8750bed5b57da7447f04ccf11c71b65d"
+        },
+        {
+          "file": "usr/lib/python3.14/lib-dynload/_posixsubprocess.cpython-314-x86_64-linux-android.so",
+          "sha256": "ca5e663bce1f1bc70e95df91e366b96d5f6c91bfa1f827de4d5b3f368fad65c2"
+        },
+        {
+          "file": "usr/lib/python3.14/lib-dynload/_queue.cpython-314-x86_64-linux-android.so",
+          "sha256": "fd783e901e6043ad9e2286088fd954dc65d55a9603b9249b6ab2c91c46be1cc8"
+        },
+        {
+          "file": "usr/lib/python3.14/lib-dynload/_random.cpython-314-x86_64-linux-android.so",
+          "sha256": "91ea50e944db3188e0552ad2d3b314c10c11ebf287666af6fb0f725c68c48672"
+        },
+        {
+          "file": "usr/lib/python3.14/lib-dynload/_remote_debugging.cpython-314-x86_64-linux-android.so",
+          "sha256": "90dc1366cdb7fb0dd2bdc1cbd1b9871eb0f6c5a149e8c4c21cba23085916f354"
+        },
+        {
+          "file": "usr/lib/python3.14/lib-dynload/_sha1.cpython-314-x86_64-linux-android.so",
+          "sha256": "6d55027010a8f59f69254454b427d657ca6de7ca2d9c930ca4af66acd4fc52c1"
+        },
+        {
+          "file": "usr/lib/python3.14/lib-dynload/_sha2.cpython-314-x86_64-linux-android.so",
+          "sha256": "10bc71cc35466b86bedd26a0ec0d4d01cafa49f46eddae0ebc874ab523918220"
+        },
+        {
+          "file": "usr/lib/python3.14/lib-dynload/_sha3.cpython-314-x86_64-linux-android.so",
+          "sha256": "43e08a10fc294481004368aeb1974b823dd34cefcdd5403dcff006761ae02f4d"
+        },
+        {
+          "file": "usr/lib/python3.14/lib-dynload/_socket.cpython-314-x86_64-linux-android.so",
+          "sha256": "70367ef91a5d504efcd7f7f1658505e798661785b3239651ab7e9c8dfe40be97"
+        },
+        {
+          "file": "usr/lib/python3.14/lib-dynload/_sqlite3.cpython-314-x86_64-linux-android.so",
+          "sha256": "3be5c3a02948e5edfacc129acd95e46f9a435c1238ddf25ed77bd5e0aaefb849"
+        },
+        {
+          "file": "usr/lib/python3.14/lib-dynload/_ssl.cpython-314-x86_64-linux-android.so",
+          "sha256": "08438b50b3c71ef7166f6df7fdf47c51f54cccb3c663560f3ba8e157a7f8e134"
+        },
+        {
+          "file": "usr/lib/python3.14/lib-dynload/_statistics.cpython-314-x86_64-linux-android.so",
+          "sha256": "1e4d0b13acbf771ff00f640dbf1a0e68e76af9c31ea72cea9cc7c3084bc36f6e"
+        },
+        {
+          "file": "usr/lib/python3.14/lib-dynload/_struct.cpython-314-x86_64-linux-android.so",
+          "sha256": "44f8cc560aa432a8356feb7035cb2453ae7202b4fbd90a8cbd6c6f12d644b36c"
+        },
+        {
+          "file": "usr/lib/python3.14/lib-dynload/_testbuffer.cpython-314-x86_64-linux-android.so",
+          "sha256": "100f249030f258302dca06d24073d9664671f6e48fa9ada938246c854ee46ee0"
+        },
+        {
+          "file": "usr/lib/python3.14/lib-dynload/_testcapi.cpython-314-x86_64-linux-android.so",
+          "sha256": "6e82a459d7eaea9eb660c30b55c9d3caa6ff28c1a8775c5a4096cf4ea017874c"
+        },
+        {
+          "file": "usr/lib/python3.14/lib-dynload/_testclinic.cpython-314-x86_64-linux-android.so",
+          "sha256": "26edeea631cf0a0d7fa47b383f558dfb02b140d98223ab67b1f69cea2864ae9a"
+        },
+        {
+          "file": "usr/lib/python3.14/lib-dynload/_testclinic_limited.cpython-314-x86_64-linux-android.so",
+          "sha256": "41faccd303d0b1cfdbff14964d47f7d18b9162f2bc61c9cebd68484ddd9046de"
+        },
+        {
+          "file": "usr/lib/python3.14/lib-dynload/_testimportmultiple.cpython-314-x86_64-linux-android.so",
+          "sha256": "7b5926b40b575bd061a1134e87d31faa1afea52129581857d70da22bbae20906"
+        },
+        {
+          "file": "usr/lib/python3.14/lib-dynload/_testinternalcapi.cpython-314-x86_64-linux-android.so",
+          "sha256": "58c7010ae111958e200b7888349b6292790d3753fd5f867ec23ed1034bef0167"
+        },
+        {
+          "file": "usr/lib/python3.14/lib-dynload/_testlimitedcapi.cpython-314-x86_64-linux-android.so",
+          "sha256": "e0a8ab4835b822592c229f2fabfc2e26fc8ed7b7ea631d6a9695b8ce3ce6e7d9"
+        },
+        {
+          "file": "usr/lib/python3.14/lib-dynload/_testmultiphase.cpython-314-x86_64-linux-android.so",
+          "sha256": "d2ffed5700b61ea4083ba13345a333f7d47cb29615be4991288356f58814e765"
+        },
+        {
+          "file": "usr/lib/python3.14/lib-dynload/_testsinglephase.cpython-314-x86_64-linux-android.so",
+          "sha256": "e5b7f3e1da417e30ad14e0006a709ef826df885d894223282c65b7fd6d900bd4"
+        },
+        {
+          "file": "usr/lib/python3.14/lib-dynload/_xxtestfuzz.cpython-314-x86_64-linux-android.so",
+          "sha256": "809a869511feb5e39258f05962faf6ca7f441fa1209f42317f18ca10b8ca49f0"
+        },
+        {
+          "file": "usr/lib/python3.14/lib-dynload/_zoneinfo.cpython-314-x86_64-linux-android.so",
+          "sha256": "802b1205bddea9448c187b495ebce4c212a7468dcbdc043f4a55ebbc1dfb3fd5"
+        },
+        {
+          "file": "usr/lib/python3.14/lib-dynload/_zstd.cpython-314-x86_64-linux-android.so",
+          "sha256": "b3b4d4edc77939c160fdddb53b0d2a1995fb9641ef5d05006edf2e1be92ba8d3"
+        },
+        {
+          "file": "usr/lib/python3.14/lib-dynload/array.cpython-314-x86_64-linux-android.so",
+          "sha256": "02cc8adeb8a067b77341ad22a866725cbbad30ddd004271d8ce88d7fa7657982"
+        },
+        {
+          "file": "usr/lib/python3.14/lib-dynload/binascii.cpython-314-x86_64-linux-android.so",
+          "sha256": "b2bcb99ba48639ca34e79236ebace7397f62c071b7cdf3f8015eeca9fe7fd1d5"
+        },
+        {
+          "file": "usr/lib/python3.14/lib-dynload/cmath.cpython-314-x86_64-linux-android.so",
+          "sha256": "9910668b4e5ba820d228cb727c955a9ea94dea326a0cb37d44b853b90763f5e5"
+        },
+        {
+          "file": "usr/lib/python3.14/lib-dynload/fcntl.cpython-314-x86_64-linux-android.so",
+          "sha256": "ec6638a88ab06d2840669797fe30476de8ced69c0b22e94a97d47c431f9cb058"
+        },
+        {
+          "file": "usr/lib/python3.14/lib-dynload/math.cpython-314-x86_64-linux-android.so",
+          "sha256": "f2242263b9feaccc8590598d0dc5fa4ed9717f422941aa2c42d7177ec7a66bc8"
+        },
+        {
+          "file": "usr/lib/python3.14/lib-dynload/mmap.cpython-314-x86_64-linux-android.so",
+          "sha256": "0309b228d1928e42992ff38d64f98253f96f2433cc5003f0cd09d692cf917699"
+        },
+        {
+          "file": "usr/lib/python3.14/lib-dynload/pyexpat.cpython-314-x86_64-linux-android.so",
+          "sha256": "fde1ef4f33facf0a246fb924755d34ff9f6301379637c1b73926c2f27dc2437a"
+        },
+        {
+          "file": "usr/lib/python3.14/lib-dynload/resource.cpython-314-x86_64-linux-android.so",
+          "sha256": "66e86713b8388ca27bdb620ab5dcc42768d13542021eeb5caf523ee261c3cb3e"
+        },
+        {
+          "file": "usr/lib/python3.14/lib-dynload/select.cpython-314-x86_64-linux-android.so",
+          "sha256": "4e4c6e21cd547bbaf454d272b54331db4e7bed5df93a9289f25f279dd54236aa"
+        },
+        {
+          "file": "usr/lib/python3.14/lib-dynload/syslog.cpython-314-x86_64-linux-android.so",
+          "sha256": "9aa0f2d18682b1d5f27cabc9249a013cf6cc2ecf46463e17b118a6cda5db9612"
+        },
+        {
+          "file": "usr/lib/python3.14/lib-dynload/termios.cpython-314-x86_64-linux-android.so",
+          "sha256": "d3cba989bd7c105f12ada9cd7dc0448b4de8cc94bd002b398df7b6d9cdb47644"
+        },
+        {
+          "file": "usr/lib/python3.14/lib-dynload/unicodedata.cpython-314-x86_64-linux-android.so",
+          "sha256": "89686e3056d3e614fad0735109f00fa9175df22d62d90a81c665c8ac00e53e3f"
+        },
+        {
+          "file": "usr/lib/python3.14/lib-dynload/xxlimited.cpython-314-x86_64-linux-android.so",
+          "sha256": "7043f640d3d61f5e6a3a9d86fb4ae041d350bcb65a66996441c9add04c70b91c"
+        },
+        {
+          "file": "usr/lib/python3.14/lib-dynload/xxlimited_35.cpython-314-x86_64-linux-android.so",
+          "sha256": "089bc465fec7567ce9daefa34da13771a3aca02c48d9772b9d762549fbf31531"
+        },
+        {
+          "file": "usr/lib/python3.14/lib-dynload/xxsubtype.cpython-314-x86_64-linux-android.so",
+          "sha256": "72d446239570135d86393a72ca29902aaba828e609e3c99732937fd2e553e874"
+        },
+        {
+          "file": "usr/lib/python3.14/lib-dynload/zlib.cpython-314-x86_64-linux-android.so",
+          "sha256": "87c30ec4f6862211cb0897cc1524bc67dbb9df371ada5d165ec229fa4c2e6cd6"
+        },
+        {
+          "file": "usr/lib/python3.14/site-packages/Cryptodome/Cipher/_ARC4.abi3.so",
+          "sha256": "157dbc21de3aba8088eb126e8256c27dca6026eecd5091242e79657fb6bcf781"
+        },
+        {
+          "file": "usr/lib/python3.14/site-packages/Cryptodome/Cipher/_Salsa20.abi3.so",
+          "sha256": "aee9a5bac8f556cbd003cd90483eb8eeeedf6837e43cd62afe62f4c1eababc62"
+        },
+        {
+          "file": "usr/lib/python3.14/site-packages/Cryptodome/Cipher/_chacha20.abi3.so",
+          "sha256": "26ca2afb844b23fb4350f20190a7a9af826093c647b5caf924dea315cb4f24b7"
+        },
+        {
+          "file": "usr/lib/python3.14/site-packages/Cryptodome/Cipher/_pkcs1_decode.abi3.so",
+          "sha256": "4b57515c09c6817d981a5c8a5cbb6e428801503e13de6fbb23f5b09a820c58ab"
+        },
+        {
+          "file": "usr/lib/python3.14/site-packages/Cryptodome/Cipher/_raw_aes.abi3.so",
+          "sha256": "0b8b0f4145fe2466faed8bba8da93fe7406123b86dc719d9266001cd57eb1f2a"
+        },
+        {
+          "file": "usr/lib/python3.14/site-packages/Cryptodome/Cipher/_raw_aesni.abi3.so",
+          "sha256": "fcf16bb9f184430494d42fbf50dbb51d10dbc8165373730a3c788788445190e7"
+        },
+        {
+          "file": "usr/lib/python3.14/site-packages/Cryptodome/Cipher/_raw_arc2.abi3.so",
+          "sha256": "869384b9b3dbcc38b5eef7d71b80b86f26ef27a75fc0ce9cdeb65f507945e308"
+        },
+        {
+          "file": "usr/lib/python3.14/site-packages/Cryptodome/Cipher/_raw_blowfish.abi3.so",
+          "sha256": "428778041ddb245ee92d56352d579687c8608ab884a85db821f57afda8748461"
+        },
+        {
+          "file": "usr/lib/python3.14/site-packages/Cryptodome/Cipher/_raw_cast.abi3.so",
+          "sha256": "7b98cfaf540228fa6f086da27ab13ffcca79db5280dc0ccee06cab3c52cabef6"
+        },
+        {
+          "file": "usr/lib/python3.14/site-packages/Cryptodome/Cipher/_raw_cbc.abi3.so",
+          "sha256": "2de94a8b93479887b64a0f0e2e21a7a559a0c4f1b18acc98c8d6910d766548c0"
+        },
+        {
+          "file": "usr/lib/python3.14/site-packages/Cryptodome/Cipher/_raw_cfb.abi3.so",
+          "sha256": "f8c36e51e5f995cf286dcbac526ee1e27eed93c602b69577085f22a33cdfc100"
+        },
+        {
+          "file": "usr/lib/python3.14/site-packages/Cryptodome/Cipher/_raw_ctr.abi3.so",
+          "sha256": "ab3b10d3617af8850011f391d6f0a135cc5904e1c5d6e0df18c5c68f3bf92866"
+        },
+        {
+          "file": "usr/lib/python3.14/site-packages/Cryptodome/Cipher/_raw_des.abi3.so",
+          "sha256": "7240756e5f170b27f4f8aa0d3a9c27e391acd3247b9dae291675f92dcae0f5f4"
+        },
+        {
+          "file": "usr/lib/python3.14/site-packages/Cryptodome/Cipher/_raw_des3.abi3.so",
+          "sha256": "e9171af258e068dbcf5245edc9e6c5dfd0106b5c4365e619b99710b0959db671"
+        },
+        {
+          "file": "usr/lib/python3.14/site-packages/Cryptodome/Cipher/_raw_ecb.abi3.so",
+          "sha256": "4128c8faa939d0c65625f00aae7e44118d2592115b470f03e86c214ffdac96d9"
+        },
+        {
+          "file": "usr/lib/python3.14/site-packages/Cryptodome/Cipher/_raw_eksblowfish.abi3.so",
+          "sha256": "fd6301317b835d26164a4891f64e5b79d878c4c615f09ca841e7cb3d8468d568"
+        },
+        {
+          "file": "usr/lib/python3.14/site-packages/Cryptodome/Cipher/_raw_ocb.abi3.so",
+          "sha256": "641f395315c05f3daf3a7b8dfa1a80f91239de461379923d76cf6cf9490d141d"
+        },
+        {
+          "file": "usr/lib/python3.14/site-packages/Cryptodome/Cipher/_raw_ofb.abi3.so",
+          "sha256": "285d90ff7df02227a51918661ff39f5624b71604ce787fc5fdd4eaaa841650eb"
+        },
+        {
+          "file": "usr/lib/python3.14/site-packages/Cryptodome/Hash/_BLAKE2b.abi3.so",
+          "sha256": "6952b344e5ca8bc3ecbb68a31ab8ab36ba20b95f93f1d2a396315b903124bf39"
+        },
+        {
+          "file": "usr/lib/python3.14/site-packages/Cryptodome/Hash/_BLAKE2s.abi3.so",
+          "sha256": "f8ad590843dd83ac40d72c0738f7c52767007bab3dec096db970c5cd29542a74"
+        },
+        {
+          "file": "usr/lib/python3.14/site-packages/Cryptodome/Hash/_MD2.abi3.so",
+          "sha256": "e64d44ce798c8358281c38bb818c5f9a0eca3cad5aeefed35bfd3b19dac3a800"
+        },
+        {
+          "file": "usr/lib/python3.14/site-packages/Cryptodome/Hash/_MD4.abi3.so",
+          "sha256": "e7fcfef70777c31fc95d07ce90c2c2c3e45132059380aa97d883ce83539bedfe"
+        },
+        {
+          "file": "usr/lib/python3.14/site-packages/Cryptodome/Hash/_MD5.abi3.so",
+          "sha256": "1b679e3661be5f3ba152d064756c6172a63a0354683fac1e2c6e1e6108a0b46e"
+        },
+        {
+          "file": "usr/lib/python3.14/site-packages/Cryptodome/Hash/_RIPEMD160.abi3.so",
+          "sha256": "3e6bcf37e621efa6d97a1ce0eb976155451f2387c3e8a782ffe3221b0956d104"
+        },
+        {
+          "file": "usr/lib/python3.14/site-packages/Cryptodome/Hash/_SHA1.abi3.so",
+          "sha256": "93f1203b59bda8557b4e65dfc8bc06c706a1694fa7eb28c0ffac8e1b1a85ea1a"
+        },
+        {
+          "file": "usr/lib/python3.14/site-packages/Cryptodome/Hash/_SHA224.abi3.so",
+          "sha256": "c5ff864c4264d31c6eb69b31d3970e0b3f9ddb84128b45fa14fe2b92d1d55143"
+        },
+        {
+          "file": "usr/lib/python3.14/site-packages/Cryptodome/Hash/_SHA256.abi3.so",
+          "sha256": "1b8da0019597fb5bccdef8532e8e98a4ccea22196a4e543f6447471dff90187a"
+        },
+        {
+          "file": "usr/lib/python3.14/site-packages/Cryptodome/Hash/_SHA384.abi3.so",
+          "sha256": "d213a892017c84da30abec7ccbf9b437cc25776171840476ac91dc1cf273e833"
+        },
+        {
+          "file": "usr/lib/python3.14/site-packages/Cryptodome/Hash/_SHA512.abi3.so",
+          "sha256": "af83bc688b1e78fd25ed4af4d35a11d3be2b62a1a036245d2f2f6a47fae17e33"
+        },
+        {
+          "file": "usr/lib/python3.14/site-packages/Cryptodome/Hash/_ghash_clmul.abi3.so",
+          "sha256": "1460d38f5e80109299035084db66f50358c92faa56966939cc2ea847815d3d0c"
+        },
+        {
+          "file": "usr/lib/python3.14/site-packages/Cryptodome/Hash/_ghash_portable.abi3.so",
+          "sha256": "7acb22267d397358da4c5e03dfe3fa3f1851a3771af44fad39ed4daf6f9fade0"
+        },
+        {
+          "file": "usr/lib/python3.14/site-packages/Cryptodome/Hash/_keccak.abi3.so",
+          "sha256": "b57fe388dccbe930b966a08b95a30fc6739a54c6f8215c154f04625366a9b377"
+        },
+        {
+          "file": "usr/lib/python3.14/site-packages/Cryptodome/Hash/_poly1305.abi3.so",
+          "sha256": "0e76bd32152a03080fd1b8b211a48a307d0967b060bd0cfa1b3b2653ef9e2099"
+        },
+        {
+          "file": "usr/lib/python3.14/site-packages/Cryptodome/Math/_modexp.abi3.so",
+          "sha256": "aaf2b37dd63556b862007c78ace4095c7efc003116e15dbd7ffefb84e47eeed6"
+        },
+        {
+          "file": "usr/lib/python3.14/site-packages/Cryptodome/Protocol/_scrypt.abi3.so",
+          "sha256": "8a6cb7ba18cb0ab37d884bf2cb241bcb3fc6566f33a1a8fa9f3ba9d4f2b57751"
+        },
+        {
+          "file": "usr/lib/python3.14/site-packages/Cryptodome/PublicKey/_curve25519.abi3.so",
+          "sha256": "3b4a1189aed78335dbc28ac2db678d3fff5a63aceb0d4225eaf51ba589b994c5"
+        },
+        {
+          "file": "usr/lib/python3.14/site-packages/Cryptodome/PublicKey/_curve448.abi3.so",
+          "sha256": "ca5ba0cec3de481453ade11499b39b5d167a9a7d3ea4ca92840417cbfc17557f"
+        },
+        {
+          "file": "usr/lib/python3.14/site-packages/Cryptodome/PublicKey/_ec_ws.abi3.so",
+          "sha256": "7f9112b18a63828ce8ef40ce61fbc31eb788f055d7692582ae106ff03eeb3890"
+        },
+        {
+          "file": "usr/lib/python3.14/site-packages/Cryptodome/PublicKey/_ed25519.abi3.so",
+          "sha256": "cf6f317da183783c6a366026fc022facdabe7e2566e7d2121ee15290ac59c979"
+        },
+        {
+          "file": "usr/lib/python3.14/site-packages/Cryptodome/PublicKey/_ed448.abi3.so",
+          "sha256": "1d558321c2352a823295e1b849f8b2baa86c39d37ee5b7f987aee4bbe237a39e"
+        },
+        {
+          "file": "usr/lib/python3.14/site-packages/Cryptodome/Util/_cpuid_c.abi3.so",
+          "sha256": "5af9774c3557d249493e313399d36a64feb41ffbcac15057bd99b4f817e96bad"
+        },
+        {
+          "file": "usr/lib/python3.14/site-packages/Cryptodome/Util/_strxor.abi3.so",
+          "sha256": "39a947767d2e8b4e92de007fdceb29e0b81ba97b6084e6317d1bf30f72843ddc"
+        },
+        {
+          "file": "usr/lib/python3.14/site-packages/_cffi_backend.so",
+          "sha256": "cb7404accb0a9efc6b91815daaf0156b7f75f9ab31a3ff84593178115de3b65e"
+        },
+        {
+          "file": "usr/lib/python3.14/site-packages/curl_cffi/_wrapper.so",
+          "sha256": "d0dfdba662fab6797e79666610840fcd1667bebaa1392ef96a8271a6c359fd22"
+        }
+      ]
+    }
+  ]
+}
