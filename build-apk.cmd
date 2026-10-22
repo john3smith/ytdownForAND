@@ -8,7 +8,7 @@ set "PATH=%JAVA_HOME%\bin;%ANDROID_HOME%\platform-tools;%PATH%"
 call ".tools\gradle-8.13\bin\gradle.bat" --no-daemon assembleRelease securityRuntimeInventory
 if errorlevel 1 exit /b %errorlevel%
 
-copy /y "app\build\outputs\apk\release\app-release.apk" "YTDown-v1.9.29-arm64-release-debugkey.apk" >nul
 echo.
-echo APK: %~dp0YTDown-v1.9.29-arm64-release-debugkey.apk
+echo UNSIGNED build input: %~dp0app\build\outputs\apk\release\app-release-unsigned.apk
+echo Do not install or distribute. Follow docs\RELEASE_SECURITY.md for signing and verification.
 endlocal

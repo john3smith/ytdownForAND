@@ -1,0 +1,11 @@
+// Release artifacts are signed separately with the protected signing identity.
+// Never silently fall back to the Android development key.
+def verifyReleaseSafety = tasks.register("verifyReleaseSafety") {
+    doLast {
+        def releaseType = android.buildTypes.getByName("release")
+        if (releaseType.debuggable) throw new GradleException("Release debugging is forbidden.")
+        if (releaseType.signingConfig != null)
+            throw new GradleException("Release must be unsigned here; use the verified external signing procedure.")
+    }
+}
+tasks.matching { it.name == "preReleaseBuild" }.configureEach { dependsOn(verifyReleaseSafety) }

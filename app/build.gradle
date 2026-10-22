@@ -63,8 +63,8 @@ android {
     buildTypes {
         release {
             debuggable false
-            // Compatibility delivery uses the installed key; storeRelease requires a production key.
-            signingConfig signingConfigs.debug
+            // Sign separately after validating the owner-approved production identity.
+            signingConfig null
             minifyEnabled false
             proguardFiles getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
         }
@@ -116,3 +116,5 @@ dependencies {
 
 apply from: rootProject.file("gradle/store-release.gradle")
 apply from: rootProject.file("gradle/security-inventory.gradle")
+
+apply from: rootProject.file("gradle/release-safety.gradle")
