@@ -1,3 +1,9 @@
 <resources>
     <item type="id" name="incomplete_files" />
+    <item type="id" name="compose_card" />
+    <item type="id" name="download_options_toggle" />
+    <item type="id" name="download_options_panel" />
+    <item type="id" name="progress_card" />
+    <item type="id" name="connection_card" />
+    <item type="id" name="tools_card" />
 </resources>

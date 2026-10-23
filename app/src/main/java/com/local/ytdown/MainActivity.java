@@ -204,17 +204,18 @@ public final class MainActivity extends Activity {
         int padding = dp(20);
         ScrollView scrollView = new ScrollView(this);
         scrollView.setFillViewport(true);
+        scrollView.setClipToPadding(true);
+        scrollView.setBackgroundColor(getColor(R.color.background));
 
         LinearLayout root = new LinearLayout(this);
         root.setOrientation(LinearLayout.VERTICAL);
         root.setPadding(padding, dp(24), padding, padding);
-        root.setOnApplyWindowInsetsListener((view, insets) -> {
-            view.setPadding(padding, dp(24) + insets.getSystemWindowInsetTop(),
-                    padding, padding + insets.getSystemWindowInsetBottom());
+        scrollView.setOnApplyWindowInsetsListener((view, insets) -> {
+            // Keep the scrolling viewport below system bars even at the bottom of the page.
+            view.setPadding(0, insets.getSystemWindowInsetTop(), 0, insets.getSystemWindowInsetBottom());
             return insets;
         });
         root.setBackgroundColor(getColor(R.color.background));
-        StoreInfo.addButton(this, root);
 
         LinearLayout titleRow = new LinearLayout(this);
         titleRow.setOrientation(LinearLayout.HORIZONTAL);
@@ -522,6 +523,149 @@ public final class MainActivity extends Activity {
         infoButton.setOnClickListener(view -> showUsage());
         logButton.setOnClickListener(view -> showDownloadLog());
         queueListButton.setOnClickListener(view -> showQueueDialog());
+
+        // Keep the original controls and listeners; only compose their presentation here.
+        root.removeAllViews();
+        root.setClipChildren(false);
+        title.setText("YTDown");
+        title.setTextSize(28);
+        title.setLetterSpacing(-0.03f);
+        TextView mark = dashboardText("↓", 30, Color.WHITE, true);
+        mark.setGravity(Gravity.CENTER);
+        mark.setBackground(rounded(getColor(R.color.accent), Color.TRANSPARENT, 0, 16));
+        mark.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
+        LinearLayout.LayoutParams markParams = new LinearLayout.LayoutParams(dp(48), dp(48));
+        markParams.setMarginEnd(dp(12));
+        titleRow.addView(mark, 0, markParams);
+        infoButton.setText("?");
+        infoButton.setTextColor(getColor(R.color.accent));
+        infoButton.setBackground(rounded(Color.WHITE, getColor(R.color.border), 1, 24));
+        infoButton.setStateListAnimator(null);
+        infoButton.setElevation(0);
+        infoButton.setLayoutParams(new LinearLayout.LayoutParams(dp(48), dp(48)));
+        place(root, titleRow, 12);
+        place(root, dashboardText("링크를 붙여넣고 간편하게 저장하세요.", 14,
+                getColor(R.color.text_secondary), false), 22);
+
+        LinearLayout composer = dashboardCard("무엇을 저장할까요?", "YouTube · X · Instagram");
+        composer.setId(R.id.compose_card);
+        urlLabel.setVisibility(View.GONE);
+        urlInput.setMinHeight(dp(60));
+        urlInput.setTextColor(getColor(R.color.text_primary));
+        urlInput.setHintTextColor(getColor(R.color.text_secondary));
+        urlInput.setBackground(rounded(getColor(R.color.input_surface), getColor(R.color.border), 1, 14));
+        place(composer, urlInput, 12);
+
+        LinearLayout options = new LinearLayout(this);
+        options.setOrientation(LinearLayout.VERTICAL);
+        options.setPadding(dp(14), dp(8), dp(14), dp(8));
+        options.setBackground(rounded(getColor(R.color.input_surface), Color.TRANSPARENT, 0, 16));
+        options.setId(R.id.download_options_panel);
+        options.setVisibility(View.GONE);
+        qualityLabel.setTextSize(13);
+        place(options, qualityLabel, 4);
+        qualitySpinner.setMinimumHeight(dp(52));
+        qualitySpinner.setBackground(rounded(Color.WHITE, getColor(R.color.border), 1, 12));
+        place(options, qualitySpinner, 4);
+        for (Switch toggle : new Switch[]{audioOnlySwitch, immediateDownloadSwitch, wifiOnlySwitch, httpsAssistSwitch}) {
+            toggle.setTextSize(13);
+            toggle.setMinHeight(dp(52));
+            toggle.setPadding(0, dp(6), 0, dp(6));
+            place(options, toggle, 0);
+        }
+        Button optionsButton = commandButton(R.string.quality_label, false);
+        optionsButton.setId(R.id.download_options_toggle);
+        optionsButton.setGravity(Gravity.START | Gravity.CENTER_VERTICAL);
+        optionsButton.setTextSize(12);
+        Runnable optionSummary = () -> {
+            String selected = audioOnlySwitch.isChecked() ? "M4A 음원" : qualitySpinner.getSelectedItem() + " · 동영상";
+            optionsButton.setText(options.getVisibility() == View.VISIBLE ? "저장 옵션 닫기  ∧" : selected + "  ·  옵션 ∨");
+            optionsButton.setContentDescription("저장 옵션, " + selected + (options.getVisibility() == View.VISIBLE ? ", 펼쳐짐" : ", 접힘"));
+        };
+        optionsButton.setOnClickListener(v -> {
+            options.setVisibility(options.getVisibility() == View.VISIBLE ? View.GONE : View.VISIBLE);
+            optionSummary.run();
+        });
+        qualitySpinner.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener() {
+            @Override public void onItemSelected(android.widget.AdapterView<?> parent, View view, int position, long id) { optionSummary.run(); }
+            @Override public void onNothingSelected(android.widget.AdapterView<?> parent) { optionSummary.run(); }
+        });
+        audioOnlySwitch.setOnCheckedChangeListener((button, checked) -> {
+            getSharedPreferences(UI_PREFERENCES, MODE_PRIVATE).edit().putBoolean(PREF_AUDIO_ONLY, checked).apply();
+            qualitySpinner.setEnabled(!checked);
+            optionSummary.run();
+        });
+        optionSummary.run();
+        place(composer, optionsButton, 8);
+        place(composer, options, 12);
+        pasteButton.setTextSize(13);
+        actions.removeAllViews();
+        LinearLayout.LayoutParams pasteParams = new LinearLayout.LayoutParams(0, -2, 1f);
+        actions.addView(pasteButton, pasteParams);
+        LinearLayout.LayoutParams primaryParams = new LinearLayout.LayoutParams(0, -2, 1.65f);
+        primaryParams.setMarginStart(dp(10));
+        actions.addView(downloadButton, primaryParams);
+        downloadButton.setMinHeight(dp(56));
+        pasteButton.setMinHeight(dp(56));
+        place(composer, actions, 8);
+        webPageButton.setTextSize(12);
+        place(composer, webPageButton, 0);
+        place(root, composer, 16);
+
+        LinearLayout progress = dashboardCard("다운로드 현황", null);
+        progress.setId(R.id.progress_card);
+        videoTitleText.setTextSize(14);
+        videoTitleText.setTextColor(getColor(R.color.text_primary));
+        place(progress, videoTitleText, 10);
+        place(progress, progressBar, 6);
+        progressBar.setLayoutParams(new LinearLayout.LayoutParams(-1, dp(8)));
+        statusText.setTextSize(12);
+        statusText.setMaxLines(3);
+        statusText.setEllipsize(TextUtils.TruncateAt.END);
+        statusText.setMinHeight(dp(48));
+        statusText.setLayoutParams(new LinearLayout.LayoutParams(0, -2, 1f));
+        percentText.setTextSize(22);
+        percentText.setTextColor(getColor(R.color.accent));
+        percentText.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
+        percentText.setMinHeight(dp(48));
+        percentText.setLayoutParams(new LinearLayout.LayoutParams(dp(90), -2));
+        place(progress, statusRow, 6);
+        queueListButton.setMinHeight(dp(48));
+        queueListButton.setLayoutParams(new LinearLayout.LayoutParams(dp(112), -2));
+        place(progress, queueRow, 8);
+        place(progress, cancelButton, 0);
+        place(root, progress, 16);
+
+        LinearLayout connection = dashboardCard("계정 연결", "로그인이 필요한 사이트만 연결하세요.");
+        connection.setId(R.id.connection_card);
+        loginRow.removeAllViews();
+        loginPlatformSpinner.setMinimumHeight(dp(52));
+        loginPlatformSpinner.setBackground(rounded(getColor(R.color.input_surface), getColor(R.color.border), 1, 12));
+        place(connection, loginPlatformSpinner, 10);
+        loginButton.setTextSize(13);
+        clearLoginButton.setTextSize(12);
+        loginRow.addView(loginButton, new LinearLayout.LayoutParams(0, -2, 1f));
+        LinearLayout.LayoutParams clearParams = new LinearLayout.LayoutParams(0, -2, 1f);
+        clearParams.setMarginStart(dp(10));
+        loginRow.addView(clearLoginButton, clearParams);
+        place(connection, loginRow, 8);
+        place(connection, loginStatusText, 12);
+        bulkDownloadButton.setTextSize(12);
+        place(connection, bulkDownloadButton, 0);
+        place(root, connection, 16);
+
+        LinearLayout tools = dashboardCard("관리 및 안내", null);
+        tools.setId(R.id.tools_card);
+        place(tools, logButton, 8);
+        place(tools, incompleteButton, 8);
+        Button privacy = commandButton(R.string.usage, false);
+        privacy.setText("개인정보·권한 안내");
+        privacy.setOnClickListener(v -> StoreInfo.show(this));
+        place(tools, privacy, 12);
+        location.setTextSize(12);
+        place(tools, location, 0);
+        place(root, tools, 4);
+        place(root, versionText, 8);
         scrollView.addView(root, new ScrollView.LayoutParams(
                 ScrollView.LayoutParams.MATCH_PARENT,
                 ScrollView.LayoutParams.WRAP_CONTENT));
@@ -2043,14 +2187,52 @@ public final class MainActivity extends Activity {
     private Button commandButton(int textResource, boolean primary) {
         Button button = new Button(this);
         button.setText(textResource);
-        button.setTextSize(15);
+        button.setTextSize(14);
         button.setAllCaps(false);
         button.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
-        button.setTextColor(primary ? Color.WHITE : getColor(R.color.text_primary));
-        button.setBackground(rounded(
+        button.setMinWidth(0);
+        button.setMinimumWidth(0);
+        button.setMinHeight(dp(48));
+        button.setMinimumHeight(dp(48));
+        button.setMaxLines(2);
+        button.setEllipsize(TextUtils.TruncateAt.END);
+        button.setPadding(dp(12), dp(10), dp(12), dp(10));
+        button.setStateListAnimator(null);
+        button.setElevation(0);
+        button.setTextColor(new ColorStateList(new int[][]{new int[]{-android.R.attr.state_enabled}, new int[]{}},
+                new int[]{getColor(R.color.disabled_text), primary ? Color.WHITE : getColor(R.color.text_primary)}));
+        android.graphics.drawable.StateListDrawable faces = new android.graphics.drawable.StateListDrawable();
+        faces.addState(new int[]{-android.R.attr.state_enabled}, rounded(getColor(R.color.input_surface), getColor(R.color.border), 1, 14));
+        faces.addState(new int[]{}, rounded(
                 primary ? getColor(R.color.accent) : Color.WHITE,
-                primary ? getColor(R.color.accent) : getColor(R.color.border), 1, 6));
+                primary ? getColor(R.color.accent) : getColor(R.color.border), 1, 14));
+        button.setBackground(new android.graphics.drawable.RippleDrawable(ColorStateList.valueOf(0x183D5AF1), faces,
+                rounded(Color.WHITE, Color.TRANSPARENT, 0, 14)));
         return button;
+    }
+
+    private TextView dashboardText(String value, int size, int color, boolean bold) {
+        TextView text = new TextView(this);
+        text.setText(value); text.setTextSize(size); text.setTextColor(color);
+        text.setIncludeFontPadding(false);
+        if (bold) text.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
+        return text;
+    }
+
+    private LinearLayout dashboardCard(String title, String subtitle) {
+        LinearLayout card = new LinearLayout(this);
+        card.setOrientation(LinearLayout.VERTICAL);
+        card.setPadding(dp(18), dp(20), dp(18), dp(18));
+        card.setBackground(rounded(Color.WHITE, getColor(R.color.border), 1, 22));
+        place(card, dashboardText(title, 18, getColor(R.color.text_primary), true), subtitle == null ? 16 : 8);
+        if (subtitle != null) place(card, dashboardText(subtitle, 12, getColor(R.color.text_secondary), false), 18);
+        return card;
+    }
+
+    private void place(LinearLayout parent, View child, int bottomDp) {
+        if (child.getParent() instanceof android.view.ViewGroup)
+            ((android.view.ViewGroup) child.getParent()).removeView(child);
+        parent.addView(child, matchWrap(dp(bottomDp)));
     }
 
     private GradientDrawable rounded(int fill, int stroke, int strokeDp, int radiusDp) {
