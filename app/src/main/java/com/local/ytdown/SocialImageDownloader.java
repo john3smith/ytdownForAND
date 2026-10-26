@@ -266,7 +266,7 @@ final class SocialImageDownloader {
             throw new IllegalArgumentException("Instagram 게시물 주소를 확인하지 못했습니다.");
         }
         String html = readText("https://www.instagram.com/p/" + shortcode
-                        + "/embed/captioned/", cookieHeader(cookieFile),
+                        + "/embed/captioned/", NetscapeCookieJar.load(cookieFile),
                 INSTAGRAM_EMBED_USER_AGENT);
         return instagramUsernameFromEmbedHtml(html);
     }
@@ -288,7 +288,7 @@ final class SocialImageDownloader {
     }
 
     static XProfileMedia discoverXProfileMedia(String sourceUrl, File cookieFile) throws Exception {
-        String cookies = cookieHeader(cookieFile);
+        NetscapeCookieJar cookies = NetscapeCookieJar.load(cookieFile);
         String csrfToken = cookieValue(cookies, "ct0");
         if (isEmpty(cookieValue(cookies, "auth_token")) || isEmpty(csrfToken)) {
             throw new IllegalStateException("X 로그인이 필요합니다.");
@@ -328,15 +328,15 @@ final class SocialImageDownloader {
         return new XProfileMedia(username, urls);
     }
 
-    private static XWebClient loadXWebClient(String username, String cookies) throws Exception {
+    private static XWebClient loadXWebClient(String username, NetscapeCookieJar cookies) throws Exception {
         return loadXWebClientFromPage("https://x.com/" + username + "/media", cookies);
     }
 
-    private static XWebClient loadXWebClientForStatus(String cookies) throws Exception {
+    private static XWebClient loadXWebClientForStatus(NetscapeCookieJar cookies) throws Exception {
         return loadXWebClientFromPage("https://x.com/home", cookies);
     }
 
-    private static XWebClient loadXWebClientFromPage(String pageUrl, String cookies)
+    private static XWebClient loadXWebClientFromPage(String pageUrl, NetscapeCookieJar cookies)
             throws Exception {
         String html = readText(pageUrl, cookies);
         Matcher script = X_MAIN_SCRIPT.matcher(html);
@@ -420,7 +420,7 @@ final class SocialImageDownloader {
         return variables;
     }
 
-    private static JSONObject queryXGraphQl(XGraphQlOperation operation, String cookies,
+    private static JSONObject queryXGraphQl(XGraphQlOperation operation, NetscapeCookieJar cookies,
                                              String csrfToken, JSONObject variables)
             throws Exception {
         String url = "https://x.com/i/api/graphql/" + operation.queryId + "/" + operation.name
@@ -430,11 +430,14 @@ final class SocialImageDownloader {
         HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
         connection.setConnectTimeout(15_000);
         connection.setReadTimeout(30_000);
+        // Authenticated API calls must not forward Bearer/CSRF headers to a redirect.
+        connection.setInstanceFollowRedirects(false);
         connection.setRequestProperty("User-Agent", USER_AGENT);
         connection.setRequestProperty("Accept", "application/json");
         connection.setRequestProperty("Accept-Language", "ko-KR,ko;q=0.9,en;q=0.8");
         connection.setRequestProperty("Authorization", "Bearer " + operation.bearerToken);
-        connection.setRequestProperty("Cookie", cookies);
+        String scopedCookies = cookieHeader(cookies, url);
+        if (!TextUtils.isEmpty(scopedCookies)) connection.setRequestProperty("Cookie", scopedCookies);
         connection.setRequestProperty("x-csrf-token", csrfToken);
         connection.setRequestProperty("x-twitter-active-user", "yes");
         connection.setRequestProperty("x-twitter-auth-type", "OAuth2Session");
@@ -894,7 +897,7 @@ final class SocialImageDownloader {
         boolean unresolvedVideo = false;
         boolean loginRequired = false;
         boolean imagesFromHtmlFallback = false;
-        String savedCookies = cookieHeader(cookieFile);
+        NetscapeCookieJar savedCookies = NetscapeCookieJar.load(cookieFile);
         boolean hasAuthToken = !isEmpty(cookieValue(savedCookies, "auth_token"));
         boolean hasCsrfToken = !isEmpty(cookieValue(savedCookies, "ct0"));
         boolean authenticatedGraphQlSucceeded = false;
@@ -948,19 +951,19 @@ final class SocialImageDownloader {
                 listener.onLog("X 로그인 GraphQL 실패: " + authenticatedGraphQlFailure);
             }
         } else if (images.isEmpty() && videos.isEmpty()
-                && (!TextUtils.isEmpty(savedCookies) || allowAmbiguousFallback)) {
+                && (!TextUtils.isEmpty(cookieHeader(savedCookies, "https://x.com/")) || allowAmbiguousFallback)) {
             listener.onLog("X 로그인 GraphQL 생략: auth_token=" + hasAuthToken
                     + ", ct0=" + hasCsrfToken);
         }
 
         String htmlUsername = null;
         if (images.isEmpty() && videos.isEmpty() && allowAmbiguousFallback) {
-            List<String> cookieCandidates = new ArrayList<>();
+            List<NetscapeCookieJar> cookieCandidates = new ArrayList<>();
             cookieCandidates.add(null);
-            if (!TextUtils.isEmpty(savedCookies)) {
+            if (!TextUtils.isEmpty(cookieHeader(savedCookies, "https://x.com/"))) {
                 cookieCandidates.add(savedCookies);
             }
-            for (String cookies : cookieCandidates) {
+            for (NetscapeCookieJar cookies : cookieCandidates) {
                 try {
                     listener.onLog(cookies == null
                             ? "X 공개 페이지 사진 검사" : "X 로그인 페이지 사진 검사");
@@ -1038,7 +1041,7 @@ final class SocialImageDownloader {
         }
         if (downloadDirectVideos && !videos.isEmpty()) {
             downloadVideos(context, videos, outputDirectory, title,
-                    cookieHeader(cookieFile), listener);
+                    NetscapeCookieJar.load(cookieFile), listener);
         }
         return new Result(images.size(), downloadDirectVideos ? videos.size() : 0,
                 hasVideo, unresolvedVideo);
@@ -1344,7 +1347,7 @@ final class SocialImageDownloader {
             throws Exception {
         listener.onLog("Instagram 사진 검사 시작");
         String embedUrl = "https://www.instagram.com/p/" + shortcode + "/embed/captioned/";
-        String html = readText(embedUrl, cookieHeader(cookieFile),
+        String html = readText(embedUrl, NetscapeCookieJar.load(cookieFile),
                 INSTAGRAM_EMBED_USER_AGENT);
         String normalized = normalizeInstagramData(html);
         listener.onLog("Instagram 임베드 분석: 길이 " + html.length()
@@ -1374,7 +1377,7 @@ final class SocialImageDownloader {
         }
         if (downloadDirectVideos && !videos.isEmpty()) {
             downloadVideos(context, videos, outputDirectory, title,
-                    cookieHeader(cookieFile), listener);
+                    NetscapeCookieJar.load(cookieFile), listener);
         }
         return new Result(images.size(), downloadDirectVideos ? videos.size() : 0,
                 hasVideo, media.unresolvedVideo);
@@ -1672,7 +1675,7 @@ final class SocialImageDownloader {
     }
 
     private static void downloadVideos(Context context, List<String> urls, File outputDirectory,
-                                       String title, String cookies, Listener listener)
+                                       String title, NetscapeCookieJar cookies, Listener listener)
             throws Exception {
         String baseName = sanitizeFileName(title);
         for (int index = 0; index < urls.size(); index++) {
@@ -1750,7 +1753,7 @@ final class SocialImageDownloader {
         }
     }
 
-    private static String readText(String url, String cookies) throws Exception {
+    private static String readText(String url, NetscapeCookieJar cookies) throws Exception {
         HttpURLConnection connection = open(url, cookies);
         try {
             return readConnectionText(connection);
@@ -1759,7 +1762,7 @@ final class SocialImageDownloader {
         }
     }
 
-    private static String readText(String url, String cookies, String userAgent)
+    private static String readText(String url, NetscapeCookieJar cookies, String userAgent)
             throws Exception {
         HttpURLConnection connection = open(url, cookies, userAgent);
         try {
@@ -1770,65 +1773,26 @@ final class SocialImageDownloader {
     }
 
     private static String readConnectionText(HttpURLConnection connection) throws Exception {
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(
-                connection.getInputStream(), StandardCharsets.UTF_8))) {
-            StringBuilder content = new StringBuilder();
-            char[] buffer = new char[16 * 1024];
-            int count;
-            while ((count = reader.read(buffer)) != -1) {
-                content.append(buffer, 0, count);
-            }
-            return content.toString();
+        try (InputStream input = connection.getInputStream()) {
+            return BoundedDocument.read(input, connection.getContentLengthLong());
         }
     }
 
-    private static HttpURLConnection open(String url, String cookies) throws Exception {
+    private static HttpURLConnection open(String url, NetscapeCookieJar cookies) throws Exception {
         return open(url, cookies, USER_AGENT);
     }
 
-    private static HttpURLConnection open(String url, String cookies, String userAgent)
+    private static HttpURLConnection open(String url, NetscapeCookieJar cookies, String userAgent)
             throws Exception {
-        HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
-        connection.setConnectTimeout(15_000);
-        connection.setReadTimeout(30_000);
-        connection.setInstanceFollowRedirects(true);
-        connection.setRequestProperty("User-Agent", userAgent);
-        connection.setRequestProperty("Accept-Language", "ko-KR,ko;q=0.9,en;q=0.8");
-        if (!TextUtils.isEmpty(cookies)) {
-            connection.setRequestProperty("Cookie", cookies);
-        }
-        int status = connection.getResponseCode();
-        if (status < 200 || status >= 300) {
-            connection.disconnect();
-            throw new IllegalStateException("HTTP " + status);
-        }
-        return connection;
+        return ScopedHttpConnection.open(url, cookies, userAgent);
     }
 
-    private static String cookieHeader(File cookieFile) {
-        if (cookieFile == null || !cookieFile.isFile()) {
-            return null;
-        }
-        List<String> cookies = new ArrayList<>();
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(
-                new FileInputStream(cookieFile), StandardCharsets.UTF_8))) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                if (line.isEmpty() || line.startsWith("#")) {
-                    continue;
-                }
-                String[] fields = line.split("\\t", 7);
-                if (fields.length == 7) {
-                    cookies.add(fields[5] + "=" + fields[6]);
-                }
-            }
-        } catch (Exception ignored) {
-            return null;
-        }
-        return TextUtils.join("; ", cookies);
+    private static String cookieHeader(NetscapeCookieJar cookies, String url) {
+        return cookies == null ? null : cookies.headerFor(url, System.currentTimeMillis() / 1000);
     }
 
-    private static String cookieValue(String cookies, String name) {
+    private static String cookieValue(NetscapeCookieJar jar, String name) {
+        String cookies = cookieHeader(jar, "https://x.com/i/api/graphql/");
         if (isEmpty(cookies)) {
             return null;
         }
