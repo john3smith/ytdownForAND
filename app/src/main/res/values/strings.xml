@@ -39,7 +39,8 @@
     <string name="status_ready">링크를 입력해 주세요.</string>
     <string name="status_updating">yt-dlp 최신 버전 확인 중&#8230;</string>
     <string name="status_engine_ready">준비 완료 (yt-dlp %1$s)</string>
-    <string name="status_update_failed">yt-dlp 업데이트 실패: %1$s</string>
+    <string name="status_engine_ready_update_failed">준비 완료 (yt-dlp %1$s) · 업데이트 확인 실패</string>
+    <string name="status_engine_failed">yt-dlp 준비 실패: %1$s</string>
     <string name="status_starting">다운로드 준비 중&#8230;</string>
     <string name="status_complete">다운로드가 완료되었습니다.</string>
     <string name="status_failed">다운로드에 실패했습니다.</string>

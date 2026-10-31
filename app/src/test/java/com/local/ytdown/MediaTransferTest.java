@@ -34,4 +34,39 @@ public class MediaTransferTest {
             assertEquals(64 * 1024, out.size());
         }
     }
+
+    @Test public void rejectsEarlyEofInsteadOfCompletingPartialMedia() throws Exception {
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        assertThrows(EOFException.class, () -> MediaTransfer.copy(
+                new ByteArrayInputStream(new byte[1024]), out,
+                2048, 0, 1, () -> false, value -> {}));
+        assertEquals(1024, out.size());
+    }
+
+    @Test public void rejectsEmptyMediaWithKnownOrUnknownLength() {
+        for (long length : new long[]{0, -1}) {
+            assertThrows(IOException.class, () -> MediaTransfer.copy(
+                    new ByteArrayInputStream(new byte[0]), new ByteArrayOutputStream(),
+                    length, 0, 1, () -> false, value -> {}));
+        }
+    }
+
+    @Test public void rejectsBytesBeyondDeclaredLength() {
+        assertThrows(IOException.class, () -> MediaTransfer.copy(
+                new ByteArrayInputStream(new byte[1024]), new ByteArrayOutputStream(),
+                512, 0, 1, () -> false, value -> {}));
+    }
+
+    @Test public void cancellationDuringEofReadCannotReportSuccess() {
+        boolean[] cancelled = {false};
+        InputStream input = new ByteArrayInputStream(new byte[]{1}) {
+            @Override public synchronized int read(byte[] buffer, int offset, int length) {
+                int count = super.read(buffer, offset, length);
+                if (count == -1) cancelled[0] = true;
+                return count;
+            }
+        };
+        assertThrows(InterruptedException.class, () -> MediaTransfer.copy(input,
+                new ByteArrayOutputStream(), 1, 0, 1, () -> cancelled[0], value -> {}));
+    }
 }

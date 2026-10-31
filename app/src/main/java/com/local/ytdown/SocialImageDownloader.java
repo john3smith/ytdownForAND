@@ -18,6 +18,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
@@ -1592,38 +1593,35 @@ final class SocialImageDownloader {
                     + (length > 0 ? length + " bytes" : "크기 미상") + ")");
             File destination = null;
             Uri destinationUri = null;
-            OutputStream destinationStream;
-            if (Build.VERSION.SDK_INT >= 29) {
-                ContentValues values = new ContentValues();
-                values.put(MediaStore.MediaColumns.DISPLAY_NAME, fileName);
-                values.put(MediaStore.MediaColumns.MIME_TYPE,
-                        TextUtils.isEmpty(contentType) ? "image/jpeg" : contentType);
-                values.put(MediaStore.MediaColumns.RELATIVE_PATH,
-                        Environment.DIRECTORY_DOWNLOADS + "/YTDown");
-                values.put(MediaStore.MediaColumns.IS_PENDING, 1);
-                destinationUri = context.getContentResolver().insert(
-                        MediaStore.Downloads.EXTERNAL_CONTENT_URI, values);
-                if (destinationUri == null) {
-                    connection.disconnect();
-                    throw new IllegalStateException("다운로드 저장소를 만들지 못했습니다.");
-                }
-                destinationStream = context.getContentResolver().openOutputStream(
-                        destinationUri, "w");
-                if (destinationStream == null) {
-                    context.getContentResolver().delete(destinationUri, null, null);
-                    connection.disconnect();
-                    throw new IllegalStateException("다운로드 파일을 열지 못했습니다.");
-                }
-            } else {
-                destination = uniqueFile(outputDirectory, baseName + suffix, extension);
-                destinationStream = new FileOutputStream(destination);
-            }
-
             boolean complete = false;
             try {
+                OutputStream destinationStream;
+                if (Build.VERSION.SDK_INT >= 29) {
+                    ContentValues values = new ContentValues();
+                    values.put(MediaStore.MediaColumns.DISPLAY_NAME, fileName);
+                    values.put(MediaStore.MediaColumns.MIME_TYPE,
+                            TextUtils.isEmpty(contentType) ? "image/jpeg" : contentType);
+                    values.put(MediaStore.MediaColumns.RELATIVE_PATH,
+                            Environment.DIRECTORY_DOWNLOADS + "/YTDown");
+                    values.put(MediaStore.MediaColumns.IS_PENDING, 1);
+                    destinationUri = context.getContentResolver().insert(
+                            MediaStore.Downloads.EXTERNAL_CONTENT_URI, values);
+                    if (destinationUri == null) {
+                        throw new IllegalStateException("다운로드 저장소를 만들지 못했습니다.");
+                    }
+                    destinationStream = context.getContentResolver().openOutputStream(
+                            destinationUri, "w");
+                    if (destinationStream == null) {
+                        throw new IllegalStateException("다운로드 파일을 열지 못했습니다.");
+                    }
+                } else {
+                    destination = uniqueFile(outputDirectory, baseName + suffix, extension);
+                    destinationStream = new FileOutputStream(destination);
+                }
                 long received = 0;
-                try (InputStream input = new BufferedInputStream(connection.getInputStream());
-                     BufferedOutputStream output = new BufferedOutputStream(destinationStream)) {
+                // Own the destination before opening a response that can fail.
+                try (BufferedOutputStream output = new BufferedOutputStream(destinationStream);
+                     InputStream input = new BufferedInputStream(connection.getInputStream())) {
                     received = MediaTransfer.copy(input, output, length, index, urls.size(),
                             listener::isCancelled, listener::onProgress);
                 }
@@ -1638,15 +1636,18 @@ final class SocialImageDownloader {
                     throw new IllegalStateException("게시물 원본이 아닌 "
                             + bounds[0] + "x" + bounds[1] + " 미리보기 이미지를 차단했습니다.");
                 }
+                if (Build.VERSION.SDK_INT >= 29 && destinationUri != null) {
+                    ContentValues ready = new ContentValues();
+                    ready.put(MediaStore.MediaColumns.IS_PENDING, 0);
+                    if (context.getContentResolver().update(destinationUri, ready, null, null) != 1) {
+                        throw new IOException("사진 저장 완료 처리에 실패했습니다.");
+                    }
+                }
                 complete = true;
             } finally {
                 connection.disconnect();
                 if (Build.VERSION.SDK_INT >= 29 && destinationUri != null) {
-                    if (complete) {
-                        ContentValues ready = new ContentValues();
-                        ready.put(MediaStore.MediaColumns.IS_PENDING, 0);
-                        context.getContentResolver().update(destinationUri, ready, null, null);
-                    } else {
+                    if (!complete) {
                         context.getContentResolver().delete(destinationUri, null, null);
                     }
                 } else if (!complete && destination != null) {
@@ -1698,47 +1699,50 @@ final class SocialImageDownloader {
 
             File destination = null;
             Uri destinationUri = null;
-            OutputStream destinationStream;
-            if (Build.VERSION.SDK_INT >= 29) {
-                ContentValues values = new ContentValues();
-                values.put(MediaStore.MediaColumns.DISPLAY_NAME, fileName);
-                values.put(MediaStore.MediaColumns.MIME_TYPE, "video/mp4");
-                values.put(MediaStore.MediaColumns.RELATIVE_PATH,
-                        Environment.DIRECTORY_DOWNLOADS + "/YTDown");
-                values.put(MediaStore.MediaColumns.IS_PENDING, 1);
-                destinationUri = context.getContentResolver().insert(
-                        MediaStore.Downloads.EXTERNAL_CONTENT_URI, values);
-                if (destinationUri == null) {
-                    connection.disconnect();
-                    throw new IllegalStateException("동영상 저장소를 만들지 못했습니다.");
-                }
-                destinationStream = context.getContentResolver().openOutputStream(
-                        destinationUri, "w");
-                if (destinationStream == null) {
-                    context.getContentResolver().delete(destinationUri, null, null);
-                    connection.disconnect();
-                    throw new IllegalStateException("동영상 파일을 열지 못했습니다.");
-                }
-            } else {
-                destination = uniqueFile(outputDirectory, baseName + suffix, ".mp4");
-                destinationStream = new FileOutputStream(destination);
-            }
-
             boolean complete = false;
             long received = 0;
-            try (InputStream input = new BufferedInputStream(connection.getInputStream());
-                 BufferedOutputStream output = new BufferedOutputStream(destinationStream)) {
-                received = MediaTransfer.copy(input, output, length, index, urls.size(),
-                        listener::isCancelled, listener::onProgress);
+            try {
+                OutputStream destinationStream;
+                if (Build.VERSION.SDK_INT >= 29) {
+                    ContentValues values = new ContentValues();
+                    values.put(MediaStore.MediaColumns.DISPLAY_NAME, fileName);
+                    values.put(MediaStore.MediaColumns.MIME_TYPE, "video/mp4");
+                    values.put(MediaStore.MediaColumns.RELATIVE_PATH,
+                            Environment.DIRECTORY_DOWNLOADS + "/YTDown");
+                    values.put(MediaStore.MediaColumns.IS_PENDING, 1);
+                    destinationUri = context.getContentResolver().insert(
+                            MediaStore.Downloads.EXTERNAL_CONTENT_URI, values);
+                    if (destinationUri == null) {
+                        throw new IllegalStateException("동영상 저장소를 만들지 못했습니다.");
+                    }
+                    destinationStream = context.getContentResolver().openOutputStream(
+                            destinationUri, "w");
+                    if (destinationStream == null) {
+                        throw new IllegalStateException("동영상 파일을 열지 못했습니다.");
+                    }
+                } else {
+                    destination = uniqueFile(outputDirectory, baseName + suffix, ".mp4");
+                    destinationStream = new FileOutputStream(destination);
+                }
+                // Own the destination before opening the response, and do not publish
+                // until buffered writes and both stream closes have succeeded.
+                try (BufferedOutputStream output = new BufferedOutputStream(destinationStream);
+                     InputStream input = new BufferedInputStream(connection.getInputStream())) {
+                    received = MediaTransfer.copy(input, output, length, index, urls.size(),
+                            listener::isCancelled, listener::onProgress);
+                }
+                if (Build.VERSION.SDK_INT >= 29 && destinationUri != null) {
+                    ContentValues ready = new ContentValues();
+                    ready.put(MediaStore.MediaColumns.IS_PENDING, 0);
+                    if (context.getContentResolver().update(destinationUri, ready, null, null) != 1) {
+                        throw new IOException("동영상 저장 완료 처리에 실패했습니다.");
+                    }
+                }
                 complete = true;
             } finally {
                 connection.disconnect();
                 if (Build.VERSION.SDK_INT >= 29 && destinationUri != null) {
-                    if (complete) {
-                        ContentValues ready = new ContentValues();
-                        ready.put(MediaStore.MediaColumns.IS_PENDING, 0);
-                        context.getContentResolver().update(destinationUri, ready, null, null);
-                    } else {
+                    if (!complete) {
                         context.getContentResolver().delete(destinationUri, null, null);
                     }
                 } else if (!complete && destination != null) {

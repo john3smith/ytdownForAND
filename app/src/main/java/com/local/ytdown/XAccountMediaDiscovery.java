@@ -12,6 +12,7 @@ import android.view.ViewGroup;
 import android.webkit.ConsoleMessage;
 import android.webkit.CookieManager;
 import android.webkit.JavascriptInterface;
+import android.webkit.RenderProcessGoneDetail;
 import android.webkit.WebChromeClient;
 import android.webkit.WebResourceError;
 import android.webkit.WebResourceRequest;
@@ -206,7 +207,16 @@ final class XAccountMediaDiscovery {
                 }
                 super.onReceivedHttpError(view, request, errorResponse);
             }
+
+            @Override
+            public boolean onRenderProcessGone(WebView view, RenderProcessGoneDetail detail) {
+                addDiagnostic("WebView 렌더러가 종료되었습니다.");
+                fail("X 페이지 처리기가 종료되었습니다. 다시 시도해 주세요.");
+                return true;
+            }
         });
+        // Loading and JavaScript evaluation may never call back; bound both waits.
+        handler.postDelayed(timeoutRunnable, MAX_SCAN_MILLIS);
         webView.loadUrl("https://x.com/" + username + "/media");
     }
 
@@ -218,6 +228,10 @@ final class XAccountMediaDiscovery {
         addDiagnostic("사용자가 검색을 취소했습니다.");
         cleanup();
     }
+
+    private final Runnable timeoutRunnable = () -> {
+        if (!finished) completeOrFail("X 계정 미디어 검색 시간이 초과되었습니다.");
+    };
 
     private final Runnable scanRunnable = new Runnable() {
         @Override
@@ -517,6 +531,7 @@ final class XAccountMediaDiscovery {
     }
 
     private void cleanup() {
+        handler.removeCallbacks(timeoutRunnable);
         handler.removeCallbacks(scanRunnable);
         if (webView == null) {
             return;

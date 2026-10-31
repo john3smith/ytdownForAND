@@ -787,26 +787,48 @@ public final class MainActivity extends Activity {
         Throwable error = YTDownApplication.getInitializationError();
         if (error != null) {
             downloadButton.setEnabled(false);
+            bulkDownloadButton.setEnabled(false);
             statusText.setText(getString(R.string.status_with_detail,
                     getString(R.string.status_failed), safeMessage(error)));
             return;
         }
         downloadButton.setEnabled(false);
+        bulkDownloadButton.setEnabled(false);
         statusText.setText(R.string.status_updating);
         executor.execute(this::updateDownloadEngine);
     }
 
     private void updateDownloadEngine() {
+        prepareDownloadEngine(new DownloadEngineStartup.Engine() {
+            @Override public void update() throws Exception {
+                logDownload("yt-dlp 업데이트 확인 시작");
+                YoutubeDL.getInstance().updateYoutubeDL(
+                        getApplicationContext(), YoutubeDL.UpdateChannel._STABLE);
+            }
+
+            @Override public String installedVersion() throws Exception {
+                YoutubeDLRequest request = new YoutubeDLRequest(java.util.Collections.emptyList());
+                request.addOption("--version");
+                return YoutubeDL.getInstance().execute(request).getOut();
+            }
+        });
+    }
+
+    private void prepareDownloadEngine(DownloadEngineStartup.Engine engine) {
         try {
-            logDownload("yt-dlp 업데이트 확인 시작");
-            YoutubeDL.getInstance().updateYoutubeDL(
-                    getApplicationContext(), YoutubeDL.UpdateChannel._STABLE);
-            String version = YoutubeDL.getInstance().versionName(getApplicationContext());
+            DownloadEngineStartup.Ready ready = DownloadEngineStartup.prepare(engine);
+            String version = ready.version;
+            if (ready.updateFailure != null) {
+                logDownload("yt-dlp 업데이트 확인 실패, 설치된 엔진 실행 확인: "
+                        + safeMessage(ready.updateFailure));
+                Log.w(TAG, "Update check failed; installed yt-dlp execution verified", ready.updateFailure);
+            }
             engineReady = true;
-                logDownload("Python 런타임: 3.14.8 · curl_cffi: 0.16.3 · Android 다운로드 라이브러리: 0.18.1");
+            logDownload("Python 런타임: 3.14.8 · curl_cffi: 0.16.3 · Android 다운로드 라이브러리: 0.18.1");
             logDownload("yt-dlp 준비 완료: " + version);
             runOnUiThread(() -> {
-                statusText.setText(getString(R.string.status_engine_ready, version));
+                statusText.setText(getString(ready.updateFailure == null
+                        ? R.string.status_engine_ready : R.string.status_engine_ready_update_failed, version));
                 downloadButton.setEnabled(true);
                 bulkDownloadButton.setEnabled(true);
                 maybeStartSharedDownload();
@@ -815,12 +837,14 @@ public final class MainActivity extends Activity {
                 }
             });
         } catch (Throwable error) {
-            logDownload("yt-dlp 업데이트 실패: " + safeMessage(error));
-            Log.e(TAG, "Failed to update yt-dlp", error);
+            engineReady = false;
+            logDownload("yt-dlp 준비 실패: " + safeMessage(error));
+            Log.e(TAG, "Failed to prepare yt-dlp", error);
             runOnUiThread(() -> {
-                statusText.setText(getString(R.string.status_update_failed,
+                statusText.setText(getString(R.string.status_engine_failed,
                         safeMessage(error)));
                 downloadButton.setEnabled(true);
+                bulkDownloadButton.setEnabled(false);
             });
         }
     }
@@ -957,7 +981,7 @@ public final class MainActivity extends Activity {
         try {
             xAccountDiscovery.start(url);
         } catch (Throwable error) {
-            xAccountDiscovery = null;
+            // Keep the partially started discovery reachable for cancellation/cleanup.
             finishBulkDiscovery(false, safeMessage(error));
         }
     }
@@ -985,7 +1009,7 @@ public final class MainActivity extends Activity {
         try {
             instagramAccountDiscovery.start(url, cookieFile);
         } catch (Throwable error) {
-            instagramAccountDiscovery = null;
+            // Keep the partially started discovery reachable for cancellation/cleanup.
             finishBulkDiscovery(false, safeMessage(error));
         }
     }
@@ -1014,6 +1038,8 @@ public final class MainActivity extends Activity {
     private void showAccountDiagnosticLog(String platformName, String diagnosticLog) {
         String dialogTitle = getString(R.string.account_diagnostic_title, platformName);
         Log.e(TAG + "-" + platformName + "-Diagnostic", diagnosticLog);
+        // Discovery callbacks can arrive after this Activity's window has gone away.
+        if (activityDestroyed || isFinishing()) return;
         TextView logView = new TextView(this);
         logView.setText(diagnosticLog);
         logView.setTextColor(getColor(R.color.text_primary));
@@ -1051,6 +1077,7 @@ public final class MainActivity extends Activity {
         }
         if (wifiOnlySwitch.isChecked() && !isWifiConnected()) {
             statusText.setText(getString(R.string.wifi_waiting, bulkMediaUrls.size()));
+            getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
             return;
         }
         String url = bulkMediaUrls.pollFirst();
@@ -1218,6 +1245,9 @@ public final class MainActivity extends Activity {
     }
 
     private void updateQueueUi() {
+        if (cancelButton != null) {
+            cancelButton.setEnabled(downloading || bulkMode || downloadQueue.size() > 0);
+        }
         if (queueStatusText != null) {
             queueStatusText.setText(!downloading && wifiOnlySwitch != null
                     && wifiOnlySwitch.isChecked() && !isWifiConnected()
@@ -1808,7 +1838,7 @@ public final class MainActivity extends Activity {
     }
 
     private void requestCancelDownload() {
-        if (!downloading && !bulkMode) {
+        if (!downloading && !bulkMode && downloadQueue.size() == 0) {
             return;
         }
         long now = SystemClock.elapsedRealtime();
@@ -1827,7 +1857,7 @@ public final class MainActivity extends Activity {
     }
 
     private void cancelDownload(boolean clearPending) {
-        if (!downloading && !bulkMode) {
+        if (!downloading && !bulkMode && downloadQueue.size() == 0) {
             return;
         }
         logDownload("사용자가 다운로드 취소");
@@ -1933,7 +1963,7 @@ public final class MainActivity extends Activity {
         }
         downloadButton.setEnabled(engineReady);
         bulkDownloadButton.setEnabled(engineReady);
-        cancelButton.setEnabled(active || bulkMode);
+        cancelButton.setEnabled(active || bulkMode || downloadQueue.size() > 0);
         urlInput.setEnabled(true);
         qualitySpinner.setEnabled(!audioOnlySwitch.isChecked());
     }

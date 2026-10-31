@@ -28,7 +28,15 @@ import org.json.JSONObject;
 
 /** Test APK only: downloads an owned synthetic MP4 over loopback, never visits a site/session. */
 public final class StreamProgressInstrumentation extends Instrumentation {
-    @Override public void onCreate(Bundle arguments) { super.onCreate(arguments); start(); }
+    private boolean diagnosticOnly;
+    private boolean timeoutOnly;
+    private boolean instagramTimeoutOnly;
+    @Override public void onCreate(Bundle arguments) {
+        diagnosticOnly = arguments != null && "true".equals(arguments.getString("diagnosticOnly"));
+        timeoutOnly = arguments != null && "true".equals(arguments.getString("timeoutOnly"));
+        instagramTimeoutOnly = arguments != null && "true".equals(arguments.getString("instagramTimeoutOnly"));
+        super.onCreate(arguments); start();
+    }
     @Override public void onStart() {
         Bundle result = new Bundle();
         MainActivity activity = null;
@@ -41,7 +49,7 @@ public final class StreamProgressInstrumentation extends Instrumentation {
             Intent intent = new Intent(context, MainActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             activity = (MainActivity) startActivitySync(intent);
             final MainActivity target = activity;
-            long deadline = SystemClock.elapsedRealtime() + 30000;
+            long deadline = SystemClock.elapsedRealtime() + 120000;
             while (!Boolean.TRUE.equals(field(target, "engineReady")) && SystemClock.elapsedRealtime() < deadline) {
                 SystemClock.sleep(100);
             }
@@ -49,7 +57,75 @@ public final class StreamProgressInstrumentation extends Instrumentation {
             if (YTDownApplication.getInitializationError() != null) {
                 throw new AssertionError("Download engine initialization failed");
             }
-            File folder = new File(context.getCacheDir(), "progress-test-" + UUID.randomUUID());
+            if (diagnosticOnly) {
+                verifyDiagnosticLifecycle(target, result);
+                result.putString("result", "PASS");
+                finish(Activity.RESULT_OK, result);
+                return;
+            }
+            if (instagramTimeoutOnly) {
+                verifyInstagramDiscoveryDeadline(target, result);
+                result.putString("result", "PASS");
+                finish(Activity.RESULT_OK, result);
+                return;
+            }
+            if (timeoutOnly) {
+                verifyXDiscoveryDeadline(target, result);
+                result.putString("result", "PASS");
+                finish(Activity.RESULT_OK, result);
+                return;
+            }
+            // A failed online check must not strand a working installed engine.
+            // Inject only the updater failure; probe the real installed Python/yt-dlp.
+            Method prepare = MainActivity.class.getDeclaredMethod("prepareDownloadEngine",
+                    DownloadEngineStartup.Engine.class);
+            prepare.setAccessible(true);
+            DownloadEngineStartup.Engine offline = new DownloadEngineStartup.Engine() {
+                public void update() throws IOException { throw new IOException("Controlled offline update check"); }
+                public String installedVersion() throws Exception {
+                    YoutubeDLRequest probe = new YoutubeDLRequest(Collections.emptyList());
+                    probe.addOption("--version");
+                    return YoutubeDL.getInstance().execute(probe).getOut();
+                }
+            };
+            prepare.invoke(target, new DownloadEngineStartup.Engine() {
+                public void update() throws IOException { throw new IOException("Controlled offline update check"); }
+                public String installedVersion() throws IOException { throw new IOException("Controlled broken engine"); }
+            });
+            waitForIdleSync();
+            if (Boolean.TRUE.equals(field(target, "engineReady"))) {
+                throw new AssertionError("Broken engine marked ready after update failure");
+            }
+            result.putString("broken_engine_remains_unready", "PASS");
+            prepare.invoke(target, offline);
+            waitForIdleSync();
+            final String installedVersion = offline.installedVersion().trim();
+            runOnMainSync(() -> {
+                try {
+                    if (!Boolean.TRUE.equals(field(target, "engineReady"))
+                            || !((android.view.View) field(target, "downloadButton")).isEnabled()
+                            || !((android.view.View) field(target, "bulkDownloadButton")).isEnabled()
+                            || !((TextView) field(target, "statusText")).getText().toString()
+                                    .equals(target.getString(R.string.status_engine_ready_update_failed,
+                                            installedVersion))) {
+                        throw new AssertionError("Verified offline engine did not restore ready controls/status");
+                    }
+                } catch (Exception error) { throw new RuntimeException(error); }
+            });
+            result.putString("failed_update_verified_installed_engine_ready", "PASS");
+            android.graphics.Bitmap startupScreen = getUiAutomation().takeScreenshot();
+            if (startupScreen == null) throw new AssertionError("Cannot capture verified startup UI");
+            try (OutputStream output = new FileOutputStream(new File(context.getFilesDir(), "startup-ready.png"))) {
+                startupScreen.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, output);
+            } finally { startupScreen.recycle(); }
+            verifyPendingCancellation(target, result);
+            verifyBulkWifiWait(target, result);
+            verifyDiscoveryStartCleanup(target, result);
+            verifyXDiscoveryDeadline(target, result);
+            verifyInstagramDiscoveryDeadline(target, result);
+            verifyXRendererLoss(target, result);
+            // Low-storage cache trimming must not remove an in-flight test transfer or its evidence.
+            File folder = new File(context.getFilesDir(), "progress-test-" + UUID.randomUUID());
             if (!folder.mkdir()) throw new IOException("Cannot create isolated test directory");
             File fixture = new File(folder, "synthetic-input.mp4");
             File ffmpeg = new File(context.getApplicationInfo().nativeLibraryDir, "libffmpeg.so");
@@ -151,7 +227,9 @@ public final class StreamProgressInstrumentation extends Instrumentation {
             });
             waitForIdleSync();
             if (samples.get() < 2 || maxIntermediate.get() < 40 || downloaded.length() <= 0) {
-                throw new AssertionError("No genuine intermediate download percentages");
+                throw new AssertionError("Invalid test transfer: samples=" + samples.get()
+                        + ", maxIntermediate=" + maxIntermediate.get()
+                        + ", exists=" + downloaded.exists() + ", bytes=" + downloaded.length());
             }
             final String[] displayed = {null};
             runOnMainSync(() -> {
@@ -214,6 +292,8 @@ public final class StreamProgressInstrumentation extends Instrumentation {
             });
             result.putString("unknown_duration_ui", "PASS");
             result.putString("stopped_ui_not_spinning", "PASS");
+            verifyDirectVideoCloseCleanup(context, downloaded, result);
+            verifyDiagnosticLifecycle(target, result);
             result.putString("result", "PASS");
             finish(Activity.RESULT_OK, result);
         } catch (Throwable error) {
@@ -229,12 +309,764 @@ public final class StreamProgressInstrumentation extends Instrumentation {
             }
         }
     }
+    /** Real live dialog and actual Activity destruction; the late diagnostic is controlled. */
+    private void verifyDiagnosticLifecycle(MainActivity target, Bundle result) throws Exception {
+        Method show = MainActivity.class.getDeclaredMethod("showAccountDiagnosticLog", String.class, String.class);
+        show.setAccessible(true);
+        final Throwable[] failure = {null};
+        runOnMainSync(() -> {
+            try { show.invoke(target, "X", "cycle10-live-diagnostic"); }
+            catch (Throwable error) { failure[0] = error; }
+        });
+        if (failure[0] != null) throw new AssertionError("Live diagnostic failed", failure[0]);
+        long deadline = SystemClock.elapsedRealtime() + 5000;
+        boolean visible = false;
+        while (SystemClock.elapsedRealtime() < deadline) {
+            android.view.accessibility.AccessibilityNodeInfo root = getUiAutomation().getRootInActiveWindow();
+            if (root != null && !root.findAccessibilityNodeInfosByText("cycle10-live-diagnostic").isEmpty()) {
+                visible = true;
+                break;
+            }
+            SystemClock.sleep(100);
+        }
+        if (!visible) throw new AssertionError("Live diagnostic dialog not visible");
+        sendKeyDownUpSync(android.view.KeyEvent.KEYCODE_BACK);
+        waitForIdleSync();
+        result.putString("live_account_diagnostic_visible", "PASS");
+        runOnMainSync(target::finish);
+        deadline = SystemClock.elapsedRealtime() + 10000;
+        while (!target.isDestroyed() && SystemClock.elapsedRealtime() < deadline) SystemClock.sleep(100);
+        if (!target.isDestroyed() || !Boolean.TRUE.equals(field(target, "activityDestroyed"))) {
+            throw new AssertionError("Activity did not actually reach destruction");
+        }
+        runOnMainSync(() -> {
+            try { show.invoke(target, "X", "cycle10-late-diagnostic"); }
+            catch (Throwable error) { failure[0] = error; }
+        });
+        if (failure[0] != null) throw new AssertionError("Late diagnostic on destroyed Activity", failure[0]);
+        result.putString("destroyed_account_diagnostic_no_window_exception", "PASS");
+    }
     private static Object field(Object object, String name) throws Exception {
-        Field field = MainActivity.class.getDeclaredField(name); field.setAccessible(true); return field.get(object);
+        Field field = object.getClass().getDeclaredField(name); field.setAccessible(true); return field.get(object);
     }
     private static void setField(Object object, String name, Object value) throws Exception {
-        Field field = MainActivity.class.getDeclaredField(name); field.setAccessible(true); field.set(object, value);
+        Field field = object.getClass().getDeclaredField(name); field.setAccessible(true); field.set(object, value);
     }
+
+    /** Controlled response faults with the real direct-video path and real MediaStore. */
+    private static void verifyDirectVideoCloseCleanup(Context context, File fixture, Bundle result)
+            throws Exception {
+        byte[] media;
+        try (InputStream input = new FileInputStream(fixture);
+             ByteArrayOutputStream output = new ByteArrayOutputStream()) {
+            byte[] buffer = new byte[8192]; int count;
+            while ((count = input.read(buffer)) != -1) output.write(buffer, 0, count);
+            media = output.toByteArray();
+        }
+        byte[] image;
+        android.graphics.Bitmap bitmap = android.graphics.Bitmap.createBitmap(640, 480,
+                android.graphics.Bitmap.Config.ARGB_8888);
+        try (ByteArrayOutputStream output = new ByteArrayOutputStream()) {
+            bitmap.eraseColor(android.graphics.Color.BLUE);
+            if (!bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, output)) {
+                throw new AssertionError("Cannot create owned PNG fixture");
+            }
+            image = output.toByteArray();
+        } finally { bitmap.recycle(); }
+        // This instrumentation process alone intercepts HTTP after the genuine HTTPS test.
+        // No TLS/trust changes or external requests; all other protocols keep their handler.
+        URL.setURLStreamHandlerFactory(protocol -> "http".equals(protocol) ? new URLStreamHandler() {
+            @Override protected URLConnection openConnection(URL url) throws IOException {
+                if (!"direct-close.invalid".equals(url.getHost())) throw new IOException("Unexpected fixture host");
+                byte[] response = url.getPath().startsWith("/image/") ? image : media;
+                return new HttpURLConnection(url) {
+                    public void connect() { }
+                    public void disconnect() { }
+                    public boolean usingProxy() { return false; }
+                    public int getResponseCode() { return 200; }
+                    public long getContentLengthLong() { return response.length; }
+                    public String getContentType() {
+                        return url.getPath().startsWith("/image/") ? "image/png" : "video/mp4";
+                    }
+                    public InputStream getInputStream() throws IOException {
+                        if (url.getPath().equals("/open") || url.getPath().endsWith("/response_open")) {
+                            throw new IOException("Controlled response open failure");
+                        }
+                        return new ByteArrayInputStream(response) {
+                            @Override public void close() throws IOException {
+                                if (url.getPath().equals("/input-close") || url.getPath().endsWith("/response_close")) {
+                                    throw new IOException("Controlled response close failure");
+                                }
+                            }
+                        };
+                    }
+                };
+            }
+        } : null);
+        Method download = SocialImageDownloader.class.getDeclaredMethod("downloadVideos", Context.class,
+                List.class, File.class, String.class, NetscapeCookieJar.class, SocialImageDownloader.Listener.class);
+        download.setAccessible(true);
+        for (String mode : Arrays.asList("success", "input-close", "open")) {
+            String title = "cycle-close-" + UUID.randomUUID();
+            String name = title + "-video.mp4";
+            List<String> logs = new ArrayList<>();
+            SocialImageDownloader.Listener listener = new SocialImageDownloader.Listener() {
+                public void onTitle(String text) { }
+                public void onProgress(int percent) { }
+                public void onLog(String text) { logs.add(text); }
+                public boolean isCancelled() { return false; }
+            };
+            Throwable failure = null;
+            try {
+                download.invoke(null, context, Collections.singletonList("http://direct-close.invalid/" + mode),
+                        fixture.getParentFile(), title, null, listener);
+            } catch (java.lang.reflect.InvocationTargetException error) { failure = error.getCause(); }
+            android.net.Uri collection = android.provider.MediaStore.Downloads.EXTERNAL_CONTENT_URI;
+            List<Uri> owned = new ArrayList<>();
+            try {
+                try (android.database.Cursor rows = context.getContentResolver().query(collection,
+                        new String[]{"_id", "is_pending", "_size", "mime_type"},
+                        "_display_name = ?", new String[]{name}, null)) {
+                    if (rows == null) throw new AssertionError("Cannot inspect owned direct-video item");
+                    while (rows.moveToNext()) {
+                        Uri uri = android.content.ContentUris.withAppendedId(collection, rows.getLong(0));
+                        owned.add(uri);
+                        if (rows.getInt(1) != 0 || rows.getLong(2) != media.length
+                                || !"video/mp4".equals(rows.getString(3))) {
+                            throw new AssertionError("Direct-video metadata/commit mismatch");
+                        }
+                    }
+                }
+                boolean success = mode.equals("success");
+                if (success ? failure != null || owned.size() != 1 : !(failure instanceof IOException) || !owned.isEmpty()) {
+                    throw new AssertionError("Direct-video " + mode + " failure=" + failure + " remaining=" + owned.size());
+                }
+                boolean loggedComplete = logs.stream().anyMatch(line -> line.startsWith("직접 동영상 저장 완료:"));
+                if (loggedComplete != success) throw new AssertionError("Incorrect direct-video completion log");
+                if (success) {
+                    try (InputStream input = context.getContentResolver().openInputStream(owned.get(0));
+                         InputStream expected = new ByteArrayInputStream(media)) {
+                        if (input == null || !StreamFileIdentity.sha256(input, () -> false)
+                                .equals(StreamFileIdentity.sha256(expected, () -> false))) {
+                            throw new AssertionError("Direct-video byte integrity mismatch");
+                        }
+                    }
+                    MediaMetadataRetriever saved = new MediaMetadataRetriever();
+                    try {
+                        saved.setDataSource(context, owned.get(0));
+                        if (!"12000".equals(saved.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION))
+                                || !"320".equals(saved.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH))) {
+                            throw new AssertionError("Direct-video playback metadata mismatch");
+                        }
+                    } finally { saved.release(); }
+                }
+                result.putString("direct_video_" + mode.replace('-', '_'), "PASS");
+            } finally {
+                // Names are unique to this attempt; preserve all unrelated media.
+                for (Uri uri : owned) context.getContentResolver().delete(uri, null, null);
+            }
+        }
+        verifyMediaStoreCommit(context, fixture.getParentFile(), media, image, result);
+    }
+
+    /** Real discovery startup with a local view-attachment fault, before any site loads. */
+    private void verifyDiscoveryStartCleanup(MainActivity target, Bundle result) throws Exception {
+        for (boolean instagram : new boolean[]{false, true}) {
+            runOnMainSync(() -> {
+                android.view.View content = target.findViewById(android.R.id.content);
+                android.view.ViewGroup parent = (android.view.ViewGroup) content.getParent();
+                android.webkit.WebView[] attached = {null};
+                android.widget.FrameLayout failing = new android.widget.FrameLayout(target) {
+                    @Override public void addView(android.view.View child, int index,
+                                                  android.view.ViewGroup.LayoutParams params) {
+                        super.addView(child, index, params);
+                        attached[0] = (android.webkit.WebView) child;
+                        throw new IllegalStateException("Controlled discovery view attachment failure");
+                    }
+                };
+                content.setId(android.view.View.NO_ID);
+                failing.setId(android.R.id.content);
+                parent.addView(failing, new android.view.ViewGroup.LayoutParams(1, 1));
+                try {
+                    setField(target, "bulkMode", true);
+                    setField(target, "bulkScanning", true);
+                    setField(target, "accountTask", new DownloadQueue.Task(
+                            "https://example.invalid/fixture", "best", true, false, false));
+                    target.getWindow().addFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+                    Method start = instagram
+                            ? MainActivity.class.getDeclaredMethod("startInstagramAccountDiscovery",
+                                    String.class, String.class, String.class, File.class)
+                            : MainActivity.class.getDeclaredMethod("startXAccountDiscovery",
+                                    String.class, String.class, String.class);
+                    start.setAccessible(true);
+                    if (instagram) start.invoke(target, "https://www.instagram.com/cycle_fixture/",
+                            "Instagram", "best", null);
+                    else start.invoke(target, "https://x.com/cycle_fixture", "X", "best");
+                    if (attached[0] == null || attached[0].getParent() != null || failing.getChildCount() != 0
+                            || field(target, instagram ? "instagramAccountDiscovery" : "xAccountDiscovery") != null
+                            || field(target, "accountTask") != null || Boolean.TRUE.equals(field(target, "bulkMode"))
+                            || Boolean.TRUE.equals(field(target, "bulkScanning"))
+                            || (target.getWindow().getAttributes().flags
+                                & android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON) != 0) {
+                        throw new AssertionError("Partially attached discovery was not cleaned up");
+                    }
+                } catch (Exception error) { throw new RuntimeException(error); }
+                finally {
+                    // Preserve the real UI even if the regression fails.
+                    parent.removeView(failing);
+                    content.setId(android.R.id.content);
+                    if (attached[0] != null && attached[0].getParent() != null) {
+                        ((android.view.ViewGroup) attached[0].getParent()).removeView(attached[0]);
+                        attached[0].destroy();
+                    }
+                }
+            });
+            waitForIdleSync();
+            result.putString((instagram ? "instagram" : "x") + "_partial_discovery_start_cleanup", "PASS");
+        }
+    }
+
+    /** Real WebViews/Handler registration; controlled deadline delivery avoids a ten-minute test. */
+    private void verifyXDiscoveryDeadline(MainActivity target, Bundle result) throws Exception {
+        for (String mode : Arrays.asList("loading", "evaluating", "partial", "cancelled", "completed")) {
+            Throwable[] failure = {null};
+            runOnMainSync(() -> {
+                android.view.View content = target.findViewById(android.R.id.content);
+                android.view.ViewGroup parent = (android.view.ViewGroup) content.getParent();
+                android.widget.FrameLayout isolated = new android.widget.FrameLayout(target) {
+                    @Override public void addView(android.view.View child, int index,
+                                                  android.view.ViewGroup.LayoutParams params) {
+                        ((android.webkit.WebView) child).getSettings().setBlockNetworkLoads(true);
+                        super.addView(child, index, params);
+                    }
+                };
+                content.setId(android.view.View.NO_ID);
+                isolated.setId(android.R.id.content);
+                parent.addView(isolated, new android.view.ViewGroup.LayoutParams(1, 1));
+                int[] completions = {0}, errors = {0};
+                XAccountMediaDiscovery discovery = new XAccountMediaDiscovery(target,
+                        new XAccountMediaDiscovery.Listener() {
+                            public void onComplete(String username, List<String> urls) {
+                                if (urls.size() != 1) throw new AssertionError("Lost existing partial-result policy");
+                                completions[0]++;
+                            }
+                            public void onError(String detail, String diagnostic) {
+                                if (!detail.contains("시간") || diagnostic.isEmpty()) {
+                                    throw new AssertionError("Missing timeout diagnostic");
+                                }
+                                errors[0]++;
+                            }
+                        });
+                try {
+                    discovery.start("https://x.com/cycle_fixture");
+                    android.webkit.WebView view = (android.webkit.WebView) field(discovery, "webView");
+                    android.webkit.WebViewClient client = view.getWebViewClient();
+                    android.os.Handler handler = (android.os.Handler) field(discovery, "handler");
+                    Runnable scan = (Runnable) field(discovery, "scanRunnable");
+                    Runnable timeout = null;
+                    try { timeout = (Runnable) field(discovery, "timeoutRunnable"); }
+                    catch (NoSuchFieldException baseline) { /* Exercise the original scan-only deadline. */ }
+                    if (timeout != null && !handler.hasCallbacks(timeout)) {
+                        throw new AssertionError("Deadline not registered before first page completion");
+                    }
+                    if (!mode.equals("loading")) client.onPageFinished(view, "about:blank");
+                    if (timeout != null && !handler.hasCallbacks(timeout)) {
+                        throw new AssertionError("Page completion removed the independent deadline");
+                    }
+                    handler.removeCallbacks(scan);
+                    setField(discovery, "startedAt", System.currentTimeMillis() - 600001L);
+                    setField(discovery, "evaluating", !mode.equals("loading"));
+                    if (mode.equals("partial") || mode.equals("completed")) {
+                        @SuppressWarnings("unchecked") Set<String> urls = (Set<String>) field(discovery, "statusUrls");
+                        urls.add("https://x.com/cycle_fixture/status/123");
+                    }
+                    if (mode.equals("cancelled")) discovery.cancel();
+                    if (mode.equals("completed")) {
+                        Method complete = XAccountMediaDiscovery.class.getDeclaredMethod("completeOrFail", String.class);
+                        complete.setAccessible(true);
+                        complete.invoke(discovery, "Controlled completion");
+                    }
+                    if (timeout != null) {
+                        if ((mode.equals("cancelled") || mode.equals("completed")) && handler.hasCallbacks(timeout)) {
+                            throw new AssertionError("Terminal discovery retained deadline callback");
+                        }
+                        handler.removeCallbacks(timeout);
+                        timeout.run();
+                        timeout.run(); // A late duplicate must not deliver twice.
+                    } else if (!mode.equals("loading")) scan.run();
+                    int expectedComplete = mode.equals("partial") || mode.equals("completed") ? 1 : 0;
+                    int expectedErrors = mode.equals("loading") || mode.equals("evaluating") ? 1 : 0;
+                    if (!Boolean.TRUE.equals(field(discovery, "finished"))
+                            || field(discovery, "webView") != null || view.getParent() != null
+                            || isolated.getChildCount() != 0 || handler.hasCallbacks(scan)
+                            || (timeout != null && handler.hasCallbacks(timeout))
+                            || completions[0] != expectedComplete || errors[0] != expectedErrors) {
+                        throw new AssertionError("Discovery deadline failed to finish/clean up: " + mode);
+                    }
+                    client.onPageFinished(view, "about:blank");
+                    if (handler.hasCallbacks(scan)) throw new AssertionError("Late page restarted finished scan");
+                } catch (Throwable error) { failure[0] = error; }
+                finally {
+                    discovery.cancel();
+                    parent.removeView(isolated);
+                    content.setId(android.R.id.content);
+                }
+            });
+            if (failure[0] != null) throw new AssertionError("X discovery deadline: " + mode, failure[0]);
+            waitForIdleSync();
+            result.putString("x_discovery_deadline_" + mode, "PASS");
+        }
+    }
+
+    /** Real WebViews/Handler registration; controlled deadline delivery avoids a ten-minute test. */
+    private void verifyInstagramDiscoveryDeadline(MainActivity target, Bundle result) throws Exception {
+        for (String mode : Arrays.asList("loading", "evaluating", "partial", "cancelled", "completed")) {
+            Throwable[] failure = {null};
+            runOnMainSync(() -> {
+                android.view.View content = target.findViewById(android.R.id.content);
+                android.view.ViewGroup parent = (android.view.ViewGroup) content.getParent();
+                android.widget.FrameLayout isolated = new android.widget.FrameLayout(target) {
+                    @Override public void addView(android.view.View child, int index,
+                                                  android.view.ViewGroup.LayoutParams params) {
+                        ((android.webkit.WebView) child).getSettings().setBlockNetworkLoads(true);
+                        super.addView(child, index, params);
+                    }
+                };
+                content.setId(android.view.View.NO_ID);
+                isolated.setId(android.R.id.content);
+                parent.addView(isolated, new android.view.ViewGroup.LayoutParams(1, 1));
+                int[] completions = {0}, errors = {0};
+                InstagramAccountMediaDiscovery discovery = new InstagramAccountMediaDiscovery(target,
+                        new InstagramAccountMediaDiscovery.Listener() {
+                            public void onComplete(String username, List<String> urls) {
+                                if (urls.size() != 1) throw new AssertionError("Lost completed media result");
+                                completions[0]++;
+                            }
+                            public void onError(String detail, String diagnostic) {
+                                if (!detail.contains("시간") || diagnostic.isEmpty()) {
+                                    throw new AssertionError("Missing timeout diagnostic");
+                                }
+                                errors[0]++;
+                            }
+                        });
+                try {
+                    discovery.start("https://www.instagram.com/cycle_fixture/", null);
+                    android.webkit.WebView view = (android.webkit.WebView) field(discovery, "webView");
+                    android.webkit.WebViewClient client = view.getWebViewClient();
+                    android.os.Handler handler = (android.os.Handler) field(discovery, "handler");
+                    Runnable scan = (Runnable) field(discovery, "scanRunnable");
+                    Runnable timeout = null;
+                    try { timeout = (Runnable) field(discovery, "timeoutRunnable"); }
+                    catch (NoSuchFieldException baseline) { /* Exercise the original scan-only deadline. */ }
+                    if (timeout != null && !handler.hasCallbacks(timeout)) {
+                        throw new AssertionError("Deadline not registered before first page completion");
+                    }
+                    if (!mode.equals("loading")) client.onPageFinished(view, "about:blank");
+                    if (timeout != null && !handler.hasCallbacks(timeout)) {
+                        throw new AssertionError("Page completion removed the independent deadline");
+                    }
+                    handler.removeCallbacks(scan);
+                    setField(discovery, "startedAt", System.currentTimeMillis() - 600001L);
+                    setField(discovery, "evaluating", !mode.equals("loading"));
+                    if (mode.equals("partial") || mode.equals("completed")) {
+                        @SuppressWarnings("unchecked") java.util.Map<String, String> urls = (java.util.Map<String, String>) field(discovery, "mediaUrls");
+                        urls.put("synthetic", "https://www.instagram.com/p/synthetic/");
+                    }
+                    if (mode.equals("cancelled")) discovery.cancel();
+                    if (mode.equals("completed")) {
+                        Method complete = InstagramAccountMediaDiscovery.class.getDeclaredMethod("completeOrFail", String.class);
+                        complete.setAccessible(true);
+                        complete.invoke(discovery, "Controlled completion");
+                    }
+                    if (timeout != null) {
+                        if ((mode.equals("cancelled") || mode.equals("completed")) && handler.hasCallbacks(timeout)) {
+                            throw new AssertionError("Terminal discovery retained deadline callback");
+                        }
+                        handler.removeCallbacks(timeout);
+                        timeout.run();
+                        timeout.run(); // A late duplicate must not deliver twice.
+                    } else if (!mode.equals("loading")) scan.run();
+                    int expectedComplete = mode.equals("completed") ? 1 : 0;
+                    int expectedErrors = mode.equals("loading") || mode.equals("evaluating") || mode.equals("partial") ? 1 : 0;
+                    if (!Boolean.TRUE.equals(field(discovery, "finished"))
+                            || field(discovery, "webView") != null || view.getParent() != null
+                            || isolated.getChildCount() != 0 || handler.hasCallbacks(scan)
+                            || (timeout != null && handler.hasCallbacks(timeout))
+                            || completions[0] != expectedComplete || errors[0] != expectedErrors) {
+                        throw new AssertionError("Discovery deadline failed to finish/clean up: " + mode);
+                    }
+                    client.onPageFinished(view, "about:blank");
+                    if (handler.hasCallbacks(scan)) throw new AssertionError("Late page restarted finished scan");
+                } catch (Throwable error) { failure[0] = error; }
+                finally {
+                    discovery.cancel();
+                    parent.removeView(isolated);
+                    content.setId(android.R.id.content);
+                }
+            });
+            if (failure[0] != null) throw new AssertionError("Instagram discovery deadline: " + mode, failure[0]);
+            waitForIdleSync();
+            result.putString("instagram_discovery_deadline_" + mode, "PASS");
+        }
+    }
+
+    /** Real WebViews with network disabled; renderer-loss delivery is controlled, not a real crash. */
+    private void verifyXRendererLoss(MainActivity target, Bundle result) throws Exception {
+        for (String mode : Arrays.asList("active_empty", "active_partial", "after_cancel", "after_failure")) {
+            runOnMainSync(() -> {
+                android.view.View content = target.findViewById(android.R.id.content);
+                android.view.ViewGroup parent = (android.view.ViewGroup) content.getParent();
+                android.widget.FrameLayout isolated = new android.widget.FrameLayout(target) {
+                    @Override public void addView(android.view.View child, int index,
+                                                  android.view.ViewGroup.LayoutParams params) {
+                        ((android.webkit.WebView) child).getSettings().setBlockNetworkLoads(true);
+                        super.addView(child, index, params);
+                    }
+                };
+                content.setId(android.view.View.NO_ID);
+                isolated.setId(android.R.id.content);
+                parent.addView(isolated, new android.view.ViewGroup.LayoutParams(1, 1));
+                final XAccountMediaDiscovery[] owner = {null};
+                int[] errors = {0};
+                XAccountMediaDiscovery discovery = new XAccountMediaDiscovery(target,
+                        new XAccountMediaDiscovery.Listener() {
+                            public void onComplete(String username, List<String> urls) {
+                                throw new AssertionError("Renderer loss published incomplete results");
+                            }
+                            public void onError(String detail, String diagnostic) {
+                                try {
+                                    if (!Boolean.TRUE.equals(field(owner[0], "finished"))
+                                            || field(owner[0], "webView") != null
+                                            || isolated.getChildCount() != 0
+                                            || ((android.os.Handler) field(owner[0], "handler"))
+                                                .hasCallbacks((Runnable) field(owner[0], "scanRunnable"))
+                                            || detail.isEmpty() || diagnostic.isEmpty()) {
+                                        throw new AssertionError("Renderer-loss error delivered before cleanup");
+                                    }
+                                    errors[0]++;
+                                } catch (Exception error) { throw new RuntimeException(error); }
+                            }
+                        });
+                owner[0] = discovery;
+                try {
+                    discovery.start("https://x.com/cycle_fixture");
+                    android.webkit.WebView view = (android.webkit.WebView) field(discovery, "webView");
+                    android.webkit.WebViewClient client = view.getWebViewClient();
+                    android.os.Handler handler = (android.os.Handler) field(discovery, "handler");
+                    Runnable scan = (Runnable) field(discovery, "scanRunnable");
+                    client.onPageFinished(view, "about:blank");
+                    if (!handler.hasCallbacks(scan)) throw new AssertionError("No pending scan to test");
+                    if (mode.equals("active_partial")) {
+                        @SuppressWarnings("unchecked") Set<String> urls = (Set<String>) field(discovery, "statusUrls");
+                        urls.add("https://x.com/cycle_fixture/status/123");
+                    }
+                    if (mode.equals("after_cancel")) discovery.cancel();
+                    if (mode.equals("after_failure")) {
+                        Method fail = XAccountMediaDiscovery.class.getDeclaredMethod("fail", String.class);
+                        fail.setAccessible(true);
+                        fail.invoke(discovery, "Controlled prior failure");
+                    }
+                    if (!client.onRenderProcessGone(view, null)
+                            || !client.onRenderProcessGone(view, null)) {
+                        throw new AssertionError("Renderer loss delegated to Android's unhandled default");
+                    }
+                    client.onPageFinished(view, "about:blank");
+                    if (!Boolean.TRUE.equals(field(discovery, "finished"))
+                            || field(discovery, "webView") != null || view.getParent() != null
+                            || isolated.getChildCount() != 0 || handler.hasCallbacks(scan)
+                            || errors[0] != (mode.equals("after_cancel") ? 0 : 1)) {
+                        throw new AssertionError("Renderer cleanup/callback ownership failed: " + mode);
+                    }
+                } catch (Exception error) { throw new RuntimeException(error); }
+                finally {
+                    discovery.cancel();
+                    parent.removeView(isolated);
+                    content.setId(android.R.id.content);
+                }
+            });
+            waitForIdleSync();
+            result.putString("x_renderer_loss_" + mode, "PASS");
+        }
+    }
+
+    /** Actual download methods and real MediaStore I/O with controlled open/close/commit faults. */
+    private static void verifyMediaStoreCommit(Context context, File directory,
+                                              byte[] video, byte[] image, Bundle result) throws Exception {
+        for (String kind : Arrays.asList("image", "video")) {
+            for (String mode : Arrays.asList("success", "zero", "throw", "output_open", "response_open", "response_close")) {
+                CommitProvider provider = new CommitProvider(context.getContentResolver(), mode);
+                android.content.pm.ProviderInfo info = new android.content.pm.ProviderInfo();
+                info.authority = "media";
+                provider.attachInfo(context, info);
+                android.content.ContentResolver resolver = android.content.ContentResolver.wrap(provider);
+                Context isolated = new android.content.ContextWrapper(context) {
+                    @Override public android.content.ContentResolver getContentResolver() { return resolver; }
+                };
+                boolean photo = kind.equals("image");
+                byte[] expected = photo ? image : video;
+                String title = "cycle-commit-" + UUID.randomUUID();
+                List<String> logs = new ArrayList<>();
+                SocialImageDownloader.Listener listener = new SocialImageDownloader.Listener() {
+                    public void onTitle(String text) { }
+                    public void onProgress(int percent) { }
+                    public void onLog(String text) { logs.add(text); }
+                    public boolean isCancelled() { return false; }
+                };
+                Throwable failure = null;
+                try {
+                    Method download = photo
+                            ? SocialImageDownloader.class.getDeclaredMethod("downloadImages", Context.class,
+                                    List.class, File.class, String.class, boolean.class, SocialImageDownloader.Listener.class)
+                            : SocialImageDownloader.class.getDeclaredMethod("downloadVideos", Context.class,
+                                    List.class, File.class, String.class, NetscapeCookieJar.class, SocialImageDownloader.Listener.class);
+                    download.setAccessible(true);
+                    try {
+                        download.invoke(null, isolated, Collections.singletonList(
+                                "http://direct-close.invalid/" + kind + "/" + mode), directory, title,
+                                photo ? Boolean.FALSE : null, listener);
+                    } catch (java.lang.reflect.InvocationTargetException error) { failure = error.getCause(); }
+                    boolean success = mode.equals("success");
+                    boolean beforeCommit = mode.equals("output_open") || mode.startsWith("response_");
+                    if (provider.created == null || provider.commits != (beforeCommit ? 0 : 1)
+                            || provider.deleted != (success ? 0 : 1)) {
+                        throw new AssertionError("Commit lifecycle mismatch: " + kind + "/" + mode);
+                    }
+                    if (success ? failure != null : mode.equals("throw")
+                            ? !(failure instanceof IllegalStateException) : !(failure instanceof IOException)) {
+                        throw new AssertionError("Wrong commit result: " + kind + "/" + mode + " " + failure);
+                    }
+                    String completed = photo ? "사진 저장 완료:" : "직접 동영상 저장 완료:";
+                    if (logs.stream().anyMatch(line -> line.startsWith(completed)) != success) {
+                        throw new AssertionError("Incorrect completion log: " + kind + "/" + mode);
+                    }
+                    try (android.database.Cursor rows = context.getContentResolver().query(provider.created,
+                            new String[]{"is_pending", "_size", "mime_type", "_display_name"}, null, null, null)) {
+                        if (rows == null || rows.getCount() != (success ? 1 : 0)) {
+                            throw new AssertionError("Failed commit left a MediaStore item: " + kind + "/" + mode);
+                        }
+                        if (success && (!rows.moveToFirst() || rows.getInt(0) != 0
+                                || rows.getLong(1) != expected.length
+                                || !(photo ? "image/png" : "video/mp4").equals(rows.getString(2))
+                                || !rows.getString(3).equals(title + (photo ? ".png" : "-video.mp4")))) {
+                            throw new AssertionError("Committed media metadata mismatch");
+                        }
+                    }
+                    if (success) {
+                        try (InputStream input = context.getContentResolver().openInputStream(provider.created);
+                             InputStream original = new ByteArrayInputStream(expected)) {
+                            if (input == null || !StreamFileIdentity.sha256(input, () -> false)
+                                    .equals(StreamFileIdentity.sha256(original, () -> false))) {
+                                throw new AssertionError("Committed media bytes mismatch");
+                            }
+                        }
+                        if (photo) {
+                            android.graphics.BitmapFactory.Options bounds = new android.graphics.BitmapFactory.Options();
+                            bounds.inJustDecodeBounds = true;
+                            try (InputStream input = context.getContentResolver().openInputStream(provider.created)) {
+                                android.graphics.BitmapFactory.decodeStream(input, null, bounds);
+                            }
+                            if (bounds.outWidth != 640 || bounds.outHeight != 480) {
+                                throw new AssertionError("Committed PNG dimensions mismatch");
+                            }
+                        }
+                    }
+                    result.putString("commit_" + kind + "_" + mode, "PASS");
+                } finally {
+                    // The provider remembers only this attempt's inserted URI.
+                    if (provider.created != null) context.getContentResolver().delete(provider.created, null, null);
+                }
+            }
+        }
+    }
+
+    private static final class CommitProvider extends android.content.ContentProvider {
+        private final android.content.ContentResolver real;
+        private final String mode;
+        Uri created;
+        int commits, deleted;
+        CommitProvider(android.content.ContentResolver real, String mode) { this.real = real; this.mode = mode; }
+        @Override public boolean onCreate() { return true; }
+        @Override public String getType(Uri uri) { return real.getType(uri); }
+        @Override public Uri insert(Uri uri, android.content.ContentValues values) {
+            if (created != null || !android.provider.MediaStore.Downloads.EXTERNAL_CONTENT_URI.equals(uri)) {
+                throw new AssertionError("Unexpected fixture insertion");
+            }
+            return created = real.insert(uri, values);
+        }
+        private void checkOwned(Uri uri) {
+            if (created == null || !created.equals(uri)) throw new AssertionError("Unowned fixture URI");
+        }
+        @Override public android.os.ParcelFileDescriptor openFile(Uri uri, String mode) throws FileNotFoundException {
+            checkOwned(uri);
+            if (this.mode.equals("output_open") && mode.contains("w")) {
+                throw new FileNotFoundException("Controlled destination open failure");
+            }
+            return real.openFileDescriptor(uri, mode);
+        }
+        @Override public android.database.Cursor query(Uri uri, String[] projection, String selection,
+                                                       String[] args, String order) {
+            checkOwned(uri); return real.query(uri, projection, selection, args, order);
+        }
+        @Override public int update(Uri uri, android.content.ContentValues values, String selection, String[] args) {
+            checkOwned(uri); commits++;
+            if (!Integer.valueOf(0).equals(values.getAsInteger("is_pending"))) {
+                throw new AssertionError("Unexpected fixture update");
+            }
+            if (mode.equals("zero")) return 0;
+            if (mode.equals("throw")) throw new IllegalStateException("Controlled commit failure");
+            return real.update(uri, values, selection, args);
+        }
+        @Override public int delete(Uri uri, String selection, String[] args) {
+            checkOwned(uri); deleted++; return real.delete(uri, selection, args);
+        }
+    }
+    private void verifyPendingCancellation(MainActivity target, Bundle result) {
+        runOnMainSync(() -> {
+            try {
+                DownloadQueue queue = (DownloadQueue) field(target, "downloadQueue");
+                if (queue.size() != 0 || Boolean.TRUE.equals(field(target, "downloading"))
+                        || Boolean.TRUE.equals(field(target, "bulkMode"))) {
+                    throw new AssertionError("Pending cancellation fixture requires an idle isolated app");
+                }
+                // Controlled queued-only state, as when Wi-Fi-only work is waiting.
+                // No global network setting is changed and these URLs are never started.
+                queue.offer(new DownloadQueue.Task("https://example.invalid/pending-1", "best"), null);
+                queue.offer(new DownloadQueue.Task("https://example.invalid/pending-2", "best"), null);
+                Method update = MainActivity.class.getDeclaredMethod("updateQueueUi");
+                update.setAccessible(true); update.invoke(target);
+                Method idle = MainActivity.class.getDeclaredMethod("setDownloadingUi", boolean.class);
+                idle.setAccessible(true); idle.invoke(target, false);
+                android.widget.Button cancel = (android.widget.Button) field(target, "cancelButton");
+                if (!cancel.isEnabled()) throw new AssertionError("Pending-only cancellation disabled");
+                cancel.performClick();
+                if (queue.size() != 2) throw new AssertionError("First press cleared pending work");
+                setField(target, "lastCancelButtonPressAt", SystemClock.elapsedRealtime() - 1001L);
+                cancel.performClick();
+                if (queue.size() != 2) throw new AssertionError("Expired confirmation cleared pending work");
+                // Reset only the test's confirmation clock; verify two real button clicks.
+                setField(target, "lastCancelButtonPressAt", 0L);
+                cancel.performClick();
+                if (queue.size() != 2) throw new AssertionError("First fresh press cleared pending work");
+                cancel.performClick();
+                if (queue.size() != 0 || cancel.isEnabled()
+                        || Boolean.TRUE.equals(field(target, "downloading"))) {
+                    throw new AssertionError("Confirmed pending cancellation did not restore idle UI");
+                }
+                if (!((TextView) field(target, "statusText")).getText().toString()
+                        .equals(target.getString(R.string.queue_cleared))) {
+                    throw new AssertionError("Pending cancellation status missing");
+                }
+                Method resume = MainActivity.class.getDeclaredMethod("maybeStartWaitingDownload");
+                resume.setAccessible(true); resume.invoke(target);
+                if (Boolean.TRUE.equals(field(target, "downloading")) || queue.size() != 0) {
+                    throw new AssertionError("Cancelled pending work resumed");
+                }
+                long generation = ((Number) field(target, "downloadGeneration")).longValue();
+                cancel.performClick();
+                if (((Number) field(target, "downloadGeneration")).longValue() != generation) {
+                    throw new AssertionError("Disabled empty cancel changed generation");
+                }
+                result.putString("pending_only_confirmed_cancel", "PASS");
+                result.putString("pending_cancel_expired_confirmation_preserves_queue", "PASS");
+                result.putString("cancelled_pending_not_resumed", "PASS");
+            } catch (Exception error) { throw new RuntimeException(error); }
+        });
+        waitForIdleSync();
+    }
+
+    /** Real emulator Wi-Fi transition and window flags; bulk items are controlled and never started. */
+    private void verifyBulkWifiWait(MainActivity target, Bundle result) throws Exception {
+        Method connected = MainActivity.class.getDeclaredMethod("isWifiConnected");
+        connected.setAccessible(true);
+        Method next = MainActivity.class.getDeclaredMethod("startNextBulkDownload", String.class);
+        next.setAccessible(true);
+        android.widget.Switch toggle = (android.widget.Switch) field(target, "wifiOnlySwitch");
+        boolean originalOnly = toggle.isChecked();
+        if (!Boolean.TRUE.equals(connected.invoke(target))) {
+            throw new AssertionError("Wi-Fi transition regression requires initially connected emulator Wi-Fi");
+        }
+        @SuppressWarnings("unchecked")
+        Deque<String> items = (Deque<String>) field(target, "bulkMediaUrls");
+        DownloadQueue.Task owner = new DownloadQueue.Task("https://example.invalid/account",
+                "best", true, true, true);
+        try {
+            runOnMainSync(() -> {
+                try {
+                    // Hold discovery across system callbacks: these synthetic URLs must never start.
+                    setField(target, "bulkMode", true);
+                    setField(target, "bulkScanning", true);
+                    setField(target, "accountTask", owner);
+                    items.add("https://example.invalid/bulk-1");
+                    items.add("https://example.invalid/bulk-2");
+                    toggle.setChecked(true);
+                    target.getWindow().addFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+                } catch (Exception error) { throw new RuntimeException(error); }
+            });
+            shell("svc wifi disable");
+            awaitWifi(target, connected, false);
+            runOnMainSync(() -> {
+                try {
+                    setField(target, "bulkScanning", false);
+                    next.invoke(target, "best");
+                    if ((target.getWindow().getAttributes().flags
+                            & android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON) != 0) {
+                        throw new AssertionError("Bulk Wi-Fi wait keeps actual Android window awake");
+                    }
+                    if (items.size() != 2 || field(target, "accountTask") != owner
+                            || !Boolean.TRUE.equals(field(target, "bulkMode"))
+                            || Boolean.TRUE.equals(field(target, "downloading"))) {
+                        throw new AssertionError("Wi-Fi wait changed pending bulk ownership/items");
+                    }
+                    String expected = target.getString(R.string.wifi_waiting, 2);
+                    if (!expected.equals(((TextView) field(target, "statusText")).getText().toString())) {
+                        throw new AssertionError("Bulk Wi-Fi wait status missing");
+                    }
+                } catch (Exception error) { throw new RuntimeException(error); }
+                finally {
+                    try { setField(target, "bulkScanning", true); }
+                    catch (Exception error) { throw new RuntimeException(error); }
+                }
+            });
+            result.putString("bulk_wifi_wait_releases_actual_window_preserves_items", "PASS");
+        } finally {
+            // Restore the original connected Wi-Fi even if an assertion fails.
+            try {
+                shell("svc wifi enable");
+                awaitWifi(target, connected, true);
+            } finally {
+                runOnMainSync(() -> {
+                    try {
+                        setField(target, "bulkMode", false);
+                        setField(target, "bulkScanning", false);
+                        setField(target, "accountTask", null);
+                        items.clear();
+                        toggle.setChecked(originalOnly);
+                    } catch (Exception error) { throw new RuntimeException(error); }
+                });
+            }
+        }
+        result.putString("emulator_wifi_connection_restored", "PASS");
+        waitForIdleSync();
+    }
+
+    private void shell(String command) throws IOException {
+        try (android.os.ParcelFileDescriptor descriptor = getUiAutomation().executeShellCommand(command);
+             InputStream input = new android.os.ParcelFileDescriptor.AutoCloseInputStream(descriptor)) {
+            byte[] buffer = new byte[1024];
+            while (input.read(buffer) != -1) { }
+        }
+    }
+
+    private void awaitWifi(MainActivity target, Method connected, boolean expected) throws Exception {
+        long deadline = SystemClock.elapsedRealtime() + 30000;
+        while (Boolean.TRUE.equals(connected.invoke(target)) != expected) {
+            if (SystemClock.elapsedRealtime() >= deadline) {
+                throw new AssertionError("Timed out waiting for actual emulator Wi-Fi state=" + expected);
+            }
+            SystemClock.sleep(100);
+        }
+    }
+
     private static final class FixtureServer extends Thread {
         private final File file;
         private final ServerSocket server;
