@@ -95,6 +95,7 @@ public final class StreamProgressInstrumentation extends Instrumentation {
             verifyPendingCancellation(target, result);
             verifyBulkWifiWait(target, result);
             verifyDiscoveryStartCleanup(target, result);
+            verifyXRendererLoss(target, result);
             // Low-storage cache trimming must not remove an in-flight test transfer or its evidence.
             File folder = new File(context.getFilesDir(), "progress-test-" + UUID.randomUUID());
             if (!folder.mkdir()) throw new IOException("Cannot create isolated test directory");
@@ -456,6 +457,85 @@ public final class StreamProgressInstrumentation extends Instrumentation {
             });
             waitForIdleSync();
             result.putString((instagram ? "instagram" : "x") + "_partial_discovery_start_cleanup", "PASS");
+        }
+    }
+
+    /** Real WebViews with network disabled; renderer-loss delivery is controlled, not a real crash. */
+    private void verifyXRendererLoss(MainActivity target, Bundle result) throws Exception {
+        for (String mode : Arrays.asList("active_empty", "active_partial", "after_cancel", "after_failure")) {
+            runOnMainSync(() -> {
+                android.view.View content = target.findViewById(android.R.id.content);
+                android.view.ViewGroup parent = (android.view.ViewGroup) content.getParent();
+                android.widget.FrameLayout isolated = new android.widget.FrameLayout(target) {
+                    @Override public void addView(android.view.View child, int index,
+                                                  android.view.ViewGroup.LayoutParams params) {
+                        ((android.webkit.WebView) child).getSettings().setBlockNetworkLoads(true);
+                        super.addView(child, index, params);
+                    }
+                };
+                content.setId(android.view.View.NO_ID);
+                isolated.setId(android.R.id.content);
+                parent.addView(isolated, new android.view.ViewGroup.LayoutParams(1, 1));
+                final XAccountMediaDiscovery[] owner = {null};
+                int[] errors = {0};
+                XAccountMediaDiscovery discovery = new XAccountMediaDiscovery(target,
+                        new XAccountMediaDiscovery.Listener() {
+                            public void onComplete(String username, List<String> urls) {
+                                throw new AssertionError("Renderer loss published incomplete results");
+                            }
+                            public void onError(String detail, String diagnostic) {
+                                try {
+                                    if (!Boolean.TRUE.equals(field(owner[0], "finished"))
+                                            || field(owner[0], "webView") != null
+                                            || isolated.getChildCount() != 0
+                                            || ((android.os.Handler) field(owner[0], "handler"))
+                                                .hasCallbacks((Runnable) field(owner[0], "scanRunnable"))
+                                            || detail.isEmpty() || diagnostic.isEmpty()) {
+                                        throw new AssertionError("Renderer-loss error delivered before cleanup");
+                                    }
+                                    errors[0]++;
+                                } catch (Exception error) { throw new RuntimeException(error); }
+                            }
+                        });
+                owner[0] = discovery;
+                try {
+                    discovery.start("https://x.com/cycle_fixture");
+                    android.webkit.WebView view = (android.webkit.WebView) field(discovery, "webView");
+                    android.webkit.WebViewClient client = view.getWebViewClient();
+                    android.os.Handler handler = (android.os.Handler) field(discovery, "handler");
+                    Runnable scan = (Runnable) field(discovery, "scanRunnable");
+                    client.onPageFinished(view, "about:blank");
+                    if (!handler.hasCallbacks(scan)) throw new AssertionError("No pending scan to test");
+                    if (mode.equals("active_partial")) {
+                        @SuppressWarnings("unchecked") Set<String> urls = (Set<String>) field(discovery, "statusUrls");
+                        urls.add("https://x.com/cycle_fixture/status/123");
+                    }
+                    if (mode.equals("after_cancel")) discovery.cancel();
+                    if (mode.equals("after_failure")) {
+                        Method fail = XAccountMediaDiscovery.class.getDeclaredMethod("fail", String.class);
+                        fail.setAccessible(true);
+                        fail.invoke(discovery, "Controlled prior failure");
+                    }
+                    if (!client.onRenderProcessGone(view, null)
+                            || !client.onRenderProcessGone(view, null)) {
+                        throw new AssertionError("Renderer loss delegated to Android's unhandled default");
+                    }
+                    client.onPageFinished(view, "about:blank");
+                    if (!Boolean.TRUE.equals(field(discovery, "finished"))
+                            || field(discovery, "webView") != null || view.getParent() != null
+                            || isolated.getChildCount() != 0 || handler.hasCallbacks(scan)
+                            || errors[0] != (mode.equals("after_cancel") ? 0 : 1)) {
+                        throw new AssertionError("Renderer cleanup/callback ownership failed: " + mode);
+                    }
+                } catch (Exception error) { throw new RuntimeException(error); }
+                finally {
+                    discovery.cancel();
+                    parent.removeView(isolated);
+                    content.setId(android.R.id.content);
+                }
+            });
+            waitForIdleSync();
+            result.putString("x_renderer_loss_" + mode, "PASS");
         }
     }
 
