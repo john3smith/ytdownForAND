@@ -86,6 +86,13 @@
   recorded locally. The framework and existing app screen recovered without
   this round restarting the emulator or stopping other user jobs. These initial
   failed observations are not passing app checks.
+- Additional post-test observation: reopening the isolated test app showed an
+  automatic yt-dlp update failure. Its process log identifies a SocketException:
+  "Software caused connection abort". The earlier owned-media HTTPS download and
+  media/UI assertions passed; that result does not prove live updater or site
+  access. No network/VPN settings or other app jobs were changed to hide this
+  failure. The startup updater/readiness behavior remains an explicit next
+  investigation area and is not recorded as a passed update check.
 - Restore: the pre-change Git source archive, archive/manifest hashes, preserved
   instruction-file hash and recovery method are retained outside project source.
   Restore into a separate review directory; do not reset existing work.
@@ -95,5 +102,6 @@
 - Dependencies and rights: no dependency version, native source/input, asset or
   third-party license configuration changed; no external media was incorporated
   into source.
-- Next investigation: buffered output flush/close failure and publication order,
-  followed by pending-task cancellation/resumption across connectivity changes.
+- Next investigation: startup engine readiness when the automatic update fails;
+  then buffered output flush/close failure and publication order, and pending-task
+  cancellation/resumption across connectivity changes.
