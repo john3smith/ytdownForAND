@@ -281,7 +281,7 @@ public final class StreamProgressInstrumentation extends Instrumentation {
         }
     }
     private static Object field(Object object, String name) throws Exception {
-        Field field = MainActivity.class.getDeclaredField(name); field.setAccessible(true); return field.get(object);
+        Field field = object.getClass().getDeclaredField(name); field.setAccessible(true); return field.get(object);
     }
     private static void setField(Object object, String name, Object value) throws Exception {
         Field field = MainActivity.class.getDeclaredField(name); field.setAccessible(true); field.set(object, value);

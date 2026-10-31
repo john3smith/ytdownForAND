@@ -478,7 +478,7 @@
 
 ## 2026-10-31: cycle 9 - handle X account discovery renderer loss
 
-- Status: deferred for queued user work; this ninth round remains incomplete.
+- Status: completed locally after same-round continuation and test-helper correction.
 - Finding/priority: X discovery's WebViewClient inherited the unhandled renderer
   termination default. Unlike the existing Instagram handler, it did not report
   a controlled search error or release its WebView and scan callbacks. Renderer
@@ -497,22 +497,29 @@
   lint zero errors / 23 warnings; isolated x86_64 app/test APK builds;
   56 independently verified dependency hashes and 11 Python packaging tests.
   Exact tested application and instrumentation inputs were hash reconciled.
-- Runtime: NOT RUN. A distinct active NotiFilter user task owns the regular
-  emulator and its Settings/MainActivity is foreground. No install, launch,
-  input, force-stop or instrumentation was sent. The controlled Android renderer
-  callback cases and genuine owned HTTPS MP4 completion/metadata regression must
-  run before this same round can be completed. Test APK intentionally reuses the
-  existing isolated .cycle8 package identity for later validation; no production
-  package update or additional engine-runtime allocation has occurred.
+- Runtime: regular emulator controlled renderer-loss delivery passed all four
+  cases with real WebViews: active empty/partial results, after cancellation and
+  after a prior failure. Real views and pending callbacks were removed before
+  error delivery; duplicate/late events did not publish partial success or
+  duplicate errors. The owned HTTPS MP4 completed with 14452 bytes,
+  12000 ms duration, valid 320-pixel video track and 22 intermediate samples.
+  Progress/notification, actual MediaStore success/fault cleanup, pending
+  cancellation and real Wi-Fi loss/recovery checks passed. Fresh startup,
+  in-progress and final isolated-app screenshots were reviewed.
 - Restore: source-only prechange ZIP and SHA-256 verified; extract separately for
   review, never reset active work or user data. Untracked AGENTS.md preserved.
-- Publication: local checkpoint only. No push, Release, production signing/install,
+- Publication: completed local-only intermediate round. No push, Release, production signing/install,
   APK/LAN delivery/service or operational activation. Publication remains cycle
   20. Existing published main, v1.9.32 asset metadata and production install
   version/timestamps unchanged. Shared-context dirty/diverged checkout preserved.
-- Remaining: finish required runtime checks in this same ninth round after the
-  existing coordinator verifies the competing work/report has finished. No new
-  cycle, scheduler, child agent, queue edit or approval change was performed.
-  Future distinct candidate: Activity destruction and discovery ownership.
+- Same-round recovery: the first Android run crashed in the test-only reflection
+  helper because it searched MainActivity.class for a discovery object's field.
+  Original failure/logs and the original test source were preserved. The getter
+  now reflects the supplied object's actual class; no assertions were weakened.
+  Corrected test APK and lint were rerun, then the full instrumentation passed.
+  Production inputs and application APK remain byte-identical to the checkpoint;
+  prior JVM/application/packaging checks were reconciled rather than rerun.
+- Remaining/next investigation: Activity destruction and discovery ownership;
+  this continuation does not count as another round or register new work.
   ARM64 production, physical phones, natural renderer crash and authenticated
-  upstream downloads are unverified. No performance improvement is claimed.
+  upstream downloads remain unverified. No performance improvement is claimed.
