@@ -92,6 +92,7 @@ public final class StreamProgressInstrumentation extends Instrumentation {
             try (OutputStream output = new FileOutputStream(new File(context.getCacheDir(), "startup-ready.png"))) {
                 startupScreen.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, output);
             } finally { startupScreen.recycle(); }
+            verifyPendingCancellation(target, result);
             File folder = new File(context.getCacheDir(), "progress-test-" + UUID.randomUUID());
             if (!folder.mkdir()) throw new IOException("Cannot create isolated test directory");
             File fixture = new File(folder, "synthetic-input.mp4");
@@ -527,6 +528,60 @@ public final class StreamProgressInstrumentation extends Instrumentation {
             checkOwned(uri); deleted++; return real.delete(uri, selection, args);
         }
     }
+    private void verifyPendingCancellation(MainActivity target, Bundle result) {
+        runOnMainSync(() -> {
+            try {
+                DownloadQueue queue = (DownloadQueue) field(target, "downloadQueue");
+                if (queue.size() != 0 || Boolean.TRUE.equals(field(target, "downloading"))
+                        || Boolean.TRUE.equals(field(target, "bulkMode"))) {
+                    throw new AssertionError("Pending cancellation fixture requires an idle isolated app");
+                }
+                // Controlled queued-only state, as when Wi-Fi-only work is waiting.
+                // No global network setting is changed and these URLs are never started.
+                queue.offer(new DownloadQueue.Task("https://example.invalid/pending-1", "best"), null);
+                queue.offer(new DownloadQueue.Task("https://example.invalid/pending-2", "best"), null);
+                Method update = MainActivity.class.getDeclaredMethod("updateQueueUi");
+                update.setAccessible(true); update.invoke(target);
+                Method idle = MainActivity.class.getDeclaredMethod("setDownloadingUi", boolean.class);
+                idle.setAccessible(true); idle.invoke(target, false);
+                android.widget.Button cancel = (android.widget.Button) field(target, "cancelButton");
+                if (!cancel.isEnabled()) throw new AssertionError("Pending-only cancellation disabled");
+                cancel.performClick();
+                if (queue.size() != 2) throw new AssertionError("First press cleared pending work");
+                setField(target, "lastCancelButtonPressAt", SystemClock.elapsedRealtime() - 1001L);
+                cancel.performClick();
+                if (queue.size() != 2) throw new AssertionError("Expired confirmation cleared pending work");
+                // Reset only the test's confirmation clock; verify two real button clicks.
+                setField(target, "lastCancelButtonPressAt", 0L);
+                cancel.performClick();
+                if (queue.size() != 2) throw new AssertionError("First fresh press cleared pending work");
+                cancel.performClick();
+                if (queue.size() != 0 || cancel.isEnabled()
+                        || Boolean.TRUE.equals(field(target, "downloading"))) {
+                    throw new AssertionError("Confirmed pending cancellation did not restore idle UI");
+                }
+                if (!((TextView) field(target, "statusText")).getText().toString()
+                        .equals(target.getString(R.string.queue_cleared))) {
+                    throw new AssertionError("Pending cancellation status missing");
+                }
+                Method resume = MainActivity.class.getDeclaredMethod("maybeStartWaitingDownload");
+                resume.setAccessible(true); resume.invoke(target);
+                if (Boolean.TRUE.equals(field(target, "downloading")) || queue.size() != 0) {
+                    throw new AssertionError("Cancelled pending work resumed");
+                }
+                long generation = ((Number) field(target, "downloadGeneration")).longValue();
+                cancel.performClick();
+                if (((Number) field(target, "downloadGeneration")).longValue() != generation) {
+                    throw new AssertionError("Disabled empty cancel changed generation");
+                }
+                result.putString("pending_only_confirmed_cancel", "PASS");
+                result.putString("pending_cancel_expired_confirmation_preserves_queue", "PASS");
+                result.putString("cancelled_pending_not_resumed", "PASS");
+            } catch (Exception error) { throw new RuntimeException(error); }
+        });
+        waitForIdleSync();
+    }
+
     private static final class FixtureServer extends Thread {
         private final File file;
         private final ServerSocket server;

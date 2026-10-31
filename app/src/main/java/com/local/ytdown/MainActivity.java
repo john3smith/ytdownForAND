@@ -1242,6 +1242,9 @@ public final class MainActivity extends Activity {
     }
 
     private void updateQueueUi() {
+        if (cancelButton != null) {
+            cancelButton.setEnabled(downloading || bulkMode || downloadQueue.size() > 0);
+        }
         if (queueStatusText != null) {
             queueStatusText.setText(!downloading && wifiOnlySwitch != null
                     && wifiOnlySwitch.isChecked() && !isWifiConnected()
@@ -1832,7 +1835,7 @@ public final class MainActivity extends Activity {
     }
 
     private void requestCancelDownload() {
-        if (!downloading && !bulkMode) {
+        if (!downloading && !bulkMode && downloadQueue.size() == 0) {
             return;
         }
         long now = SystemClock.elapsedRealtime();
@@ -1851,7 +1854,7 @@ public final class MainActivity extends Activity {
     }
 
     private void cancelDownload(boolean clearPending) {
-        if (!downloading && !bulkMode) {
+        if (!downloading && !bulkMode && downloadQueue.size() == 0) {
             return;
         }
         logDownload("사용자가 다운로드 취소");
@@ -1957,7 +1960,7 @@ public final class MainActivity extends Activity {
         }
         downloadButton.setEnabled(engineReady);
         bulkDownloadButton.setEnabled(engineReady);
-        cancelButton.setEnabled(active || bulkMode);
+        cancelButton.setEnabled(active || bulkMode || downloadQueue.size() > 0);
         urlInput.setEnabled(true);
         qualitySpinner.setEnabled(!audioOnlySwitch.isChecked());
     }

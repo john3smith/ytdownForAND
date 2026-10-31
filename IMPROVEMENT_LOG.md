@@ -359,3 +359,39 @@
 - Next investigation: pending-task cancellation and connectivity transitions,
   followed by progress at copy-to-publication boundaries. These remain candidates;
   this round does not implement or count them as improvements.
+
+## 2026-10-31: cycle 6 - cancel pending-only downloads
+
+- Status: completed locally. This remains the sixth round, not a new plan.
+- New finding: while only pending downloads remain (including Wi-Fi-only waiting),
+  updateQueueUi did not enable Cancel, setDownloadingUi(false) disabled it, and
+  both cancellation entry points returned before clearing pending tasks. Cancelling
+  an active account while preserving later work also left pending controls disabled.
+- Priority: users cannot use the existing confirmed cancel-all operation for
+  waiting work. Enable Cancel whenever active, bulk or pending work exists and
+  accept pending-only work in the two existing guards. Keep the one-second,
+  two-press confirmation, selected-item removal and clearPending=false behavior.
+- Before/after: exact original MainActivity method bodies and the real DownloadQueue
+  compiled with host Android/control doubles. Four cases failed before; seven
+  passed after: pending controls, confirmed/direct cancellation, expired
+  confirmation, active preserve/clear, empty queue. Host doubles do not prove
+  actual Android interactions or a real connectivity transition.
+- Required local checks: 172 JVM tests / 27 suites, zero failures/errors;
+  lint zero errors / 24 warnings; isolated .cycle6 x86_64 app/test builds;
+  56 independent dependency hashes; 11 Python packaging checks.
+  Final build/test input hashes were captured and reconciled unchanged.
+- Runtime: isolated emulator instrumentation and genuine owned HTTPS MP4 download completed; controlled queued-only button regression passed.
+  Added a controlled pending-only Android regression using real Cancel clicks,
+  expired confirmation and an empty resume callback. Physical Wi-Fi transitions
+  are not claimed. Required owned HTTPS download/metadata/progress regression
+  passed.
+- Restore: verified source-only prechange ZIP and SHA-256; extract separately for
+  review, never reset active work. Existing untracked instructions preserved.
+- Publication: local-only, no push, Release, production signing/install, APK/LAN
+  delivery or service; designated final publication remains cycle 20. Existing
+  main and v1.9.32 asset metadata unchanged. No dependency, permission, native,
+  asset or license/notice configuration change. Shared-context dirty/diverged
+  checkout preserved; no pull, merge, stash, reset or push.
+- Limits/next: next investigate actual connectivity loss/recovery and bulk queue handoff.
+  Physical devices, ARM64 production, authenticated third-party downloads and
+  performance improvement remain unverified; no measured performance claim.
