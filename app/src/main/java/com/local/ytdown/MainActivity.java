@@ -981,7 +981,7 @@ public final class MainActivity extends Activity {
         try {
             xAccountDiscovery.start(url);
         } catch (Throwable error) {
-            xAccountDiscovery = null;
+            // Keep the partially started discovery reachable for cancellation/cleanup.
             finishBulkDiscovery(false, safeMessage(error));
         }
     }
@@ -1009,7 +1009,7 @@ public final class MainActivity extends Activity {
         try {
             instagramAccountDiscovery.start(url, cookieFile);
         } catch (Throwable error) {
-            instagramAccountDiscovery = null;
+            // Keep the partially started discovery reachable for cancellation/cleanup.
             finishBulkDiscovery(false, safeMessage(error));
         }
     }

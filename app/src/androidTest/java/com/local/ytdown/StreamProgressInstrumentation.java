@@ -94,6 +94,7 @@ public final class StreamProgressInstrumentation extends Instrumentation {
             } finally { startupScreen.recycle(); }
             verifyPendingCancellation(target, result);
             verifyBulkWifiWait(target, result);
+            verifyDiscoveryStartCleanup(target, result);
             File folder = new File(context.getCacheDir(), "progress-test-" + UUID.randomUUID());
             if (!folder.mkdir()) throw new IOException("Cannot create isolated test directory");
             File fixture = new File(folder, "synthetic-input.mp4");
@@ -396,6 +397,63 @@ public final class StreamProgressInstrumentation extends Instrumentation {
             }
         }
         verifyMediaStoreCommit(context, fixture.getParentFile(), media, image, result);
+    }
+
+    /** Real discovery startup with a local view-attachment fault, before any site loads. */
+    private void verifyDiscoveryStartCleanup(MainActivity target, Bundle result) throws Exception {
+        for (boolean instagram : new boolean[]{false, true}) {
+            runOnMainSync(() -> {
+                android.view.View content = target.findViewById(android.R.id.content);
+                android.view.ViewGroup parent = (android.view.ViewGroup) content.getParent();
+                android.webkit.WebView[] attached = {null};
+                android.widget.FrameLayout failing = new android.widget.FrameLayout(target) {
+                    @Override public void addView(android.view.View child, int index,
+                                                  android.view.ViewGroup.LayoutParams params) {
+                        super.addView(child, index, params);
+                        attached[0] = (android.webkit.WebView) child;
+                        throw new IllegalStateException("Controlled discovery view attachment failure");
+                    }
+                };
+                content.setId(android.view.View.NO_ID);
+                failing.setId(android.R.id.content);
+                parent.addView(failing, new android.view.ViewGroup.LayoutParams(1, 1));
+                try {
+                    setField(target, "bulkMode", true);
+                    setField(target, "bulkScanning", true);
+                    setField(target, "accountTask", new DownloadQueue.Task(
+                            "https://example.invalid/fixture", "best", true, false, false));
+                    target.getWindow().addFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+                    Method start = instagram
+                            ? MainActivity.class.getDeclaredMethod("startInstagramAccountDiscovery",
+                                    String.class, String.class, String.class, File.class)
+                            : MainActivity.class.getDeclaredMethod("startXAccountDiscovery",
+                                    String.class, String.class, String.class);
+                    start.setAccessible(true);
+                    if (instagram) start.invoke(target, "https://www.instagram.com/cycle_fixture/",
+                            "Instagram", "best", null);
+                    else start.invoke(target, "https://x.com/cycle_fixture", "X", "best");
+                    if (attached[0] == null || attached[0].getParent() != null || failing.getChildCount() != 0
+                            || field(target, instagram ? "instagramAccountDiscovery" : "xAccountDiscovery") != null
+                            || field(target, "accountTask") != null || Boolean.TRUE.equals(field(target, "bulkMode"))
+                            || Boolean.TRUE.equals(field(target, "bulkScanning"))
+                            || (target.getWindow().getAttributes().flags
+                                & android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON) != 0) {
+                        throw new AssertionError("Partially attached discovery was not cleaned up");
+                    }
+                } catch (Exception error) { throw new RuntimeException(error); }
+                finally {
+                    // Preserve the real UI even if the regression fails.
+                    parent.removeView(failing);
+                    content.setId(android.R.id.content);
+                    if (attached[0] != null && attached[0].getParent() != null) {
+                        ((android.view.ViewGroup) attached[0].getParent()).removeView(attached[0]);
+                        attached[0].destroy();
+                    }
+                }
+            });
+            waitForIdleSync();
+            result.putString((instagram ? "instagram" : "x") + "_partial_discovery_start_cleanup", "PASS");
+        }
     }
 
     /** Actual download methods and real MediaStore I/O with controlled open/close/commit faults. */

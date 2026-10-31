@@ -428,3 +428,36 @@
   Physical devices and ARM64 production remain untested in this local cycle.
 - Next investigation: account discovery callback ownership/lifecycle and queue
   handoff after discovery errors, without repeating this screen-on flag fix.
+
+## 2026-10-31: cycle 8 - clean up partially started account discoveries
+
+- Status: deferred for queued user work; required emulator runtime NOT RUN. The eighth round only; no new plan or queue changes.
+- New finding/priority: MainActivity caught X/Instagram discovery start errors
+  after dropping the discovery reference. finishBulkDiscovery therefore could
+  not cancel a partially initialized WebView or remove its pending callbacks.
+  This can leave a failed search attached while the queue proceeds.
+- Fix: retain the reference in both start-error catches and let the existing
+  finishBulkDiscovery cancel and clear it. Keep success/asynchronous-error
+  behavior, owner guards, cancellation and queue handoff unchanged. No layout,
+  permission, native input, dependency, asset or license/notice change.
+- Before/after: exact original start and finish method bodies with host doubles
+  failed four lifecycle-cancellation cases (two after partial resource setup,
+  two before setup). Modified methods passed all ten cases: both platforms,
+  partial/early start faults, successful startup, asynchronous errors and late
+  callbacks from an older owner. Host doubles are not physical failure evidence.
+- Required checks: 172 JVM tests / 27 suites, zero failures/errors;
+  lint zero errors / 24 warnings; isolated .cycle8 x86_64 app/test builds;
+  56 independently matched dependency hashes; 11 Python packaging
+  checks. Exact final build/test inputs were captured and reconciled unchanged.
+- Runtime: NOT RUN: required shared-emulator cleanup and owned HTTPS checks are pending while yielding to other user work. No runtime pass is inferred from a build or host double.
+- Restore: source-only prechange ZIP and SHA-256 verified. Extract separately for
+  review; do not reset active work/user data. Untracked instructions preserved.
+- Publication: intermediate local-only; no push, Release, production signing/
+  install, APK/LAN delivery or server. Final publication remains cycle 20.
+  Production v1.9.32/code71 and published main/asset metadata remain unchanged.
+  Shared-context dirty/diverged checkout preserved without pull/merge/reset/stash.
+- Limits: startup failures are controlled injection, not a naturally observed
+  WebView allocation failure; authenticated upstream account discovery, physical
+  phones and ARM64 production are not tested. No performance measurement/claim.
+- Next investigation: X discovery renderer termination and Activity lifecycle
+  ownership. Confirm a new defect before changing either path.
