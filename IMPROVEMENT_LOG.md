@@ -105,3 +105,68 @@
 - Next investigation: startup engine readiness when the automatic update fails;
   then buffered output flush/close failure and publication order, and pending-task
   cancellation/resumption across connectivity changes.
+
+## 2026-10-31: cycle 2 - installed engine readiness after update-check failure
+
+- Investigation: followed the separate startup failure retained by cycle 1.
+  Application initialization extracts and initializes yt-dlp/FFmpeg successfully,
+  but MainActivity previously set engineReady only after an online update check
+  succeeded. Its exception path enabled the retry button without marking the
+  installed engine ready; beginDownload immediately retried the same online
+  check. An update-server connection failure therefore prevented even a usable
+  installed engine from downloading. This is distinct from cycle 1's media-copy
+  completeness checks; no new network reachability fix is claimed.
+- Priority: readiness affects all download entry points after startup. Confined
+  the change to startup policy, status text and focused regressions. Kept the
+  normal stable-channel update attempt and existing shared/clipboard entry paths.
+- Change: capture an ordinary update-check exception, then actually execute the
+  installed yt-dlp with --version. Only a successful execution with a nonempty
+  version enables download/account controls. An update warning remains visible
+  and logged. If installed execution fails, keep engineReady false, disable
+  account download and retain the existing retry path. Initialization failures
+  and fatal update errors do not enable the installed-engine fallback.
+- Focused verification: six JVM checks passed for update success/failure,
+  working/broken installed engines, empty versions and fatal errors. Android
+  instrumentation additionally injects update failure while running the real
+  installed engine, checks ready controls/status, and distinguishes a broken
+  engine before the existing synthetic HTTPS media download test.
+- Final required checks passed: 172 JVM tests in 27 suites, zero failures/errors;
+  Android lint zero errors and the same 24 pre-existing warnings; isolated x86_64
+  debug app/test APK builds and security runtime inventory. Removed the obsolete
+  update-failure string after the initial lint run found one additional unused
+  resource warning. The final complete incremental command passed, with input
+  hashes confirming application/test sources stayed unchanged during validation.
+- Regular Android Emulator YTDown_API_35 / emulator-5554: injected updater failure
+  while actually executing installed yt-dlp; verified ready status and both download
+  controls. A separately injected broken-engine probe kept engineReady false. The
+  existing owned loopback HTTPS MP4 test then really downloaded and published
+  14,452 bytes, checked a 12,000 ms duration and valid 320-pixel video track, and
+  produced 22 intermediate progress samples. Finalization stayed at 99%, success
+  reached 100%; notification, unknown-duration and stopped-progress checks passed.
+  Only the test's own synthetic MediaStore export was removed by its cleanup.
+- Visual QA: initial captures were obscured by the completed cycle 1 test app's
+  existing ANR dialog; these captures are not an unobstructed UI pass. Confirmed
+  its package/window and the prior full-message receipt, closed only that old
+  isolated app through its dialog, then captured the current .cycle2 ready screen.
+  Normal and 320dp-wide / font-scale 1.3 views showed complete download controls
+  and readable wrapped readiness status; scrolled to the intended status card.
+  Verified restoration of the emulator's original size and font scale afterward.
+- Limits: updater failure tests use controlled fault injection, not a claim that
+  the previously observed upstream connection failure is fixed. Installed-engine
+  execution and owned HTTPS media transfer are real. Authenticated third-party
+  downloads, physical devices, keyboard layouts and ARM64 production deployment
+  are outside this round's tested scope. No production data or login was used.
+- Restore: a verified source-only archive of the pre-change local HEAD and its
+  SHA-256, preserved untracked instruction hash and recovery method remain in
+  local operational evidence. Extract into a separate review directory; never
+  reset active work or restore user data from source archives.
+- Publication: local-only intermediate cycle. No source push, Release, production
+  signing/install, APK delivery or LAN service. Version 1.9.32/code 71 and existing
+  published assets are unchanged. Final publication remains designated cycle 20.
+- Dependencies and rights: no new dependency, version, permission, native input,
+  external asset or third-party notice configuration. Synthetic media and generated
+  TLS credentials stay in isolated test/runtime outputs, outside committed source.
+- Measurements: the startup decision behavior is covered; throughput, memory
+  peaks and startup-duration improvement are not measured or claimed.
+- Next investigation: buffered output flush/close failures and publication order,
+  then pending-task cancellation/resumption across connectivity changes.

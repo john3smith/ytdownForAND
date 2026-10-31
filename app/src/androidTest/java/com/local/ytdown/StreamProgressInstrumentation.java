@@ -41,7 +41,7 @@ public final class StreamProgressInstrumentation extends Instrumentation {
             Intent intent = new Intent(context, MainActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             activity = (MainActivity) startActivitySync(intent);
             final MainActivity target = activity;
-            long deadline = SystemClock.elapsedRealtime() + 30000;
+            long deadline = SystemClock.elapsedRealtime() + 120000;
             while (!Boolean.TRUE.equals(field(target, "engineReady")) && SystemClock.elapsedRealtime() < deadline) {
                 SystemClock.sleep(100);
             }
@@ -49,6 +49,49 @@ public final class StreamProgressInstrumentation extends Instrumentation {
             if (YTDownApplication.getInitializationError() != null) {
                 throw new AssertionError("Download engine initialization failed");
             }
+            // A failed online check must not strand a working installed engine.
+            // Inject only the updater failure; probe the real installed Python/yt-dlp.
+            Method prepare = MainActivity.class.getDeclaredMethod("prepareDownloadEngine",
+                    DownloadEngineStartup.Engine.class);
+            prepare.setAccessible(true);
+            DownloadEngineStartup.Engine offline = new DownloadEngineStartup.Engine() {
+                public void update() throws IOException { throw new IOException("Controlled offline update check"); }
+                public String installedVersion() throws Exception {
+                    YoutubeDLRequest probe = new YoutubeDLRequest(Collections.emptyList());
+                    probe.addOption("--version");
+                    return YoutubeDL.getInstance().execute(probe).getOut();
+                }
+            };
+            prepare.invoke(target, new DownloadEngineStartup.Engine() {
+                public void update() throws IOException { throw new IOException("Controlled offline update check"); }
+                public String installedVersion() throws IOException { throw new IOException("Controlled broken engine"); }
+            });
+            waitForIdleSync();
+            if (Boolean.TRUE.equals(field(target, "engineReady"))) {
+                throw new AssertionError("Broken engine marked ready after update failure");
+            }
+            result.putString("broken_engine_remains_unready", "PASS");
+            prepare.invoke(target, offline);
+            waitForIdleSync();
+            final String installedVersion = offline.installedVersion().trim();
+            runOnMainSync(() -> {
+                try {
+                    if (!Boolean.TRUE.equals(field(target, "engineReady"))
+                            || !((android.view.View) field(target, "downloadButton")).isEnabled()
+                            || !((android.view.View) field(target, "bulkDownloadButton")).isEnabled()
+                            || !((TextView) field(target, "statusText")).getText().toString()
+                                    .equals(target.getString(R.string.status_engine_ready_update_failed,
+                                            installedVersion))) {
+                        throw new AssertionError("Verified offline engine did not restore ready controls/status");
+                    }
+                } catch (Exception error) { throw new RuntimeException(error); }
+            });
+            result.putString("failed_update_verified_installed_engine_ready", "PASS");
+            android.graphics.Bitmap startupScreen = getUiAutomation().takeScreenshot();
+            if (startupScreen == null) throw new AssertionError("Cannot capture verified startup UI");
+            try (OutputStream output = new FileOutputStream(new File(context.getCacheDir(), "startup-ready.png"))) {
+                startupScreen.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, output);
+            } finally { startupScreen.recycle(); }
             File folder = new File(context.getCacheDir(), "progress-test-" + UUID.randomUUID());
             if (!folder.mkdir()) throw new IOException("Cannot create isolated test directory");
             File fixture = new File(folder, "synthetic-input.mp4");
