@@ -325,3 +325,37 @@
   Physical storage failure, ARM64, authenticated third-party downloads and
   performance gains are unverified. Later candidates: pending cancellation and
   connectivity transitions, and copy-to-publication progress; not new fixes yet.
+
+### Cycle 5 resumed - required runtime completed in the same round
+
+- The two queue-yield checkpoints and full final-message receipt were reconciled
+  before continuing. No prior application change, upload or message was repeated.
+  This completes the pending fifth round; it is not another improvement cycle.
+- Regular YTDown_API_35 emulator, isolated .cycle5 x86_64 debug app/test APKs:
+  all extended direct image/video success, zero-row/throw commit, destination-open,
+  response-open and response-close cases passed with actual MediaStore insertion,
+  file I/O, query and deletion. Failures removed only their own new item and did
+  not emit completion. Error outcomes are controlled injection, not physical
+  Android storage failures. Success checks verify MIME, size, filename, SHA-256,
+  PNG dimensions or MP4 duration/track as appropriate.
+- Genuine owned loopback HTTPS MP4 transfer completed with nonempty media,
+  12-second duration and 320-pixel video track. Intermediate progress, 99% during
+  finalization, verified 100% completion, notification progress, unknown-duration
+  and stopped-state behavior passed. Existing-engine readiness after an injected
+  update failure and broken-engine rejection also passed with the actual installed
+  engine probe. Live upstream recovery and authenticated sites remain untested.
+- Retained required checks were reconciled against unchanged exact build inputs:
+  172 JVM tests / 27 suites, zero errors/failures; lint zero errors / 24 warnings;
+  isolated app/test builds; all 56 dependency hashes; 11 Python packaging checks;
+  18 source-block host lifetime cases. Passed checks were not needlessly rerun.
+- Both production version/install timestamps and untracked project instructions
+  remained unchanged. The prechange source ZIP and SHA-256 were verified again;
+  restore by extracting into a separate review directory, never reset active work.
+- Status: completed locally, final publication remains cycle 20. No source push,
+  Release, production signing/install, APK/LAN delivery or service was performed.
+  No new dependency, native input, permission, asset or notice change. Physical
+  storage faults, ARM64 production, third-party authenticated downloads and
+  performance gains remain unverified. No measured performance claim is made.
+- Next investigation: pending-task cancellation and connectivity transitions,
+  followed by progress at copy-to-publication boundaries. These remain candidates;
+  this round does not implement or count them as improvements.
