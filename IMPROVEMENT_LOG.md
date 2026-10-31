@@ -1152,3 +1152,58 @@
   remaining reproducible transport candidate only with platform-specific proof.
   No new round, queue mutation or scheduler was started. Native coordinator
   alone handles the next investigation after the full final report receipt.
+
+
+## 2026-10-31: cycle 20 - final packaging investigation and accumulated publication
+
+- Investigation result: no_improvement; no new application defect established.
+  Do not count release versioning or repeated validation as a new code fix.
+  Across twenty investigations, fifteen rounds corrected application behavior;
+  rounds 13, 15, 16, 19 and 20 were investigations without a new application fix.
+- Existing v1.9.33 publication already contains rounds 1-14 after a separate
+  direct deployment request. Verified and reused that outcome without repeating
+  its upload. Final v1.9.34 / code73 includes the subsequent atomic cookie-file
+  cleanup and cooperative cancelled owner-resolver request/body cleanup fixes.
+  Update README version and retain signing identity, permissions and dependencies.
+- Fresh Debug and Release: 174 JVM tests in 27 suites each, zero failures/errors/
+  skips; both lint variants zero errors/fatals and 23 existing warnings. Eleven
+  Python packaging tests pass. ARM64 release, signed x86_64 validation release
+  and isolated Android regression APKs build. All 56 resolved artifact hashes
+  verified for each ABI. No performance improvement is claimed.
+- Reused existing Android regression code and nine synthetic atomic-file cleanup/
+  recovery cases on the regular API35/x86_64 emulator; all pass. Owned HTTPS MP4
+  completed: 14,452 bytes, 12,000 ms playable metadata, 22 intermediate samples
+  and 100-percent completion. Controlled failures/renderer/timer checks retain
+  their documented limitations; authenticated upstream sites were not exercised.
+- Signed non-debuggable x86_64 production package updated in place to 1.9.34;
+  installed SHA256, version/code, UID, original firstInstallTime, running Activity,
+  native engine readiness and enabled download control verified. No uninstall,
+  data clear or physical-device operation. Delivery APK is ARM64: physical ARM64
+  execution remains untested because the regular emulator has a known native
+  executable translation limitation. Emulator execution is explicitly a matching
+  x86_64 validation variant, not proof of ARM64 runtime success.
+- Distinct packaging investigation compared the previous release with a fresh
+  build: all 1,231 embedded Python payload filenames retained; only the generated
+  curl_cffi wrapper differs. Existing build requirements pin host CFFI2.1.1;
+  the old build used host CFFI2.0.0. Reviewed generator changes and ELF sections
+  (132 changed text bytes, identical section sizes), retaining pinned upstream
+  sources, versions and license text. This is a refreshed build, not a new app
+  patch. Actual x86_64 Python/CFFI/curl_cffi imports, Curl native calls and native
+  callbacks pass. No ARM64 import/callback or upstream TLS/network claim.
+- Release signing and independent APK verification pass at API24/26/28/32/33/35/
+  36 with established legacy/API33 production lineage, debugging disabled and
+  alignment checked. APK excludes signing material, generated test credentials
+  and test fixtures. Existing LICENSE/NOTICE entries remain packaged. Existing
+  store/commercial source-compliance and service-policy review gates are not
+  cleared; no store submission or broad commercial compliance claim is made.
+- Prechange tracked-source ZIP/hash retained locally; extract separately for
+  review rather than resetting active work. Untracked instructions and unrelated
+  work preserved. Shared-context checkout is dirty/diverged, so handoff stays local.
+- Publication evidence is recorded separately: exact source/CI/tag/asset commit,
+  API digest and downloaded SHA256, existing LAN allowlist delivery with byte hash,
+  and current installed-native state. Only the final Telegram response reports
+  this round; no duplicate message, APK attachment, HTML report or new coordinator.
+- Twenty-round admission limit reached. Future work may validate native ARM64
+  execution, authenticated upstream cancellation/download, natural process or
+  renderer failures, and power-loss/disk-full behavior under separately scoped
+  execution. No next round or scheduler is registered here.
