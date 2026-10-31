@@ -851,3 +851,50 @@
   reproduce a fault before changing code. In-flight owner-resolver socket lifetime
   remains unverified. Only the native coordinator admits the next round after
   this final Telegram message's full encrypted delivery receipt.
+
+## 2026-10-31: cycle 16 - investigate cookie export failure preservation
+
+- Status: no_improvement. No newly reproduced application defect; application
+  source unchanged. This investigation does not terminate the approved plan.
+- New area: AuthCookieStore export transaction and existing-session preservation,
+  with exact current production AuthCookieStore and NetscapeCookie compiled into
+  a Java 17 host harness. Only synthetic cookie fixtures were used; no real
+  user session, browser login, credential or authentication material was read.
+- Twenty host cases pass: first export and replacement, start/I/O/runtime
+  failure with and without a prior file (six cases), unconfirmed prior-session
+  reuse without browser reads, guest rejection, confirmed empty export preserving
+  the previous file, ordinary and detailed cookie-reader failures, metadata
+  scope/HttpOnly preservation, invalid/expired/cross-domain rejection, existing
+  YouTube/X/Instagram auth exports, selected-platform clear, missing/short files.
+- Existing guards preserve previous bytes on controlled failed writes, propagate
+  exceptions, do not advertise failed first saves and retain trusted manual
+  confirmation requirements. No speculative transaction or auth-policy change.
+  Existing non-masked-platform stale-cookie invalidation is left unchanged.
+- Limits: file I/O is real Java, but Android CookieManager, feature support and
+  AtomicFile are controlled doubles. This does NOT prove Android AtomicFile
+  fsync/rename behavior, power-loss/process-death durability, legacy .bak recovery,
+  actual WebView cookie reads, disk exhaustion or authenticated website behavior.
+  Unverified backup recovery is a future investigation, not a confirmed defect.
+- Fresh validation: 172 JVM tests / 27 suites EACH Debug and Release, zero
+  failures/errors/skips; 11 Python tests; lint zero errors / 23 warnings
+  (incremental analysis); isolated x86_64 app/test incremental builds; 56 actual
+  dependency artifact hashes verified. These regressions are not improvements.
+- Runtime: reverified prior exact application/test/build inputs and retained
+  regular-emulator runtime/download evidence read-only. The prior owned HTTPS
+  synthetic MP4 completed at 14452 bytes / 12000 ms with 22 intermediate samples.
+  No new installation, emulator interaction or download in this round, and no
+  new Android cookie-persistence, physical ARM64 or real-login verification.
+- Restore: verified pre-investigation tracked-source ZIP and SHA-256; untracked
+  AGENTS.md preserved. Extract separately for inspection; never reset active
+  work or user data. Only this investigation log is committed locally.
+- Publication: no source/shared-context push, Release, signing, production
+  install/activation, APK/LAN delivery/server or duplicate report send. Existing
+  v1.9.33 asset, remote main, installed package hashes/times remain unchanged.
+  Final publication stays round 20. No dependency/license/permission/asset
+  change or performance claim. Dirty shared-context is preserved without pull,
+  merge, reset or push; a separate local handoff records this investigation.
+- Next area: real Android AtomicFile legacy backup/recovery and explicit logout
+  cleanup under interrupted writes, with isolated synthetic files and a suitable
+  API-level environment. First reproduce a user-visible fault before patching.
+  In-flight owner-resolver socket lifetime also remains unverified. Only the
+  native coordinator admits the next round after full final-message receipt.
