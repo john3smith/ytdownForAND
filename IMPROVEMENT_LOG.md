@@ -948,3 +948,53 @@
   external operations unnecessarily. In-flight resolver socket lifetime remains a
   separate future investigation. Only native coordinator resumes after user work
   and complete final-message receipt; do not admit a new cycle here.
+
+### Cycle 17 resumed - required Android validation completed, local only
+
+- Resumed the same cycle after queued user work. The existing two-path
+  AuthCookieStore correction and checkpoint commit were preserved; no new
+  improvement or cycle was started. Reverified previous full final-message
+  receipt, source/evidence/restore hashes, remote Release and installed state.
+- Actual Android API35 verification: nine synthetic-file cases passed with
+  the production AuthCookieStore and real Android AtomicFile/CookieManager:
+  base/backup/new removal, backup-only clearing, interrupted startWrite cleanup,
+  unauthenticated export invalidation, empty confirmed export preservation,
+  other-platform preservation, legacy backup read recovery, failed-write
+  preservation and idempotent absent-file clearing. Temporary files were
+  removed; a distinct empty synthetic WebView profile isolated all cookies.
+- Used an isolated .cycle8 debug package on the regular YTDown_API_35 x86_64
+  emulator. A local-only diagnostic addition to the existing instrumentation
+  exercises these cases before the unchanged regression workflow. It was built
+  only into the local test APK, never production source/APK or a Release.
+  Prepared application APK hash exactly matches the verified checkpoint.
+- Existing Android regressions passed: startup/offline failure readiness,
+  cancellation and pending queue, Wi-Fi wait/recovery, X/Instagram discovery
+  setup/deadline/renderer cleanup, diagnostic Activity destruction, direct
+  video/image MediaStore success and fault cleanup, notification/UI progress.
+- Real owned synthetic HTTPS MP4 transfer completed: 14452 bytes,
+  12000 ms duration, 320-pixel video width, 22 intermediate progress
+  samples and 100-percent completion UI. TLS used the test's own CA; no third
+  party login, private media or access-control bypass. Generated MediaStore
+  fixtures were removed by the existing instrumentation cleanup.
+- Earlier same-cycle required results were hash-reverified, not unnecessarily
+  repeated: 172 JVM tests in each Debug/Release variant, 11 Python checks,
+  lint zero errors / 23 warnings and 56 dependency artifact hashes. Application,
+  existing test source and build inputs are unchanged since those checks.
+  Fresh Android probe compilation and installed runtime checks passed.
+- Fresh startup/progress/final-ready screenshots were reviewed locally. No UI
+  code or layout changed. No performance gain is claimed.
+- Prechange restore archive and untracked instructions verified intact. Final
+  local commit adds only this completion log to the source checkpoint; all
+  executable/build inputs remain identical to validated inputs.
+- No source/shared-context push, Release, production install/activation,
+  APK/LAN delivery, server change or duplicate report. Remote main, v1.9.33
+  asset and production package bytes/install times are unchanged. Publication
+  remains reserved for cycle 20. Dirty/diverged shared context stays local.
+- Limits: real runtime covers API35/x86_64, not physical ARM64 or API24 device
+  execution. API24/API35 host baseline/postfix evidence remains as previously
+  recorded. Power loss, process death, disk exhaustion, natural renderer crash
+  and live upstream authenticated download remain untested. No dependency,
+  license, permission, version or external asset changes.
+- Next investigation remains in-flight account-owner resolver socket/resource
+  lifetime. Native coordinator alone admits any next round after full report
+  delivery; this completion does not register another task.
