@@ -1048,3 +1048,48 @@
   finalize. Investigate actual transport blocking/cancellation timing separately
   only with an owned network fixture. Native coordinator alone resumes after full
   final Telegram report receipt; no duplicate registration, queue edits or sends.
+
+### Cycle 18 resumed - required runtime checks completed, local only
+
+- Resumed the same cycle after queued user work. Preserved the existing
+  cooperative owner-resolver cancellation correction; no additional improvement
+  or round was started. Reverified both prior yield evidence and the latest full
+  final-message receipt, exact source/restore/build evidence/APK hashes, native
+  plan and queue, remote main, v1.9.33 asset and installed package identities.
+- Earlier shared-emulator owner completed restoration and full final delivery
+  before installation. Used the preserved isolated .cycle8 x86_64 debug app and
+  unchanged existing Android test APK on the regular YTDown_API_35 emulator.
+  No production package installation, new Android/UI test or ARTEMIS operation.
+- Fresh Android regressions passed: engine startup and offline failure readiness,
+  cancellation and pending queue, real Wi-Fi wait/recovery, X/Instagram discovery
+  setup/deadline/renderer cleanup, diagnostic Activity destruction, real image/
+  video MediaStore success and controlled fault cleanup, notifications and UI.
+- Real owned synthetic HTTPS MP4 download completed: 14452 bytes,
+  12000 ms duration, 320-pixel video width, 22 intermediate progress
+  samples and 100-percent UI completion. Existing test verifies generated file
+  integrity and playable metadata, then cleans synthetic MediaStore fixtures.
+  TLS uses the test's own CA; no third-party session or private media is used.
+- Fresh startup/progress/final-ready screenshots reviewed locally; final ready
+  UI has enabled download controls. Earlier same-cycle required results reused
+  only after exact executable-input/evidence verification: Debug/Release each
+  174 JVM tests, 11 Python checks, lint zero errors / 23 warnings, isolated APK
+  builds and 56 dependency artifact hashes. No redundant rebuild or test rerun.
+- Four baseline cancellation failures and seven post-fix host resolver cases
+  remain verified evidence. The existing finished predicate now reaches request
+  headers/redirects and bounded body reads; cancellation uses existing resource
+  cleanup. Pending network calls still retain 15/30-second connect/read bounds.
+  Immediate socket abort, upstream cancellation latency and performance gains
+  are not claimed. Actual Android regressions do not prove live upstream timing.
+- Prechange source ZIP and untracked AGENTS.md intact. Final local commit adds
+  only this completion log; all executable/test/build inputs remain identical
+  to the verified checkpoint. No dependencies, licenses, permissions, versions
+  or external assets changed.
+- No source/shared-context push, Release, signing, production activation,
+  APK/LAN delivery/server or duplicate message. Remote main/v1.9.33 and original
+  production package bytes/install times unchanged; final publication stays
+  cycle 20. Dirty/diverged shared context is retained locally.
+- Limits: API35/x86_64 runtime only; physical ARM64/API24 execution, authenticated
+  upstream cancellation/download, natural renderer crashes, power-loss/process
+  death/disk-full durability remain unverified. Next investigation may examine
+  transport blocking and cancellation timing using an owned network fixture.
+  Native coordinator alone admits any next round after full report receipt.
