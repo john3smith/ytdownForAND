@@ -1038,6 +1038,8 @@ public final class MainActivity extends Activity {
     private void showAccountDiagnosticLog(String platformName, String diagnosticLog) {
         String dialogTitle = getString(R.string.account_diagnostic_title, platformName);
         Log.e(TAG + "-" + platformName + "-Diagnostic", diagnosticLog);
+        // Discovery callbacks can arrive after this Activity's window has gone away.
+        if (activityDestroyed || isFinishing()) return;
         TextView logView = new TextView(this);
         logView.setText(diagnosticLog);
         logView.setTextColor(getColor(R.color.text_primary));

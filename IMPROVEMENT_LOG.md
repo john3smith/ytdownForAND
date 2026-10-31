@@ -523,3 +523,47 @@
   this continuation does not count as another round or register new work.
   ARM64 production, physical phones, natural renderer crash and authenticated
   upstream downloads remain unverified. No performance improvement is claimed.
+
+## 2026-10-31: cycle 10 - skip account diagnostic dialogs after Activity exit
+
+- Status: completed locally, tenth round only; publication remains cycle 20.
+- Finding/priority: X/Instagram discovery error callbacks can outlive an Activity
+  window. The shared diagnostic presenter unconditionally created an AlertDialog.
+  The existing lifecycle intentionally permits unfinished background work after
+  non-finishing destruction, so a late error can reach this presenter.
+- Before evidence: actual regular-emulator live dialog displayed successfully;
+  after actual Activity finish/destruction, the same presenter raised an exception.
+  An exact-method host harness reproduced three invalid-window cases (finishing,
+  destroyed, both), with the live case passing. Host window behavior is controlled.
+- Fix: preserve diagnostic logging, then skip only dialog creation while the
+  Activity is destroyed or finishing. Two production lines added; discovery
+  callbacks, ownership, queue processing and download/cancellation remain intact.
+- After: all four host cases passed, with logs retained. Regular emulator showed
+  the live dialog, then finished/destroyed the real Activity and accepted a late
+  controlled diagnostic call without a window exception. No real upstream account
+  error or independent configuration recreation is claimed.
+- Checks: 172 JVM tests/27 suites, zero failures/errors; lint zero errors / 23
+  warnings; isolated x86_64 app/test builds; 11 Python packaging tests and 56
+  dependency hashes verified. Exact final app/test build inputs reconciled.
+- Runtime: owned loopback HTTPS MP4 transfer completed: 14452 bytes, 12000 ms,
+  valid 320-pixel video track, 22 intermediate progress samples. Existing real
+  MediaStore success/fault cleanup, discovery resource/renderer checks, pending
+  cancellation, actual Wi-Fi loss/recovery and engine readiness checks passed.
+  Fresh startup, transfer and final screens reviewed; fixture data only.
+- Restore: verified source-only prechange ZIP and hash retained locally. Extract
+  separately for review; do not reset active work or user data. Existing untracked
+  AGENTS.md preserved.
+- Recovery: host test double initially had an invalid nested-class definition;
+  corrected the local harness before recording baseline failures. Runtime preflight
+  found the old isolated cycle2 task exposed after cycle8 finish; verified same-app
+  exclusion, preserved other tasks and admitted only existing isolated YTDown apps.
+  No app/runtime assertion was relaxed or failed check reported as passed.
+- Publication: local commit only; no push, Release, production signing/install,
+  APK/LAN delivery/server or operational activation. Production package version,
+  install times and APK SHA-256, published main and Release asset unchanged.
+  No dependency, permission, native binary, asset or license/notice input changed.
+  Shared-context dirty checkout preserved without pull/merge/reset/stash/push.
+- Limits: physical phones, ARM64 production, authenticated upstream downloads and
+  a natural late discovery error remain untested. No performance/power claim.
+- Next investigation: account discovery resources and ownership across Activity
+  recreation; distinguish intended background completion from stale-window work.

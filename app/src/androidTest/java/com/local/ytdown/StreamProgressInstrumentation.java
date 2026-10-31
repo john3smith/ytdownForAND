@@ -28,7 +28,11 @@ import org.json.JSONObject;
 
 /** Test APK only: downloads an owned synthetic MP4 over loopback, never visits a site/session. */
 public final class StreamProgressInstrumentation extends Instrumentation {
-    @Override public void onCreate(Bundle arguments) { super.onCreate(arguments); start(); }
+    private boolean diagnosticOnly;
+    @Override public void onCreate(Bundle arguments) {
+        diagnosticOnly = arguments != null && "true".equals(arguments.getString("diagnosticOnly"));
+        super.onCreate(arguments); start();
+    }
     @Override public void onStart() {
         Bundle result = new Bundle();
         MainActivity activity = null;
@@ -48,6 +52,12 @@ public final class StreamProgressInstrumentation extends Instrumentation {
             if (!Boolean.TRUE.equals(field(target, "engineReady"))) throw new AssertionError("Engine not ready");
             if (YTDownApplication.getInitializationError() != null) {
                 throw new AssertionError("Download engine initialization failed");
+            }
+            if (diagnosticOnly) {
+                verifyDiagnosticLifecycle(target, result);
+                result.putString("result", "PASS");
+                finish(Activity.RESULT_OK, result);
+                return;
             }
             // A failed online check must not strand a working installed engine.
             // Inject only the updater failure; probe the real installed Python/yt-dlp.
@@ -265,6 +275,7 @@ public final class StreamProgressInstrumentation extends Instrumentation {
             result.putString("unknown_duration_ui", "PASS");
             result.putString("stopped_ui_not_spinning", "PASS");
             verifyDirectVideoCloseCleanup(context, downloaded, result);
+            verifyDiagnosticLifecycle(target, result);
             result.putString("result", "PASS");
             finish(Activity.RESULT_OK, result);
         } catch (Throwable error) {
@@ -279,6 +290,43 @@ public final class StreamProgressInstrumentation extends Instrumentation {
                 try { setField(activity, "downloading", false); } catch (Exception ignored) { }
             }
         }
+    }
+    /** Real live dialog and actual Activity destruction; the late diagnostic is controlled. */
+    private void verifyDiagnosticLifecycle(MainActivity target, Bundle result) throws Exception {
+        Method show = MainActivity.class.getDeclaredMethod("showAccountDiagnosticLog", String.class, String.class);
+        show.setAccessible(true);
+        final Throwable[] failure = {null};
+        runOnMainSync(() -> {
+            try { show.invoke(target, "X", "cycle10-live-diagnostic"); }
+            catch (Throwable error) { failure[0] = error; }
+        });
+        if (failure[0] != null) throw new AssertionError("Live diagnostic failed", failure[0]);
+        long deadline = SystemClock.elapsedRealtime() + 5000;
+        boolean visible = false;
+        while (SystemClock.elapsedRealtime() < deadline) {
+            android.view.accessibility.AccessibilityNodeInfo root = getUiAutomation().getRootInActiveWindow();
+            if (root != null && !root.findAccessibilityNodeInfosByText("cycle10-live-diagnostic").isEmpty()) {
+                visible = true;
+                break;
+            }
+            SystemClock.sleep(100);
+        }
+        if (!visible) throw new AssertionError("Live diagnostic dialog not visible");
+        sendKeyDownUpSync(android.view.KeyEvent.KEYCODE_BACK);
+        waitForIdleSync();
+        result.putString("live_account_diagnostic_visible", "PASS");
+        runOnMainSync(target::finish);
+        deadline = SystemClock.elapsedRealtime() + 10000;
+        while (!target.isDestroyed() && SystemClock.elapsedRealtime() < deadline) SystemClock.sleep(100);
+        if (!target.isDestroyed() || !Boolean.TRUE.equals(field(target, "activityDestroyed"))) {
+            throw new AssertionError("Activity did not actually reach destruction");
+        }
+        runOnMainSync(() -> {
+            try { show.invoke(target, "X", "cycle10-late-diagnostic"); }
+            catch (Throwable error) { failure[0] = error; }
+        });
+        if (failure[0] != null) throw new AssertionError("Late diagnostic on destroyed Activity", failure[0]);
+        result.putString("destroyed_account_diagnostic_no_window_exception", "PASS");
     }
     private static Object field(Object object, String name) throws Exception {
         Field field = object.getClass().getDeclaredField(name); field.setAccessible(true); return field.get(object);
