@@ -1,14 +1,22 @@
 package com.local.ytdown;
 
 import java.io.IOException;
+import java.io.InterruptedIOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.function.BooleanSupplier;
 
 /** Re-select cookies at every redirect instead of forwarding a flattened header. */
 final class ScopedHttpConnection {
     static HttpURLConnection open(String url, NetscapeCookieJar cookies, String userAgent) throws IOException {
+        return open(url, cookies, userAgent, () -> false);
+    }
+
+    static HttpURLConnection open(String url, NetscapeCookieJar cookies, String userAgent,
+                                  BooleanSupplier cancelled) throws IOException {
         URL current = new URL(url);
         for (int redirects = 0; redirects <= 5; redirects++) {
+            if (cancelled.getAsBoolean()) throw new InterruptedIOException("metadata request cancelled");
             if (!(current.getProtocol().equalsIgnoreCase("https") || current.getProtocol().equalsIgnoreCase("http"))
                     || current.getUserInfo() != null) throw new IOException("unsupported media URL");
             HttpURLConnection connection = (HttpURLConnection) current.openConnection();
@@ -22,6 +30,7 @@ final class ScopedHttpConnection {
                         System.currentTimeMillis() / 1000);
                 if (header != null) connection.setRequestProperty("Cookie", header);
                 int status = connection.getResponseCode();
+                if (cancelled.getAsBoolean()) throw new InterruptedIOException("metadata request cancelled");
                 if (status >= 200 && status < 300) return connection;
                 if (status == 301 || status == 302 || status == 303 || status == 307 || status == 308) {
                     String location = connection.getHeaderField("Location");

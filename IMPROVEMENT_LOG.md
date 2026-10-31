@@ -998,3 +998,53 @@
 - Next investigation remains in-flight account-owner resolver socket/resource
   lifetime. Native coordinator alone admits any next round after full report
   delivery; this completion does not register another task.
+
+## 2026-10-31: cycle 18 - cooperative owner-resolver I/O cancellation checkpoint
+
+- Status: deferred / queued_user_work. New reproducible correction saved locally;
+  this SAME cycle remains incomplete pending fresh Android/runtime regressions.
+- New area: in-flight Instagram post-owner resolver network resource lifetime.
+  The existing volatile finished flag blocked stale main-thread callbacks but
+  never reached HTTP or metadata reads. Cancelling a gated response allowed all
+  body reads to finish; a cancelled redirect kept opening requests up to six.
+- Reproduction uses full production SocialImageDownloader, ScopedHttpConnection,
+  NetscapeCookie/Jar and BoundedDocument on Java17; URLConnection/response streams
+  are gated synthetic doubles. Four expected baseline failures (cancel before
+  open, during body, during headers, between redirects), three passing controls.
+  No real user cookie, upstream login, private media or website data was read.
+- Correction passes the existing finished predicate from discovery into owner
+  resolution, HTTP open/redirect handling and bounded metadata reads. Checks run
+  before each request and before/after each body read, and after response headers.
+  Cancellation throws InterruptedIOException and uses existing stream/disconnect
+  cleanup. Existing non-cancellable callers and cookie scope/redirect/size/auth
+  policy are preserved. No extra worker, scheduler or forced main-thread close.
+- After: seven host cases pass, including normal owner parsing, HTTP/read faults
+  and cleanup. Two new JVM test methods cover pre-read and data/EOF cancellation.
+  Fresh Debug and Release each pass 174 tests / 27 suites, zero failures/errors/
+  skips. Eleven Python checks pass; lint has zero errors and 23 warnings;
+  isolated x86_64 app and existing test APK build and ZIP integrity pass;
+  56 actual dependency artifact hashes verified. No performance gain is claimed.
+- Bound: cooperative cancellation stops after a pending network operation
+  returns; connect/read timeouts remain 15/30 seconds per operation. Immediate
+  socket abort, a strict wall-clock deadline and real upstream cancellation
+  latency were not measured or implemented. This is not a network timeout change.
+- Runtime preflight found another user app owning the regular emulator. Yielded
+  before installation/UI interaction; production and prior isolated package
+  bytes/install times unchanged. Fresh actual owned HTTPS download and Android
+  regressions have NOT run for this changed source. Prior cycle17 evidence is
+  not substituted. No new Android/UI test code or ARTEMIS operation was authored.
+- Restore: prechange tracked-source ZIP and SHA256 verified against original
+  changed files; untracked AGENTS.md and unrelated work preserved. Extract to a
+  separate review directory, never reset active work or user data.
+- Publication: local checkpoint commit only. No source/shared-context push,
+  Release, signing, production install/activation, APK/LAN delivery/server or
+  duplicate report. Remote main/v1.9.33 asset unchanged; final publication stays
+  cycle20. Dirty shared context retained with a separate local handoff.
+- No dependency/license/permission/version/asset changes. No physical ARM64,
+  authenticated upstream, disk-full or natural network cancellation claims.
+- Resume SAME cycle: verify checkpoint/source/restore/artifact/evidence hashes,
+  native queue and current emulator ownership, then run existing regular-emulator
+  regressions and owned HTTPS MP4 completion/metadata, inspect fresh visuals and
+  finalize. Investigate actual transport blocking/cancellation timing separately
+  only with an owned network fixture. Native coordinator alone resumes after full
+  final Telegram report receipt; no duplicate registration, queue edits or sends.

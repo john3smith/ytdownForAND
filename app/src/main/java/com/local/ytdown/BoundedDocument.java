@@ -3,7 +3,9 @@ package com.local.ytdown;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InterruptedIOException;
 import java.nio.charset.StandardCharsets;
+import java.util.function.BooleanSupplier;
 
 /** Limits metadata documents only; media streams keep their separate transfer policy. */
 final class BoundedDocument {
@@ -14,11 +16,20 @@ final class BoundedDocument {
     }
 
     static String read(InputStream input, long declaredLength, int limit) throws IOException {
+        return read(input, declaredLength, limit, () -> false);
+    }
+
+    static String read(InputStream input, long declaredLength, int limit,
+                       BooleanSupplier cancelled) throws IOException {
         if (limit < 0 || declaredLength > limit) throw new IOException("metadata document too large");
         ByteArrayOutputStream output = new ByteArrayOutputStream();
         byte[] buffer = new byte[8192];
         int count;
-        while ((count = input.read(buffer)) != -1) {
+        while (true) {
+            if (cancelled.getAsBoolean()) throw new InterruptedIOException("metadata request cancelled");
+            count = input.read(buffer);
+            if (cancelled.getAsBoolean()) throw new InterruptedIOException("metadata request cancelled");
+            if (count == -1) break;
             if (output.size() > limit - count) throw new IOException("metadata document too large");
             output.write(buffer, 0, count);
         }
