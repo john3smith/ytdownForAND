@@ -224,6 +224,8 @@ final class InstagramAccountMediaDiscovery {
                 return true;
             }
         });
+        // Loading and JavaScript evaluation may never call back; bound both waits.
+        handler.postDelayed(timeoutRunnable, MAX_SCAN_MILLIS);
         webView.loadUrl("https://www.instagram.com/" + username + "/");
     }
 
@@ -236,6 +238,10 @@ final class InstagramAccountMediaDiscovery {
         cleanup();
     }
 
+    private final Runnable timeoutRunnable = () -> fail(
+            "Instagram 목록을 끝까지 확인하기 전에 검색 시간이 초과되었습니다. "
+                    + "이미 찾은 " + mediaUrls.size() + "개는 전체 목록으로 처리하지 않았습니다.");
+
     private final Runnable scanRunnable = new Runnable() {
         @Override
         public void run() {
@@ -243,8 +249,7 @@ final class InstagramAccountMediaDiscovery {
                 return;
             }
             if (System.currentTimeMillis() - startedAt >= MAX_SCAN_MILLIS) {
-                fail("Instagram 목록을 끝까지 확인하기 전에 검색 시간이 초과되었습니다. "
-                        + "이미 찾은 " + mediaUrls.size() + "개는 전체 목록으로 처리하지 않았습니다.");
+                timeoutRunnable.run();
                 return;
             }
             evaluating = true;
@@ -455,6 +460,7 @@ final class InstagramAccountMediaDiscovery {
 
     private void cleanup() {
         handler.removeCallbacks(scanRunnable);
+        handler.removeCallbacks(timeoutRunnable);
         if (webView == null) {
             return;
         }

@@ -619,3 +619,54 @@
   performance/power improvement is claimed.
 - Next investigation: Instagram discovery's independent timeout coverage and
   resolver ownership. Confirm/reproduce independently before changing that path.
+
+## 2026-10-31: cycle 12 - bound stalled Instagram profile discovery
+
+- Status: completed locally, twelfth round only; final publication remains cycle 20.
+- Investigation: independently reviewed Instagram profile loading, JavaScript
+  evaluation, partial-result handling, cleanup and post-owner resolution. The
+  profile timeout was checked only by a page-driven scan, after the evaluating
+  guard. Initial loading or an evaluation without callback could leave discovery
+  resources retained indefinitely. Resolver already checks finished in posted
+  callbacks and uses the bounded HTTP reader; its ownership is unchanged here.
+- Priority: reproducible discovery liveness/resource fault, small bounded change;
+  no speculative feature or unrelated refactor. Instagram deliberately treats
+  incomplete media lists as failure, unlike the X partial-result timeout policy.
+- Fix: schedule an independent ten-minute profile deadline before initial load,
+  reuse the existing Instagram failure diagnostic including partial item count,
+  and remove the timer in shared cleanup. The existing fail guard prevents late
+  duplicate terminal delivery. Cancel and successful completion remove the timer.
+- Before/after: actual production runnable/terminal/cleanup extraction with host
+  resource and Handler doubles reproduced three stalled failures; all five cases
+  passed after, including cancellation and prior completion. Real regular-emulator
+  baseline separately reproduced a retained WebView before page completion.
+  Corrected real Handler registration and five terminal/cleanup cases passed.
+  Timers are dispatched under test control without a ten-minute wall wait;
+  network is blocked, and no natural upstream stall is claimed.
+- Checks: 172 JVM tests / 27 suites, no failures/errors; lint no errors / 23
+  warnings; isolated x86_64 app/test builds; 11 Python packaging tests; 56 pinned
+  dependency artifact hashes checked; final tested-source inputs reconciled.
+- Runtime: owned HTTPS MP4 completed with 14452 bytes, 12000 ms duration,
+  a valid 320-pixel video track and 22 intermediate progress samples. Real
+  MediaStore success/fault cleanup, X deadlines/renderer cleanup, partial setup,
+  pending cancellation, Wi-Fi loss/recovery and engine readiness regressions pass.
+  Fresh startup, download progress and final ready screens visually reviewed.
+- Restore: verified prechange source-only ZIP and SHA-256; extract separately for
+  review, never reset active work/user data. Untracked AGENTS.md preserved.
+- Same-round recovery: initial local test-preparation assertions caught exact
+  argument parsing and fixture URL differences before changing source. Corrected
+  the preparation script; the unchanged preliminary build is retained separately.
+  The first Android baseline preflight saw another app in foreground and stopped
+  before install/interaction; independent host/build work continued. Baseline
+  application/test bytes were preserved for later verification. No other app,
+  instrumentation, queue, approval or relay was stopped or modified.
+- Publication: local commit only; no source/shared-context push, Release,
+  production signing/install, APK/LAN delivery/server or operational activation.
+  Published main/Release asset, production package version/timestamps and APK bytes
+  unchanged. No dependency, permission, asset/native binary or license inputs
+  changed. Dirty shared-context checkout preserved without pull/merge/reset/push.
+- Limits: physical devices, ARM64 production, authenticated upstream downloads,
+  natural network stalls and elapsed ten-minute timing untested. No measured
+  performance or power improvement claim.
+- Next investigation: Instagram post-owner resolver cancellation and callback
+  ownership; independently reproduce any fault before changing that path.
