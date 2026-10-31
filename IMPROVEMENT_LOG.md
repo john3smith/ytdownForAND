@@ -431,7 +431,7 @@
 
 ## 2026-10-31: cycle 8 - clean up partially started account discoveries
 
-- Status: deferred for queued user work; required emulator runtime NOT RUN. The eighth round only; no new plan or queue changes.
+- Status: completed locally after same-round continuation and validation recovery. The eighth round only; no new plan or queue changes.
 - New finding/priority: MainActivity caught X/Instagram discovery start errors
   after dropping the discovery reference. finishBulkDiscovery therefore could
   not cancel a partially initialized WebView or remove its pending callbacks.
@@ -449,7 +449,7 @@
   lint zero errors / 24 warnings; isolated .cycle8 x86_64 app/test builds;
   56 independently matched dependency hashes; 11 Python packaging
   checks. Exact final build/test inputs were captured and reconciled unchanged.
-- Runtime: NOT RUN: required shared-emulator cleanup and owned HTTPS checks are pending while yielding to other user work. No runtime pass is inferred from a build or host double.
+- Runtime: regular emulator actual X/Instagram partial WebView attachment failures cleaned up the real views, ownership, bulk/scanning state and screen-on flag before any upstream site loaded. The owned HTTPS MP4 completed with 14452 bytes, 12000 ms duration, valid 320-pixel video track and 22 intermediate samples. Progress/notification, real MediaStore success/fault cleanup, pending cancellation and actual Wi-Fi loss/reconnection checks passed. Fresh startup, in-progress and final isolated-app screens were reviewed.
 - Restore: source-only prechange ZIP and SHA-256 verified. Extract separately for
   review; do not reset active work/user data. Untracked instructions preserved.
 - Publication: intermediate local-only; no push, Release, production signing/
@@ -461,3 +461,17 @@
   phones and ARM64 production are not tested. No performance measurement/claim.
 - Next investigation: X discovery renderer termination and Activity lifecycle
   ownership. Confirm a new defect before changing either path.
+- Same-round recovery: the first instrumentation attempt passed discovery cleanup
+  but failed transfer verification after Android reclaimed in-flight cache files
+  under low storage. The test-only fixture and startup evidence now use filesDir;
+  assertions are unchanged and provide clearer transfer diagnostics. The first
+  corrected test-APK install was explicitly rejected for insufficient space.
+  Three inactive earlier isolated test runtimes were backed up locally and all
+  4,068 file hashes verified before offloading their generated engine folders.
+  Production apps, preferences and media were preserved. No threshold/security
+  override or unrelated app/data cleanup was used. The final install and full
+  instrumentation passed; failed attempts and recovery evidence remain local.
+- Continuation changed only test fixture storage/diagnostics and this log.
+  Test APK rebuilt and lint rerun; prior 172-test JVM/application build results
+  remain valid against unchanged production inputs and unchanged application APK.
+  No natural allocation-failure, authenticated upstream or performance claim.

@@ -89,13 +89,14 @@ public final class StreamProgressInstrumentation extends Instrumentation {
             result.putString("failed_update_verified_installed_engine_ready", "PASS");
             android.graphics.Bitmap startupScreen = getUiAutomation().takeScreenshot();
             if (startupScreen == null) throw new AssertionError("Cannot capture verified startup UI");
-            try (OutputStream output = new FileOutputStream(new File(context.getCacheDir(), "startup-ready.png"))) {
+            try (OutputStream output = new FileOutputStream(new File(context.getFilesDir(), "startup-ready.png"))) {
                 startupScreen.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, output);
             } finally { startupScreen.recycle(); }
             verifyPendingCancellation(target, result);
             verifyBulkWifiWait(target, result);
             verifyDiscoveryStartCleanup(target, result);
-            File folder = new File(context.getCacheDir(), "progress-test-" + UUID.randomUUID());
+            // Low-storage cache trimming must not remove an in-flight test transfer or its evidence.
+            File folder = new File(context.getFilesDir(), "progress-test-" + UUID.randomUUID());
             if (!folder.mkdir()) throw new IOException("Cannot create isolated test directory");
             File fixture = new File(folder, "synthetic-input.mp4");
             File ffmpeg = new File(context.getApplicationInfo().nativeLibraryDir, "libffmpeg.so");
@@ -197,7 +198,9 @@ public final class StreamProgressInstrumentation extends Instrumentation {
             });
             waitForIdleSync();
             if (samples.get() < 2 || maxIntermediate.get() < 40 || downloaded.length() <= 0) {
-                throw new AssertionError("No genuine intermediate download percentages");
+                throw new AssertionError("Invalid test transfer: samples=" + samples.get()
+                        + ", maxIntermediate=" + maxIntermediate.get()
+                        + ", exists=" + downloaded.exists() + ", bytes=" + downloaded.length());
             }
             final String[] displayed = {null};
             runOnMainSync(() -> {
