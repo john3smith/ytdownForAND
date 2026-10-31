@@ -1726,10 +1726,14 @@ final class SocialImageDownloader {
 
             boolean complete = false;
             long received = 0;
-            try (InputStream input = new BufferedInputStream(connection.getInputStream());
-                 BufferedOutputStream output = new BufferedOutputStream(destinationStream)) {
-                received = MediaTransfer.copy(input, output, length, index, urls.size(),
-                        listener::isCancelled, listener::onProgress);
+            try {
+                // Own the destination before opening the response, and do not publish
+                // until buffered writes and both stream closes have succeeded.
+                try (BufferedOutputStream output = new BufferedOutputStream(destinationStream);
+                     InputStream input = new BufferedInputStream(connection.getInputStream())) {
+                    received = MediaTransfer.copy(input, output, length, index, urls.size(),
+                            listener::isCancelled, listener::onProgress);
+                }
                 complete = true;
             } finally {
                 connection.disconnect();

@@ -170,3 +170,58 @@
   peaks and startup-duration improvement are not measured or claimed.
 - Next investigation: buffered output flush/close failures and publication order,
   then pending-task cancellation/resumption across connectivity changes.
+
+## 2026-10-31: cycle 3 - direct-video stream finalization
+
+- Investigation: compared direct-image and direct-video save/finalization order
+  with the verified staged StreamVideoPublisher path. Selected a concrete direct-
+  video defect: complete=true ran inside try-with-resources, before buffered
+  output flush and stream closes. A close/flush error therefore entered finally
+  with complete=true and published a failed download. Opening the response could
+  also fail before the already-open output stream gained a resource owner.
+- Priority: incomplete direct videos could be visible as finished downloads.
+  Confined production changes to resource lifetime and completion ordering.
+- Before/after: an executable host harness compiled the exact unmodified cleanup
+  block with the actual MediaTransfer and controlled stream/resolver doubles.
+  Before: flush, output-close and input-close faults published the failed item;
+  response-open failure leaked the output. After: all seven cases passed, including
+  success, these four faults, short input and cancellation. These host faults do
+  not claim physical Android storage failure or full Android behavior by themselves.
+- Change: own buffered output before opening response input, finish both resource
+  closes, then set complete. Existing finally deletes failed attempts. No network,
+  authentication, cookie, permission, destination or UI policy changed.
+- Android regression: the existing instrumentation now invokes the actual private
+  direct-video method against real MediaStore after its genuine owned HTTPS MP4
+  download. A test-process HTTP response fixture verifies exact saved bytes/hash,
+  video/mp4 type, 12-second duration and 320-pixel video track on success. Controlled
+  response close/open faults throw IOException, leave no owned MediaStore item and
+  emit no completion log. Unique test-owned exports alone are removed. This test
+  handler does not change TLS, trust or any production code/network configuration.
+- Required final checks: 172 JVM tests / 27 suites, zero failures/errors; lint zero
+  errors and 24 existing warnings; isolated x86_64 debug app/test APKs and security
+  inventory passed. All 56 dependency hashes independently matched. The 11 Python
+  runtime/transport packaging checks passed. A PowerShell native-stderr wrapper
+  marked their logging redirection as an error despite unittest reporting OK; its
+  original wrapper evidence is retained and decoded explicitly to UTF-8. The first
+  direct invocation exited successfully. No failed check is reported as passed.
+- Build binding: after adding the regression while the initial build was running,
+  a final incremental full check succeeded with application/test input hashes
+  captured before and verified unchanged afterward.
+- Regular emulator YTDown_API_35 / emulator-5554 used isolated .cycle3. Waited for
+  other app device actions to finish and verified the prior isolated YTDown screen
+  before installing. Genuine owned HTTPS download, publication, 99% finalization,
+  100% completion, notification/unknown/stopped progress and prior startup fallback
+  regressions passed. The real MP4 was nonempty with valid metadata. No production
+  package, user login/media or physical device was used.
+- Limits: output flush/close faults are host injections; response open/close faults
+  are Android injections. Live upstream update/authenticated third-party downloads,
+  physical storage failure, ARM64 deployment and performance gains are unverified.
+- Restore: pre-change source archive and SHA-256 verified; existing untracked
+  instruction file preserved. Extract separately for review, never reset active work.
+- Publication: local-only intermediate cycle, final publication remains cycle 20.
+  No source push, Release, production signing/install, APK/LAN delivery or service.
+  Existing version 1.9.32/code 71 and published files remain unchanged. No dependency,
+  asset, native input or third-party license/notice configuration changed.
+- Next investigate image response-open failure resource lifetime and MediaStore
+  update failure/zero-row commit behavior, then pending-task cancellation across
+  connectivity changes. These are candidates, not newly verified defects.

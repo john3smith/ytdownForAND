@@ -257,6 +257,7 @@ public final class StreamProgressInstrumentation extends Instrumentation {
             });
             result.putString("unknown_duration_ui", "PASS");
             result.putString("stopped_ui_not_spinning", "PASS");
+            verifyDirectVideoCloseCleanup(context, downloaded, result);
             result.putString("result", "PASS");
             finish(Activity.RESULT_OK, result);
         } catch (Throwable error) {
@@ -277,6 +278,106 @@ public final class StreamProgressInstrumentation extends Instrumentation {
     }
     private static void setField(Object object, String name, Object value) throws Exception {
         Field field = MainActivity.class.getDeclaredField(name); field.setAccessible(true); field.set(object, value);
+    }
+
+    /** Controlled response faults with the real direct-video path and real MediaStore. */
+    private static void verifyDirectVideoCloseCleanup(Context context, File fixture, Bundle result)
+            throws Exception {
+        byte[] media;
+        try (InputStream input = new FileInputStream(fixture);
+             ByteArrayOutputStream output = new ByteArrayOutputStream()) {
+            byte[] buffer = new byte[8192]; int count;
+            while ((count = input.read(buffer)) != -1) output.write(buffer, 0, count);
+            media = output.toByteArray();
+        }
+        // This instrumentation process alone intercepts HTTP after the genuine HTTPS test.
+        // No TLS/trust changes or external requests; all other protocols keep their handler.
+        URL.setURLStreamHandlerFactory(protocol -> "http".equals(protocol) ? new URLStreamHandler() {
+            @Override protected URLConnection openConnection(URL url) throws IOException {
+                if (!"direct-close.invalid".equals(url.getHost())) throw new IOException("Unexpected fixture host");
+                return new HttpURLConnection(url) {
+                    public void connect() { }
+                    public void disconnect() { }
+                    public boolean usingProxy() { return false; }
+                    public int getResponseCode() { return 200; }
+                    public long getContentLengthLong() { return media.length; }
+                    public String getContentType() { return "video/mp4"; }
+                    public InputStream getInputStream() throws IOException {
+                        if (url.getPath().equals("/open")) throw new IOException("Controlled response open failure");
+                        return new ByteArrayInputStream(media) {
+                            @Override public void close() throws IOException {
+                                if (url.getPath().equals("/input-close")) {
+                                    throw new IOException("Controlled response close failure");
+                                }
+                            }
+                        };
+                    }
+                };
+            }
+        } : null);
+        Method download = SocialImageDownloader.class.getDeclaredMethod("downloadVideos", Context.class,
+                List.class, File.class, String.class, NetscapeCookieJar.class, SocialImageDownloader.Listener.class);
+        download.setAccessible(true);
+        for (String mode : Arrays.asList("success", "input-close", "open")) {
+            String title = "cycle-close-" + UUID.randomUUID();
+            String name = title + "-video.mp4";
+            List<String> logs = new ArrayList<>();
+            SocialImageDownloader.Listener listener = new SocialImageDownloader.Listener() {
+                public void onTitle(String text) { }
+                public void onProgress(int percent) { }
+                public void onLog(String text) { logs.add(text); }
+                public boolean isCancelled() { return false; }
+            };
+            Throwable failure = null;
+            try {
+                download.invoke(null, context, Collections.singletonList("http://direct-close.invalid/" + mode),
+                        fixture.getParentFile(), title, null, listener);
+            } catch (java.lang.reflect.InvocationTargetException error) { failure = error.getCause(); }
+            android.net.Uri collection = android.provider.MediaStore.Downloads.EXTERNAL_CONTENT_URI;
+            List<Uri> owned = new ArrayList<>();
+            try {
+                try (android.database.Cursor rows = context.getContentResolver().query(collection,
+                        new String[]{"_id", "is_pending", "_size", "mime_type"},
+                        "_display_name = ?", new String[]{name}, null)) {
+                    if (rows == null) throw new AssertionError("Cannot inspect owned direct-video item");
+                    while (rows.moveToNext()) {
+                        Uri uri = android.content.ContentUris.withAppendedId(collection, rows.getLong(0));
+                        owned.add(uri);
+                        if (rows.getInt(1) != 0 || rows.getLong(2) != media.length
+                                || !"video/mp4".equals(rows.getString(3))) {
+                            throw new AssertionError("Direct-video metadata/commit mismatch");
+                        }
+                    }
+                }
+                boolean success = mode.equals("success");
+                if (success ? failure != null || owned.size() != 1 : !(failure instanceof IOException) || !owned.isEmpty()) {
+                    throw new AssertionError("Direct-video " + mode + " failure=" + failure + " remaining=" + owned.size());
+                }
+                boolean loggedComplete = logs.stream().anyMatch(line -> line.startsWith("직접 동영상 저장 완료:"));
+                if (loggedComplete != success) throw new AssertionError("Incorrect direct-video completion log");
+                if (success) {
+                    try (InputStream input = context.getContentResolver().openInputStream(owned.get(0));
+                         InputStream expected = new ByteArrayInputStream(media)) {
+                        if (input == null || !StreamFileIdentity.sha256(input, () -> false)
+                                .equals(StreamFileIdentity.sha256(expected, () -> false))) {
+                            throw new AssertionError("Direct-video byte integrity mismatch");
+                        }
+                    }
+                    MediaMetadataRetriever saved = new MediaMetadataRetriever();
+                    try {
+                        saved.setDataSource(context, owned.get(0));
+                        if (!"12000".equals(saved.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION))
+                                || !"320".equals(saved.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH))) {
+                            throw new AssertionError("Direct-video playback metadata mismatch");
+                        }
+                    } finally { saved.release(); }
+                }
+                result.putString("direct_video_" + mode.replace('-', '_'), "PASS");
+            } finally {
+                // Names are unique to this attempt; preserve all unrelated media.
+                for (Uri uri : owned) context.getContentResolver().delete(uri, null, null);
+            }
+        }
     }
     private static final class FixtureServer extends Thread {
         private final File file;
