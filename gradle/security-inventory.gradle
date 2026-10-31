@@ -2,8 +2,18 @@
 tasks.register('securityRuntimeInventory') {
     doLast {
         def artifacts = configurations.releaseRuntimeClasspath.resolvedConfiguration.resolvedArtifacts.collect { a ->
+            // Native/runtime AARs can exceed the build heap. Hash without loading
+            // an entire artifact into a byte array; keep the same SHA-256 output.
+            def digest = java.security.MessageDigest.getInstance('SHA-256')
+            a.file.withInputStream { input ->
+                byte[] buffer = new byte[64 * 1024]
+                int count
+                while ((count = input.read(buffer)) != -1) {
+                    if (count > 0) digest.update(buffer, 0, count)
+                }
+            }
             [module: a.moduleVersion.id.toString(), file: a.file.absolutePath,
-             sha256: java.security.MessageDigest.getInstance('SHA-256').digest(a.file.bytes).encodeHex().toString()]
+             sha256: digest.digest().encodeHex().toString()]
         }
         def required = ['com.fasterxml.jackson.core:jackson-databind:2.22.4',
                         'com.fasterxml.jackson.core:jackson-core:2.22.4',

@@ -36,3 +36,64 @@
   links without APK attachments. Performance changes require actual measurements.
 - Next step: after confirmed delivery of the setup report, the existing coordinator
   alone admits round one, respecting overlapping-app FIFO and current work gates.
+
+## 2026-10-31: cycle 1 - reject incomplete direct media transfers
+
+- Investigation: reviewed cancellation/generation checks, pending-task FIFO,
+  structured image/direct-video saving, and failure cleanup. Chose direct-media
+  completeness because a concrete shared helper could report success after an
+  early EOF, allowing callers to mark truncated media ready. The direct-video
+  caller only warned about small files; image dimension decoding alone did not
+  prove that all advertised bytes arrived. No queue defect is claimed.
+- Priority: incorrect completed downloads affect both direct images and videos.
+  The application fix is confined to the existing copy helper and its unit tests,
+  preserving authentication, transport selection, pending jobs and destinations.
+- Reproduction before patch: 7 focused JVM tests ran; the original 3 passed and
+  4 new regression cases failed because no exception was thrown. Cases covered
+  premature EOF (1,024 received / 2,048 expected), empty known/unknown-length
+  content, bytes beyond the advertised length, and cancellation during EOF read.
+- Change: check cancellation immediately after every read, reject an advertised
+  length overrun, reject premature EOF, and reject empty media. Exceptions enter
+  the existing callers' failure cleanup before their completion marker is set.
+  Nonempty unknown-length transfers and progress coalescing remain supported.
+- Focused verification after patch: all 7 tests passed, including the existing
+  byte-preservation, progress-coalescing and cancellation checks. No throughput
+  or memory improvement was measured or claimed.
+- Build-check repair within this round: the first complete command passed the
+  app/test APK, unit and lint tasks but failed securityRuntimeInventory with
+  Java heap space at the whole-artifact byte-array read. The original failed log
+  is preserved. Changed only that task's hash calculation to read 64 KiB chunks;
+  dependency selection and SHA-256 output format are unchanged. The same complete
+  command then succeeded under the same 768 MiB JVM heap cap (81 tasks, including
+  valid unchanged task outputs). All 56 artifact hashes independently matched
+  Python's streaming SHA-256 calculation. No maximum process-memory reduction
+  is claimed because process peak memory was not measured.
+- Confirmed static/build checks: 166 unit tests in 26 suites, zero failures/errors;
+  Android lint zero errors and 24 warnings; x86_64 isolated debug app/test APKs
+  built; security runtime inventory passed. The 24 lint warnings remain unresolved.
+- Status: implemented and locally validated; this is one intermediate improvement
+  round. Regular Android Emulator YTDown_API_35 / emulator-5554 passed the existing
+  owned loopback HTTPS download instrumentation in the separate .cycle1 package:
+  14,452-byte synthetic MP4, 12,000 ms duration, verified 320-pixel video track,
+  20 intermediate progress samples, 99% finalization and 100% completion. Notification
+  progress, unknown-duration UI and stopped progress behavior passed. The test's
+  own MediaStore export was removed by its existing cleanup; no real user media
+  was used. Clipboard reads were blocked only for the test package. Authenticated
+  third-party downloads, a physical phone and ARM64 production deployment remain
+  untested in this round.
+- Initial observations found ADB connected but Android
+  framework services missing; host memory pressure and Binder failures are
+  recorded locally. The framework and existing app screen recovered without
+  this round restarting the emulator or stopping other user jobs. These initial
+  failed observations are not passing app checks.
+- Restore: the pre-change Git source archive, archive/manifest hashes, preserved
+  instruction-file hash and recovery method are retained outside project source.
+  Restore into a separate review directory; do not reset existing work.
+- Publication: local-only intermediate round. No source push, Release, production
+  signing, operational installation, APK delivery or LAN serving is authorized
+  here. Existing version 1.9.32/versionCode 71 and published assets are unchanged.
+- Dependencies and rights: no dependency version, native source/input, asset or
+  third-party license configuration changed; no external media was incorporated
+  into source.
+- Next investigation: buffered output flush/close failure and publication order,
+  followed by pending-task cancellation/resumption across connectivity changes.
