@@ -280,3 +280,48 @@
 - Remaining candidates: image response-open resource lifetime and destination
   open exceptions; pending-task cancellation/connectivity changes; progress at
   the copy-to-publication boundary. These are investigation areas, not new fixes.
+
+## 2026-10-31: cycle 5 - destination open resource lifetime (runtime deferred)
+
+- Status: deferred for queued user work, not a completed improvement cycle.
+  Preserve the same round for the native coordinator to resume after report
+  delivery and user work; no new plan, queue mutation or manual retry registration.
+- Investigation: both direct image/video methods opened their MediaStore/file
+  destination before the failure-cleanup guard. An insert exception leaked the
+  connection; an output-open exception additionally retained the newly inserted
+  pending item. Images also opened response input before owning output, leaking
+  output if response opening failed. These precede cycle 4's checked commit and
+  cycle 3's video stream-close ordering, rather than repeating those fixes.
+- Change: protect destination allocation/open with the existing cleanup guard;
+  own image buffered output before opening response input. On failure, disconnect
+  and delete only this attempt's URI/file. No deletion of historical downloads.
+- Before/after: compiled exact unmodified source blocks with the real MediaTransfer
+  and controlled host stream/resolver doubles. Five failures reproduced before:
+  insert/output exceptions for both paths and response-open for images. After:
+  18 cases passed covering success, insert exception/null, output exception/null,
+  response open/close, short input and cancellation. These do not prove physical
+  Android storage failure or a successful Android runtime execution.
+- Static/build validation passed: 172 JVM tests / 27 suites, zero
+  failures/errors; lint zero errors and 24 warnings; isolated .cycle5
+  x86_64 app/test APK builds; 56 independent dependency hashes matched;
+  11 Python runtime/transport packaging checks. Application/test input hashes
+  were captured before build and confirmed unchanged after all final checks.
+- Runtime: NOT RUN this round. Regular emulator identity/readiness and the prior
+  isolated YTDown foreground were read-only observed. A new queued user command
+  appeared before installation/instrumentation, so saved local work and yielded.
+  No runtime pass is inferred from a build or host double. Extended the existing
+  real-MediaStore instrumentation for output-open and response-open/close faults
+  for images/videos; these checks compiled but await execution, along with the
+  existing genuine owned HTTPS MP4 download, metadata and progress regressions.
+- Restore: verified source-only pre-change ZIP and hash retained locally;
+  extract into a separate review directory, never reset active work or user data.
+  Existing untracked project instructions were preserved and hash verified.
+- Publication: intermediate local-only checkpoint. No push, Release, production
+  signing/install, APK delivery, LAN link or service. Existing version 1.9.32/code
+  71 and published main/assets remain unchanged; final publication stays cycle 20.
+  No new dependencies, native inputs, permissions, assets or notice changes.
+- Limits/next: complete the pending runtime checks in this same cycle, then
+  bind passed validation to the final local commit before completed status.
+  Physical storage failure, ARM64, authenticated third-party downloads and
+  performance gains are unverified. Later candidates: pending cancellation and
+  connectivity transitions, and copy-to-publication progress; not new fixes yet.

@@ -316,10 +316,12 @@ public final class StreamProgressInstrumentation extends Instrumentation {
                         return url.getPath().startsWith("/image/") ? "image/png" : "video/mp4";
                     }
                     public InputStream getInputStream() throws IOException {
-                        if (url.getPath().equals("/open")) throw new IOException("Controlled response open failure");
+                        if (url.getPath().equals("/open") || url.getPath().endsWith("/response_open")) {
+                            throw new IOException("Controlled response open failure");
+                        }
                         return new ByteArrayInputStream(response) {
                             @Override public void close() throws IOException {
-                                if (url.getPath().equals("/input-close")) {
+                                if (url.getPath().equals("/input-close") || url.getPath().endsWith("/response_close")) {
                                     throw new IOException("Controlled response close failure");
                                 }
                             }
@@ -394,11 +396,11 @@ public final class StreamProgressInstrumentation extends Instrumentation {
         verifyMediaStoreCommit(context, fixture.getParentFile(), media, image, result);
     }
 
-    /** Actual download methods and real MediaStore I/O; only commit outcome is injected. */
+    /** Actual download methods and real MediaStore I/O with controlled open/close/commit faults. */
     private static void verifyMediaStoreCommit(Context context, File directory,
                                               byte[] video, byte[] image, Bundle result) throws Exception {
         for (String kind : Arrays.asList("image", "video")) {
-            for (String mode : Arrays.asList("success", "zero", "throw")) {
+            for (String mode : Arrays.asList("success", "zero", "throw", "output_open", "response_open", "response_close")) {
                 CommitProvider provider = new CommitProvider(context.getContentResolver(), mode);
                 android.content.pm.ProviderInfo info = new android.content.pm.ProviderInfo();
                 info.authority = "media";
@@ -427,16 +429,17 @@ public final class StreamProgressInstrumentation extends Instrumentation {
                     download.setAccessible(true);
                     try {
                         download.invoke(null, isolated, Collections.singletonList(
-                                "http://direct-close.invalid/" + kind + "/success"), directory, title,
+                                "http://direct-close.invalid/" + kind + "/" + mode), directory, title,
                                 photo ? Boolean.FALSE : null, listener);
                     } catch (java.lang.reflect.InvocationTargetException error) { failure = error.getCause(); }
                     boolean success = mode.equals("success");
-                    if (provider.created == null || provider.commits != 1
+                    boolean beforeCommit = mode.equals("output_open") || mode.startsWith("response_");
+                    if (provider.created == null || provider.commits != (beforeCommit ? 0 : 1)
                             || provider.deleted != (success ? 0 : 1)) {
                         throw new AssertionError("Commit lifecycle mismatch: " + kind + "/" + mode);
                     }
-                    if (success ? failure != null : mode.equals("zero")
-                            ? !(failure instanceof IOException) : !(failure instanceof IllegalStateException)) {
+                    if (success ? failure != null : mode.equals("throw")
+                            ? !(failure instanceof IllegalStateException) : !(failure instanceof IOException)) {
                         throw new AssertionError("Wrong commit result: " + kind + "/" + mode + " " + failure);
                     }
                     String completed = photo ? "사진 저장 완료:" : "직접 동영상 저장 완료:";
@@ -501,7 +504,11 @@ public final class StreamProgressInstrumentation extends Instrumentation {
             if (created == null || !created.equals(uri)) throw new AssertionError("Unowned fixture URI");
         }
         @Override public android.os.ParcelFileDescriptor openFile(Uri uri, String mode) throws FileNotFoundException {
-            checkOwned(uri); return real.openFileDescriptor(uri, mode);
+            checkOwned(uri);
+            if (this.mode.equals("output_open") && mode.contains("w")) {
+                throw new FileNotFoundException("Controlled destination open failure");
+            }
+            return real.openFileDescriptor(uri, mode);
         }
         @Override public android.database.Cursor query(Uri uri, String[] projection, String selection,
                                                        String[] args, String order) {
