@@ -715,3 +715,49 @@
   cancellation; then LoginActivity navigation/renderer cleanup. Independently
   reproduce a user-visible fault before selecting any patch. Only the existing
   coordinator may admit the next round after final-message delivery verification.
+
+## 2026-10-31: cycle 14 - resolver deadline checkpoint, user work yield
+
+- Status: deferred / queued_user_work; this is not a completed improvement round.
+- Reproduced a separate pre-profile liveness gap: the Instagram post-owner HTTP
+  resolver has byte and per-read idle bounds, but no independent UI deadline.
+  A response that keeps arriving within each socket read timeout can retain the
+  account discovery UI beyond the profile scan's intended bounded wait. The
+  profile deadline added earlier starts only after owner resolution completes.
+- Change: seven production lines add a ten-minute owner-resolution deadline using
+  the existing Handler and fail/cleanup path. Cancel/failure remove it; successful
+  resolution removes it before the profile stage gets its own existing deadline.
+  Finished guards suppress success/error callbacks arriving after a timeout.
+- Before/after: the exact production resolver entry/cleanup harness fails before
+  with no registered resolver deadline. Ten host cases pass after: timeout with
+  late success/error, timeout with already queued success/error, cancel with late
+  or queued callbacks, normal success/error and direct-profile routing. Real Java
+  worker, controlled resolver and Handler dispatch; no elapsed ten-minute claim.
+- Checks completed: 172 JVM tests / 27 suites freshly executed, no failures or
+  errors; lint no errors / 23 warnings; isolated x86_64 application and
+  existing test APK build; 11 Python tests; 56 dependency hashes; build input
+  identity and original production package/version/install times/APK hash retained.
+- Yield: a fresh durable queue check found a later user command before any
+  emulator installation or interaction. The runtime preflight stopped at this
+  guard. This is queue-aware yielding, not an Android test failure. Existing app
+  regressions and owned HTTPS media download have NOT run for this new source.
+- Restore: verified prechange tracked-source ZIP and hash, with original source
+  content checked against the parent commit. Extract separately for review; do
+  not reset active work or user data. Untracked AGENTS.md preserved.
+- Checkpoint recovery: archive/blob and archive/working byte comparisons caught
+  Git archive CRLF conversion versus Git blob and working-file LF. Recorded byte
+  counts and line endings; prechange working bytes match the exact parent blob
+  SHA-256, and normalized archive source equals it. No backup was replaced.
+- Publication: local checkpoint only, no push/shared-context push/Release,
+  production signing/install/activation, APK/LAN server or delivery. Remote main
+  and existing Release asset unchanged. No dependency/license/permission/asset
+  changes. Dirty shared-context checkout preserved.
+- Limits: this bounds discovery UI waiting, not in-flight socket lifetime. The
+  worker is still daemonized; socket cancellation and naturally slow upstream,
+  authenticated Instagram and Activity recreation are unverified. No measured
+  performance/power claim or complete runtime validation claim.
+- Resume THIS cycle: verify this checkpoint and latest queue/ownership, perform
+  the existing regular-emulator regression suite and real owned HTTPS MP4 through
+  completion, inspect its output metadata and screens, then finalize validation
+  and result. Do not repeat the patch/build/commit unnecessarily. Only the native
+  coordinator resumes this round after user work and final report receipt.

@@ -99,6 +99,8 @@ final class InstagramAccountMediaDiscovery {
         }
         startedAt = System.currentTimeMillis();
         addDiagnostic("Instagram 게시물 링크에서 작성자 계정 확인 시작");
+        // A response can keep trickling within each socket read timeout.
+        handler.postDelayed(resolverTimeoutRunnable, MAX_SCAN_MILLIS);
         Thread resolver = new Thread(() -> {
             try {
                 String owner = SocialImageDownloader.resolveInstagramPostOwner(
@@ -128,6 +130,7 @@ final class InstagramAccountMediaDiscovery {
     }
 
     private void startProfileScan() {
+        handler.removeCallbacks(resolverTimeoutRunnable);
         startedAt = System.currentTimeMillis();
         try {
             PackageInfo appInfo = activity.getPackageManager().getPackageInfo(
@@ -237,6 +240,9 @@ final class InstagramAccountMediaDiscovery {
         addDiagnostic("사용자가 검색을 취소했습니다.");
         cleanup();
     }
+
+    private final Runnable resolverTimeoutRunnable = () -> fail(
+            "Instagram 게시물 작성자 확인 시간이 초과되었습니다. 다시 시도해 주세요.");
 
     private final Runnable timeoutRunnable = () -> fail(
             "Instagram 목록을 끝까지 확인하기 전에 검색 시간이 초과되었습니다. "
@@ -459,6 +465,7 @@ final class InstagramAccountMediaDiscovery {
     }
 
     private void cleanup() {
+        handler.removeCallbacks(resolverTimeoutRunnable);
         handler.removeCallbacks(scanRunnable);
         handler.removeCallbacks(timeoutRunnable);
         if (webView == null) {
