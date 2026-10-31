@@ -1093,3 +1093,62 @@
   death/disk-full durability remain unverified. Next investigation may examine
   transport blocking and cancellation timing using an owned network fixture.
   Native coordinator alone admits any next round after full report receipt.
+
+## 2026-10-31: cycle 19 - investigate real transport cancellation and truncated metadata
+
+- Result: no_improvement. Investigated actual socket blocking and HTTP body
+  framing, rather than counting cycle18's controlled URLConnection checks again.
+  No new Android application defect was established; no application, test,
+  dependency, license, permission, version or packaged asset change was made.
+- Read-only preflight verified the current native plan/job and independent app
+  scopes, cycle18's full final-message receipt, exact source and prior evidence,
+  public matching source remote, private shared-context destination, published
+  v1.9.33 asset metadata and installed production/isolated package identities.
+  Existing dirty shared-context work remains local and untouched.
+- New host investigation compiled the actual ScopedHttpConnection,
+  BoundedDocument and cookie classes on Java17. A synthetic server used real
+  loopback TCP sockets, with no URLConnection mocks, upstream account, cookies,
+  private media, Android UI tests, ARTEMIS or external content downloads.
+- Seven checks passed: complete fixed-length and chunked documents, cancellation
+  before connect, cancellation during delayed headers/fixed-length body/chunked
+  body, and unknown-length oversized chunked metadata rejection. Actual socket
+  read stack observation establishes blocking before cancellation. All three
+  gated cancellation cases stayed pending during a 300 ms observation window,
+  then rejected their result after server release; measured release-to-completion
+  was 1/0/0 ms on this host. These are fixture observations, not upstream latency
+  or Android speed claims. Configured connect/read values remain 15/30 seconds;
+  natural timeout expiration and immediate socket abortion were not tested.
+- One additional observation: host JDK17 accepted a six-byte prefix when the
+  response declared 100 bytes. This alone does not establish an Android defect.
+  Official Android15 Http1xStream FixedLengthSource and ChunkedSource reject
+  premature EOF with ProtocolException. Official Android HttpURLConnection docs
+  also explain transparent gzip clearing Content-Length/Content-Encoding.
+  Preserved a local hashed source reference; no upstream source was added to Git.
+  Rejected a speculative application content-length patch pending Android proof.
+- Investigation fixture setup had two local failures, both resolved in this
+  cycle: missing compile classpath for the existing AuthCookieStore reference,
+  and a cancellation/read-entry race in the fixture. Added the existing compiled
+  production classpath and waited for an actual socket read stack before
+  cancelling. Failed attempts remain separate evidence; the final seven checks
+  passed. No failed attempt is reported as a passed application check.
+- Exact hashes reconcile all 127 prior tracked inputs, 24 prior validation
+  evidence files and both APKs. Preserved prior results: Debug/Release each 174
+  JVM tests, 11 Python checks, lint zero errors / 23 warnings, 56 dependency hashes
+  and cycle18's API35/x86_64 regressions plus actual owned HTTPS MP4 completion.
+  No fresh JVM/build/lint/Android/download run is claimed in this unchanged-source
+  investigation. No device installation or interaction was needed.
+- Verified a prechange tracked-source ZIP with hash and every archived entry;
+  untracked project instructions and unrelated work remain intact. Restore by
+  extracting separately for review; never reset current work or user data.
+  Only this investigation log is committed locally. Source push, Release,
+  signing, production activation, APK/LAN delivery/server and duplicate messages
+  were not attempted; remote main, v1.9.33 and installed packages are unchanged.
+- Limits: host Java17 socket observations and official Android15 source review
+  do not prove current device socket timing, API24/physical ARM64 behavior,
+  authenticated upstream cancellation or gzip/truncation behavior on device.
+  No performance improvement is claimed and this is not a code improvement.
+- Next distinct area: final packaging/signing/ABI and accumulated source versus
+  release verification for the reserved cycle20 publication, including any
+  remaining reproducible transport candidate only with platform-specific proof.
+  No new round, queue mutation or scheduler was started. Native coordinator
+  alone handles the next investigation after the full final report receipt.
