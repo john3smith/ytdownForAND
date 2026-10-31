@@ -1075,6 +1075,7 @@ public final class MainActivity extends Activity {
         }
         if (wifiOnlySwitch.isChecked() && !isWifiConnected()) {
             statusText.setText(getString(R.string.wifi_waiting, bulkMediaUrls.size()));
+            getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
             return;
         }
         String url = bulkMediaUrls.pollFirst();

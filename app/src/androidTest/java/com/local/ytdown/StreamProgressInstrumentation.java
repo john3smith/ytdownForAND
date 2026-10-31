@@ -93,6 +93,7 @@ public final class StreamProgressInstrumentation extends Instrumentation {
                 startupScreen.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, output);
             } finally { startupScreen.recycle(); }
             verifyPendingCancellation(target, result);
+            verifyBulkWifiWait(target, result);
             File folder = new File(context.getCacheDir(), "progress-test-" + UUID.randomUUID());
             if (!folder.mkdir()) throw new IOException("Cannot create isolated test directory");
             File fixture = new File(folder, "synthetic-input.mp4");
@@ -580,6 +581,99 @@ public final class StreamProgressInstrumentation extends Instrumentation {
             } catch (Exception error) { throw new RuntimeException(error); }
         });
         waitForIdleSync();
+    }
+
+    /** Real emulator Wi-Fi transition and window flags; bulk items are controlled and never started. */
+    private void verifyBulkWifiWait(MainActivity target, Bundle result) throws Exception {
+        Method connected = MainActivity.class.getDeclaredMethod("isWifiConnected");
+        connected.setAccessible(true);
+        Method next = MainActivity.class.getDeclaredMethod("startNextBulkDownload", String.class);
+        next.setAccessible(true);
+        android.widget.Switch toggle = (android.widget.Switch) field(target, "wifiOnlySwitch");
+        boolean originalOnly = toggle.isChecked();
+        if (!Boolean.TRUE.equals(connected.invoke(target))) {
+            throw new AssertionError("Wi-Fi transition regression requires initially connected emulator Wi-Fi");
+        }
+        @SuppressWarnings("unchecked")
+        Deque<String> items = (Deque<String>) field(target, "bulkMediaUrls");
+        DownloadQueue.Task owner = new DownloadQueue.Task("https://example.invalid/account",
+                "best", true, true, true);
+        try {
+            runOnMainSync(() -> {
+                try {
+                    // Hold discovery across system callbacks: these synthetic URLs must never start.
+                    setField(target, "bulkMode", true);
+                    setField(target, "bulkScanning", true);
+                    setField(target, "accountTask", owner);
+                    items.add("https://example.invalid/bulk-1");
+                    items.add("https://example.invalid/bulk-2");
+                    toggle.setChecked(true);
+                    target.getWindow().addFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+                } catch (Exception error) { throw new RuntimeException(error); }
+            });
+            shell("svc wifi disable");
+            awaitWifi(target, connected, false);
+            runOnMainSync(() -> {
+                try {
+                    setField(target, "bulkScanning", false);
+                    next.invoke(target, "best");
+                    if ((target.getWindow().getAttributes().flags
+                            & android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON) != 0) {
+                        throw new AssertionError("Bulk Wi-Fi wait keeps actual Android window awake");
+                    }
+                    if (items.size() != 2 || field(target, "accountTask") != owner
+                            || !Boolean.TRUE.equals(field(target, "bulkMode"))
+                            || Boolean.TRUE.equals(field(target, "downloading"))) {
+                        throw new AssertionError("Wi-Fi wait changed pending bulk ownership/items");
+                    }
+                    String expected = target.getString(R.string.wifi_waiting, 2);
+                    if (!expected.equals(((TextView) field(target, "statusText")).getText().toString())) {
+                        throw new AssertionError("Bulk Wi-Fi wait status missing");
+                    }
+                } catch (Exception error) { throw new RuntimeException(error); }
+                finally {
+                    try { setField(target, "bulkScanning", true); }
+                    catch (Exception error) { throw new RuntimeException(error); }
+                }
+            });
+            result.putString("bulk_wifi_wait_releases_actual_window_preserves_items", "PASS");
+        } finally {
+            // Restore the original connected Wi-Fi even if an assertion fails.
+            try {
+                shell("svc wifi enable");
+                awaitWifi(target, connected, true);
+            } finally {
+                runOnMainSync(() -> {
+                    try {
+                        setField(target, "bulkMode", false);
+                        setField(target, "bulkScanning", false);
+                        setField(target, "accountTask", null);
+                        items.clear();
+                        toggle.setChecked(originalOnly);
+                    } catch (Exception error) { throw new RuntimeException(error); }
+                });
+            }
+        }
+        result.putString("emulator_wifi_connection_restored", "PASS");
+        waitForIdleSync();
+    }
+
+    private void shell(String command) throws IOException {
+        try (android.os.ParcelFileDescriptor descriptor = getUiAutomation().executeShellCommand(command);
+             InputStream input = new android.os.ParcelFileDescriptor.AutoCloseInputStream(descriptor)) {
+            byte[] buffer = new byte[1024];
+            while (input.read(buffer) != -1) { }
+        }
+    }
+
+    private void awaitWifi(MainActivity target, Method connected, boolean expected) throws Exception {
+        long deadline = SystemClock.elapsedRealtime() + 30000;
+        while (Boolean.TRUE.equals(connected.invoke(target)) != expected) {
+            if (SystemClock.elapsedRealtime() >= deadline) {
+                throw new AssertionError("Timed out waiting for actual emulator Wi-Fi state=" + expected);
+            }
+            SystemClock.sleep(100);
+        }
     }
 
     private static final class FixtureServer extends Thread {

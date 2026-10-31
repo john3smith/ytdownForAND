@@ -395,3 +395,36 @@
 - Limits/next: next investigate actual connectivity loss/recovery and bulk queue handoff.
   Physical devices, ARM64 production, authenticated third-party downloads and
   performance improvement remain unverified; no measured performance claim.
+
+## 2026-10-31: cycle 7 - release screen-on flag while bulk downloads wait for Wi-Fi
+
+- Status: completed locally. The seventh round only; no new plan or queue changes.
+- New finding/priority: after account discovery or between bulk media items,
+  startNextBulkDownload returned for Wi-Fi-only waiting without clearing
+  FLAG_KEEP_SCREEN_ON. An indefinite network wait could therefore keep the screen
+  awake. The ordinary pending queue already clears this flag in its waiting path.
+- Fix: clear only the window's screen-on flag at the existing bulk Wi-Fi wait.
+  Preserve bulk ownership, FIFO media/options, foreground service, cancellation,
+  connectivity callbacks and active downloads. startDownload restores the flag
+  when a media download actually resumes. No UI layout or dependency change.
+- Reproduction: exact original method with controlled network/window doubles
+  failed the offline screen-release case; the modified method passed all seven
+  cases, including pending preservation, reconnect FIFO/options/screen-on,
+  unrestricted mode, active transfer, discovery and inactive bulk guards.
+- Required checks: 172 JVM tests / 27 suites, zero failures/errors;
+  lint zero errors / 24 warnings; isolated .cycle7 x86_64 app/test builds;
+  56 independently matched dependency hashes; 11 Python packaging
+  checks. Final build/test input hashes were captured and reconciled unchanged.
+- Runtime: regular emulator actual Wi-Fi loss/recovery and actual Android window flag passed. Controlled bulk items/ownership remained untouched; Wi-Fi was restored in finally. Genuine owned HTTPS MP4 download completed with nonempty file, duration/track metadata, progress/notification and MediaStore regressions passed.
+- Restore: verified prechange source ZIP and SHA-256; extract in a separate review
+  directory. Preserve existing untracked instructions and all user data.
+- Publication: intermediate local-only cycle, final publication remains cycle 20.
+  No push, Release, production signing/install, APK/LAN delivery or serving.
+  Production version 1.9.32/code71 and published main/asset metadata unchanged.
+  No new dependency, permission, native binary, asset or license/notice change.
+  Dirty/diverged shared-context checkout preserved without pull/merge/reset/stash.
+- Limits: controlled bulk state does not prove authenticated account discovery or
+  an upstream bulk download. No battery/power/performance measurement is claimed.
+  Physical devices and ARM64 production remain untested in this local cycle.
+- Next investigation: account discovery callback ownership/lifecycle and queue
+  handoff after discovery errors, without repeating this screen-on flag fix.
