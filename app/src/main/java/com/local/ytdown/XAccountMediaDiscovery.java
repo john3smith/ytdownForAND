@@ -215,6 +215,8 @@ final class XAccountMediaDiscovery {
                 return true;
             }
         });
+        // Loading and JavaScript evaluation may never call back; bound both waits.
+        handler.postDelayed(timeoutRunnable, MAX_SCAN_MILLIS);
         webView.loadUrl("https://x.com/" + username + "/media");
     }
 
@@ -226,6 +228,10 @@ final class XAccountMediaDiscovery {
         addDiagnostic("사용자가 검색을 취소했습니다.");
         cleanup();
     }
+
+    private final Runnable timeoutRunnable = () -> {
+        if (!finished) completeOrFail("X 계정 미디어 검색 시간이 초과되었습니다.");
+    };
 
     private final Runnable scanRunnable = new Runnable() {
         @Override
@@ -525,6 +531,7 @@ final class XAccountMediaDiscovery {
     }
 
     private void cleanup() {
+        handler.removeCallbacks(timeoutRunnable);
         handler.removeCallbacks(scanRunnable);
         if (webView == null) {
             return;

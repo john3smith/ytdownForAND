@@ -29,8 +29,10 @@ import org.json.JSONObject;
 /** Test APK only: downloads an owned synthetic MP4 over loopback, never visits a site/session. */
 public final class StreamProgressInstrumentation extends Instrumentation {
     private boolean diagnosticOnly;
+    private boolean timeoutOnly;
     @Override public void onCreate(Bundle arguments) {
         diagnosticOnly = arguments != null && "true".equals(arguments.getString("diagnosticOnly"));
+        timeoutOnly = arguments != null && "true".equals(arguments.getString("timeoutOnly"));
         super.onCreate(arguments); start();
     }
     @Override public void onStart() {
@@ -55,6 +57,12 @@ public final class StreamProgressInstrumentation extends Instrumentation {
             }
             if (diagnosticOnly) {
                 verifyDiagnosticLifecycle(target, result);
+                result.putString("result", "PASS");
+                finish(Activity.RESULT_OK, result);
+                return;
+            }
+            if (timeoutOnly) {
+                verifyXDiscoveryDeadline(target, result);
                 result.putString("result", "PASS");
                 finish(Activity.RESULT_OK, result);
                 return;
@@ -105,6 +113,7 @@ public final class StreamProgressInstrumentation extends Instrumentation {
             verifyPendingCancellation(target, result);
             verifyBulkWifiWait(target, result);
             verifyDiscoveryStartCleanup(target, result);
+            verifyXDiscoveryDeadline(target, result);
             verifyXRendererLoss(target, result);
             // Low-storage cache trimming must not remove an in-flight test transfer or its evidence.
             File folder = new File(context.getFilesDir(), "progress-test-" + UUID.randomUUID());
@@ -332,7 +341,7 @@ public final class StreamProgressInstrumentation extends Instrumentation {
         Field field = object.getClass().getDeclaredField(name); field.setAccessible(true); return field.get(object);
     }
     private static void setField(Object object, String name, Object value) throws Exception {
-        Field field = MainActivity.class.getDeclaredField(name); field.setAccessible(true); field.set(object, value);
+        Field field = object.getClass().getDeclaredField(name); field.setAccessible(true); field.set(object, value);
     }
 
     /** Controlled response faults with the real direct-video path and real MediaStore. */
@@ -505,6 +514,98 @@ public final class StreamProgressInstrumentation extends Instrumentation {
             });
             waitForIdleSync();
             result.putString((instagram ? "instagram" : "x") + "_partial_discovery_start_cleanup", "PASS");
+        }
+    }
+
+    /** Real WebViews/Handler registration; controlled deadline delivery avoids a ten-minute test. */
+    private void verifyXDiscoveryDeadline(MainActivity target, Bundle result) throws Exception {
+        for (String mode : Arrays.asList("loading", "evaluating", "partial", "cancelled", "completed")) {
+            Throwable[] failure = {null};
+            runOnMainSync(() -> {
+                android.view.View content = target.findViewById(android.R.id.content);
+                android.view.ViewGroup parent = (android.view.ViewGroup) content.getParent();
+                android.widget.FrameLayout isolated = new android.widget.FrameLayout(target) {
+                    @Override public void addView(android.view.View child, int index,
+                                                  android.view.ViewGroup.LayoutParams params) {
+                        ((android.webkit.WebView) child).getSettings().setBlockNetworkLoads(true);
+                        super.addView(child, index, params);
+                    }
+                };
+                content.setId(android.view.View.NO_ID);
+                isolated.setId(android.R.id.content);
+                parent.addView(isolated, new android.view.ViewGroup.LayoutParams(1, 1));
+                int[] completions = {0}, errors = {0};
+                XAccountMediaDiscovery discovery = new XAccountMediaDiscovery(target,
+                        new XAccountMediaDiscovery.Listener() {
+                            public void onComplete(String username, List<String> urls) {
+                                if (urls.size() != 1) throw new AssertionError("Lost existing partial-result policy");
+                                completions[0]++;
+                            }
+                            public void onError(String detail, String diagnostic) {
+                                if (!detail.contains("시간") || diagnostic.isEmpty()) {
+                                    throw new AssertionError("Missing timeout diagnostic");
+                                }
+                                errors[0]++;
+                            }
+                        });
+                try {
+                    discovery.start("https://x.com/cycle_fixture");
+                    android.webkit.WebView view = (android.webkit.WebView) field(discovery, "webView");
+                    android.webkit.WebViewClient client = view.getWebViewClient();
+                    android.os.Handler handler = (android.os.Handler) field(discovery, "handler");
+                    Runnable scan = (Runnable) field(discovery, "scanRunnable");
+                    Runnable timeout = null;
+                    try { timeout = (Runnable) field(discovery, "timeoutRunnable"); }
+                    catch (NoSuchFieldException baseline) { /* Exercise the original scan-only deadline. */ }
+                    if (timeout != null && !handler.hasCallbacks(timeout)) {
+                        throw new AssertionError("Deadline not registered before first page completion");
+                    }
+                    if (!mode.equals("loading")) client.onPageFinished(view, "about:blank");
+                    if (timeout != null && !handler.hasCallbacks(timeout)) {
+                        throw new AssertionError("Page completion removed the independent deadline");
+                    }
+                    handler.removeCallbacks(scan);
+                    setField(discovery, "startedAt", System.currentTimeMillis() - 600001L);
+                    setField(discovery, "evaluating", !mode.equals("loading"));
+                    if (mode.equals("partial") || mode.equals("completed")) {
+                        @SuppressWarnings("unchecked") Set<String> urls = (Set<String>) field(discovery, "statusUrls");
+                        urls.add("https://x.com/cycle_fixture/status/123");
+                    }
+                    if (mode.equals("cancelled")) discovery.cancel();
+                    if (mode.equals("completed")) {
+                        Method complete = XAccountMediaDiscovery.class.getDeclaredMethod("completeOrFail", String.class);
+                        complete.setAccessible(true);
+                        complete.invoke(discovery, "Controlled completion");
+                    }
+                    if (timeout != null) {
+                        if ((mode.equals("cancelled") || mode.equals("completed")) && handler.hasCallbacks(timeout)) {
+                            throw new AssertionError("Terminal discovery retained deadline callback");
+                        }
+                        handler.removeCallbacks(timeout);
+                        timeout.run();
+                        timeout.run(); // A late duplicate must not deliver twice.
+                    } else if (!mode.equals("loading")) scan.run();
+                    int expectedComplete = mode.equals("partial") || mode.equals("completed") ? 1 : 0;
+                    int expectedErrors = mode.equals("loading") || mode.equals("evaluating") ? 1 : 0;
+                    if (!Boolean.TRUE.equals(field(discovery, "finished"))
+                            || field(discovery, "webView") != null || view.getParent() != null
+                            || isolated.getChildCount() != 0 || handler.hasCallbacks(scan)
+                            || (timeout != null && handler.hasCallbacks(timeout))
+                            || completions[0] != expectedComplete || errors[0] != expectedErrors) {
+                        throw new AssertionError("Discovery deadline failed to finish/clean up: " + mode);
+                    }
+                    client.onPageFinished(view, "about:blank");
+                    if (handler.hasCallbacks(scan)) throw new AssertionError("Late page restarted finished scan");
+                } catch (Throwable error) { failure[0] = error; }
+                finally {
+                    discovery.cancel();
+                    parent.removeView(isolated);
+                    content.setId(android.R.id.content);
+                }
+            });
+            if (failure[0] != null) throw new AssertionError("X discovery deadline: " + mode, failure[0]);
+            waitForIdleSync();
+            result.putString("x_discovery_deadline_" + mode, "PASS");
         }
     }
 

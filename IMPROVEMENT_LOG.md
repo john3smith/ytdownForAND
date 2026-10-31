@@ -567,3 +567,55 @@
   a natural late discovery error remain untested. No performance/power claim.
 - Next investigation: account discovery resources and ownership across Activity
   recreation; distinguish intended background completion from stale-window work.
+
+## 2026-10-31: cycle 11 - bound stalled X discovery loading and JavaScript waits
+
+- Status: completed locally, eleventh round only; final publication remains cycle 20.
+- Investigation: reviewed Activity destruction, account owner guards and discovery
+  resource lifetime. The intended background completion paths were preserved.
+  Found a separate liveness fault: X's ten-minute check was reached only by a
+  page-driven scan, and its evaluating guard returned before the deadline check.
+  A page that never finishes or an evaluation without callback can retain the
+  discovery WebView, scanning owner and foreground work indefinitely.
+- Fix: schedule an independent ten-minute Handler deadline before initial URL
+  loading; remove it through the existing shared cleanup path. The finished guard
+  prevents late duplicate terminal delivery. Keep the existing X partial-result
+  timeout policy, cancellation, owner handling, and scan behavior unchanged.
+  Seven production lines; no layout or dependency/permission/native/asset change.
+- Before/after: extracted actual production scan/terminal/cleanup methods with
+  host resource/Handler doubles failed loading, evaluation and partial-result
+  stalled cases before; all five cases passed after, including cancellation and
+  prior success. Host scheduling is controlled, not Android timing evidence.
+  Android baseline independently reproduced retained real WebView on a stalled
+  initial page; corrected real Handler registration and all five terminal cleanup
+  cases passed. Deadline delivery is controlled without a ten-minute wall wait;
+  upstream pages are blocked and no natural network stall is claimed.
+- Required checks: 172 JVM tests / 27 suites, no failures/errors; lint no errors /
+  23 warnings; isolated x86_64 app/test builds; 11 Python packaging tests;
+  56 dependency hashes verified; exact final app/test build inputs reconciled.
+- Runtime: owned HTTPS MP4 completed with 14452 bytes, 12000 ms duration,
+  valid 320-pixel video track and 22 intermediate samples. Actual MediaStore
+  success/fault cleanup, prior renderer/partial-discovery cleanup, cancellation,
+  Wi-Fi loss/recovery and engine readiness regressions passed. Fresh startup,
+  transfer and final isolated-app screens reviewed.
+- Restore: verified prechange source-only ZIP and SHA-256; extract separately for
+  review, never reset active work/user data. Untracked AGENTS.md preserved.
+- Same-round preflight: first Android attempt stopped at the foreground guard
+  while another app owned the emulator, before install or interaction. Rechecked
+  after independent host/build work and proceeded only from isolated YTDown with
+  no active instrumentation; other app/user work was not stopped.
+  The first baseline run failed in the test setter, which reflected MainActivity
+  instead of the supplied discovery class. The setter now uses the actual class;
+  main-thread failures are returned to the instrumentation thread. Corrected test
+  build/lint/input hashes were rerun before baseline and final runtime checks.
+  Original failed output/crash evidence is retained; assertions were not relaxed.
+- Publication: local commit only; no push, Release, production signing/install,
+  APK/LAN delivery/server or operational activation. Production package version,
+  install times and APK bytes, published main and Release asset unchanged.
+  No new dependency, permission, native binary, asset or license/notice inputs.
+  Shared-context dirty/diverged state preserved without pull/merge/reset/push.
+- Limits: physical devices, ARM64 production, authenticated upstream downloads,
+  natural stalled page and elapsed ten-minute timing are untested. No measured
+  performance/power improvement is claimed.
+- Next investigation: Instagram discovery's independent timeout coverage and
+  resolver ownership. Confirm/reproduce independently before changing that path.
