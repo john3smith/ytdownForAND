@@ -290,21 +290,34 @@ public final class StreamProgressInstrumentation extends Instrumentation {
             while ((count = input.read(buffer)) != -1) output.write(buffer, 0, count);
             media = output.toByteArray();
         }
+        byte[] image;
+        android.graphics.Bitmap bitmap = android.graphics.Bitmap.createBitmap(640, 480,
+                android.graphics.Bitmap.Config.ARGB_8888);
+        try (ByteArrayOutputStream output = new ByteArrayOutputStream()) {
+            bitmap.eraseColor(android.graphics.Color.BLUE);
+            if (!bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, output)) {
+                throw new AssertionError("Cannot create owned PNG fixture");
+            }
+            image = output.toByteArray();
+        } finally { bitmap.recycle(); }
         // This instrumentation process alone intercepts HTTP after the genuine HTTPS test.
         // No TLS/trust changes or external requests; all other protocols keep their handler.
         URL.setURLStreamHandlerFactory(protocol -> "http".equals(protocol) ? new URLStreamHandler() {
             @Override protected URLConnection openConnection(URL url) throws IOException {
                 if (!"direct-close.invalid".equals(url.getHost())) throw new IOException("Unexpected fixture host");
+                byte[] response = url.getPath().startsWith("/image/") ? image : media;
                 return new HttpURLConnection(url) {
                     public void connect() { }
                     public void disconnect() { }
                     public boolean usingProxy() { return false; }
                     public int getResponseCode() { return 200; }
-                    public long getContentLengthLong() { return media.length; }
-                    public String getContentType() { return "video/mp4"; }
+                    public long getContentLengthLong() { return response.length; }
+                    public String getContentType() {
+                        return url.getPath().startsWith("/image/") ? "image/png" : "video/mp4";
+                    }
                     public InputStream getInputStream() throws IOException {
                         if (url.getPath().equals("/open")) throw new IOException("Controlled response open failure");
-                        return new ByteArrayInputStream(media) {
+                        return new ByteArrayInputStream(response) {
                             @Override public void close() throws IOException {
                                 if (url.getPath().equals("/input-close")) {
                                     throw new IOException("Controlled response close failure");
@@ -377,6 +390,134 @@ public final class StreamProgressInstrumentation extends Instrumentation {
                 // Names are unique to this attempt; preserve all unrelated media.
                 for (Uri uri : owned) context.getContentResolver().delete(uri, null, null);
             }
+        }
+        verifyMediaStoreCommit(context, fixture.getParentFile(), media, image, result);
+    }
+
+    /** Actual download methods and real MediaStore I/O; only commit outcome is injected. */
+    private static void verifyMediaStoreCommit(Context context, File directory,
+                                              byte[] video, byte[] image, Bundle result) throws Exception {
+        for (String kind : Arrays.asList("image", "video")) {
+            for (String mode : Arrays.asList("success", "zero", "throw")) {
+                CommitProvider provider = new CommitProvider(context.getContentResolver(), mode);
+                android.content.pm.ProviderInfo info = new android.content.pm.ProviderInfo();
+                info.authority = "media";
+                provider.attachInfo(context, info);
+                android.content.ContentResolver resolver = android.content.ContentResolver.wrap(provider);
+                Context isolated = new android.content.ContextWrapper(context) {
+                    @Override public android.content.ContentResolver getContentResolver() { return resolver; }
+                };
+                boolean photo = kind.equals("image");
+                byte[] expected = photo ? image : video;
+                String title = "cycle-commit-" + UUID.randomUUID();
+                List<String> logs = new ArrayList<>();
+                SocialImageDownloader.Listener listener = new SocialImageDownloader.Listener() {
+                    public void onTitle(String text) { }
+                    public void onProgress(int percent) { }
+                    public void onLog(String text) { logs.add(text); }
+                    public boolean isCancelled() { return false; }
+                };
+                Throwable failure = null;
+                try {
+                    Method download = photo
+                            ? SocialImageDownloader.class.getDeclaredMethod("downloadImages", Context.class,
+                                    List.class, File.class, String.class, boolean.class, SocialImageDownloader.Listener.class)
+                            : SocialImageDownloader.class.getDeclaredMethod("downloadVideos", Context.class,
+                                    List.class, File.class, String.class, NetscapeCookieJar.class, SocialImageDownloader.Listener.class);
+                    download.setAccessible(true);
+                    try {
+                        download.invoke(null, isolated, Collections.singletonList(
+                                "http://direct-close.invalid/" + kind + "/success"), directory, title,
+                                photo ? Boolean.FALSE : null, listener);
+                    } catch (java.lang.reflect.InvocationTargetException error) { failure = error.getCause(); }
+                    boolean success = mode.equals("success");
+                    if (provider.created == null || provider.commits != 1
+                            || provider.deleted != (success ? 0 : 1)) {
+                        throw new AssertionError("Commit lifecycle mismatch: " + kind + "/" + mode);
+                    }
+                    if (success ? failure != null : mode.equals("zero")
+                            ? !(failure instanceof IOException) : !(failure instanceof IllegalStateException)) {
+                        throw new AssertionError("Wrong commit result: " + kind + "/" + mode + " " + failure);
+                    }
+                    String completed = photo ? "사진 저장 완료:" : "직접 동영상 저장 완료:";
+                    if (logs.stream().anyMatch(line -> line.startsWith(completed)) != success) {
+                        throw new AssertionError("Incorrect completion log: " + kind + "/" + mode);
+                    }
+                    try (android.database.Cursor rows = context.getContentResolver().query(provider.created,
+                            new String[]{"is_pending", "_size", "mime_type", "_display_name"}, null, null, null)) {
+                        if (rows == null || rows.getCount() != (success ? 1 : 0)) {
+                            throw new AssertionError("Failed commit left a MediaStore item: " + kind + "/" + mode);
+                        }
+                        if (success && (!rows.moveToFirst() || rows.getInt(0) != 0
+                                || rows.getLong(1) != expected.length
+                                || !(photo ? "image/png" : "video/mp4").equals(rows.getString(2))
+                                || !rows.getString(3).equals(title + (photo ? ".png" : "-video.mp4")))) {
+                            throw new AssertionError("Committed media metadata mismatch");
+                        }
+                    }
+                    if (success) {
+                        try (InputStream input = context.getContentResolver().openInputStream(provider.created);
+                             InputStream original = new ByteArrayInputStream(expected)) {
+                            if (input == null || !StreamFileIdentity.sha256(input, () -> false)
+                                    .equals(StreamFileIdentity.sha256(original, () -> false))) {
+                                throw new AssertionError("Committed media bytes mismatch");
+                            }
+                        }
+                        if (photo) {
+                            android.graphics.BitmapFactory.Options bounds = new android.graphics.BitmapFactory.Options();
+                            bounds.inJustDecodeBounds = true;
+                            try (InputStream input = context.getContentResolver().openInputStream(provider.created)) {
+                                android.graphics.BitmapFactory.decodeStream(input, null, bounds);
+                            }
+                            if (bounds.outWidth != 640 || bounds.outHeight != 480) {
+                                throw new AssertionError("Committed PNG dimensions mismatch");
+                            }
+                        }
+                    }
+                    result.putString("commit_" + kind + "_" + mode, "PASS");
+                } finally {
+                    // The provider remembers only this attempt's inserted URI.
+                    if (provider.created != null) context.getContentResolver().delete(provider.created, null, null);
+                }
+            }
+        }
+    }
+
+    private static final class CommitProvider extends android.content.ContentProvider {
+        private final android.content.ContentResolver real;
+        private final String mode;
+        Uri created;
+        int commits, deleted;
+        CommitProvider(android.content.ContentResolver real, String mode) { this.real = real; this.mode = mode; }
+        @Override public boolean onCreate() { return true; }
+        @Override public String getType(Uri uri) { return real.getType(uri); }
+        @Override public Uri insert(Uri uri, android.content.ContentValues values) {
+            if (created != null || !android.provider.MediaStore.Downloads.EXTERNAL_CONTENT_URI.equals(uri)) {
+                throw new AssertionError("Unexpected fixture insertion");
+            }
+            return created = real.insert(uri, values);
+        }
+        private void checkOwned(Uri uri) {
+            if (created == null || !created.equals(uri)) throw new AssertionError("Unowned fixture URI");
+        }
+        @Override public android.os.ParcelFileDescriptor openFile(Uri uri, String mode) throws FileNotFoundException {
+            checkOwned(uri); return real.openFileDescriptor(uri, mode);
+        }
+        @Override public android.database.Cursor query(Uri uri, String[] projection, String selection,
+                                                       String[] args, String order) {
+            checkOwned(uri); return real.query(uri, projection, selection, args, order);
+        }
+        @Override public int update(Uri uri, android.content.ContentValues values, String selection, String[] args) {
+            checkOwned(uri); commits++;
+            if (!Integer.valueOf(0).equals(values.getAsInteger("is_pending"))) {
+                throw new AssertionError("Unexpected fixture update");
+            }
+            if (mode.equals("zero")) return 0;
+            if (mode.equals("throw")) throw new IllegalStateException("Controlled commit failure");
+            return real.update(uri, values, selection, args);
+        }
+        @Override public int delete(Uri uri, String selection, String[] args) {
+            checkOwned(uri); deleted++; return real.delete(uri, selection, args);
         }
     }
     private static final class FixtureServer extends Thread {

@@ -18,6 +18,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
@@ -1638,15 +1639,18 @@ final class SocialImageDownloader {
                     throw new IllegalStateException("게시물 원본이 아닌 "
                             + bounds[0] + "x" + bounds[1] + " 미리보기 이미지를 차단했습니다.");
                 }
+                if (Build.VERSION.SDK_INT >= 29 && destinationUri != null) {
+                    ContentValues ready = new ContentValues();
+                    ready.put(MediaStore.MediaColumns.IS_PENDING, 0);
+                    if (context.getContentResolver().update(destinationUri, ready, null, null) != 1) {
+                        throw new IOException("사진 저장 완료 처리에 실패했습니다.");
+                    }
+                }
                 complete = true;
             } finally {
                 connection.disconnect();
                 if (Build.VERSION.SDK_INT >= 29 && destinationUri != null) {
-                    if (complete) {
-                        ContentValues ready = new ContentValues();
-                        ready.put(MediaStore.MediaColumns.IS_PENDING, 0);
-                        context.getContentResolver().update(destinationUri, ready, null, null);
-                    } else {
+                    if (!complete) {
                         context.getContentResolver().delete(destinationUri, null, null);
                     }
                 } else if (!complete && destination != null) {
@@ -1734,15 +1738,18 @@ final class SocialImageDownloader {
                     received = MediaTransfer.copy(input, output, length, index, urls.size(),
                             listener::isCancelled, listener::onProgress);
                 }
+                if (Build.VERSION.SDK_INT >= 29 && destinationUri != null) {
+                    ContentValues ready = new ContentValues();
+                    ready.put(MediaStore.MediaColumns.IS_PENDING, 0);
+                    if (context.getContentResolver().update(destinationUri, ready, null, null) != 1) {
+                        throw new IOException("동영상 저장 완료 처리에 실패했습니다.");
+                    }
+                }
                 complete = true;
             } finally {
                 connection.disconnect();
                 if (Build.VERSION.SDK_INT >= 29 && destinationUri != null) {
-                    if (complete) {
-                        ContentValues ready = new ContentValues();
-                        ready.put(MediaStore.MediaColumns.IS_PENDING, 0);
-                        context.getContentResolver().update(destinationUri, ready, null, null);
-                    } else {
+                    if (!complete) {
                         context.getContentResolver().delete(destinationUri, null, null);
                     }
                 } else if (!complete && destination != null) {

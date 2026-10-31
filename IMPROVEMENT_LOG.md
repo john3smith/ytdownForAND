@@ -225,3 +225,58 @@
 - Next investigate image response-open failure resource lifetime and MediaStore
   update failure/zero-row commit behavior, then pending-task cancellation across
   connectivity changes. These are candidates, not newly verified defects.
+
+## 2026-10-31: cycle 4 - verify MediaStore publication
+
+- Investigation: inspected direct image/video publication against the existing
+  staged publisher's checked commit. Both direct methods set complete before
+  clearing IS_PENDING in finally and ignored the update count. A zero-row update
+  falsely returned success; a thrown update error bypassed deletion, retaining
+  the current attempt's pending item. This is distinct from cycle 3's stream
+  close ordering; no queue/connectivity defect is claimed.
+- Priority: false completion and orphaned pending downloads affect both direct
+  media paths. Move the commit inside the guarded operation, require exactly one
+  updated row and set complete only after that succeeds. Existing failure cleanup
+  removes only the newly inserted URI. Legacy file storage behavior is unchanged.
+- Reproduction: exact unmodified image and video source blocks compiled with the
+  real MediaTransfer and host resolver/stream doubles. Before: commit-zero and
+  commit-throw failed in both paths (four failures). After: ten checks passed for
+  normal completion, both commit failures, short input and cancellation. These
+  injections do not demonstrate a physical Android storage failure.
+- Android regression: actual private image/video download methods ran against
+  real MediaStore. A test-only local wrapped provider delegates insert, file I/O,
+  query and deletion to the real resolver and controls only update's return/throw.
+  Six success/zero/throw cases passed. Success required nonpending metadata,
+  exact filename/type/size and SHA-256; the generated PNG additionally decoded to
+  640x480. Failed commits threw, deleted the owned URI and emitted no completion
+  log. Only unique attempt-owned test exports were removed. Synthetic responses
+  stay within the test process; no production TLS/authentication change.
+- Required final checks: 172 JVM tests / 27 suites, zero failures/errors;
+  lint zero errors and 24 warnings; isolated x86_64 debug app/test APK builds,
+  security inventory with all 56 independent hashes matched; 11 Python
+  runtime/transport packaging checks. Input hashes bind final checks and runtime
+  evidence to the finished application/test sources.
+- Same-round repair: the initial Android compilation caught a missing IOException
+  import introduced by this patch. Added that import and reran the full checks.
+  Original failed log/result are retained separately; that attempt is not passed.
+  The first Python packaging invocation also used the wrong working directory;
+  preserved its import-error log, corrected the tools-directory invocation and
+  confirmed all 11 tests passed with an actual zero exit code.
+- Regular Android Emulator YTDown_API_35 / emulator-5554, isolated .cycle4:
+  genuine owned loopback HTTPS MP4 transfer/publication with a nonempty saved file,
+  12-second duration and 320-pixel video track; intermediate/99%/100% progress,
+  notification and startup readiness checks passed, along with prior direct-video
+  response-open/close failure cleanup. Original package and user data preserved.
+- Limits: commit errors are controlled return/exception injection, with actual
+  Android MediaStore I/O around them. Physical storage failures, authenticated
+  third-party downloads, live upstream updater recovery and ARM64 production
+  behavior remain unverified. No performance improvement was measured or claimed.
+- Restore: pre-change source archive and SHA-256 verified; existing untracked
+  instruction preserved. Extract into a separate review folder, never reset work.
+- Publication: local-only intermediate cycle; final publication stays cycle 20.
+  No push, Release, production signing/install, APK attachment or LAN serving.
+  Version 1.9.32/code 71 and published main/assets remain unchanged. No dependency,
+  native input, permission, asset or third-party notice configuration change.
+- Remaining candidates: image response-open resource lifetime and destination
+  open exceptions; pending-task cancellation/connectivity changes; progress at
+  the copy-to-publication boundary. These are investigation areas, not new fixes.
