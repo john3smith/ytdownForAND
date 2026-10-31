@@ -670,3 +670,48 @@
   performance or power improvement claim.
 - Next investigation: Instagram post-owner resolver cancellation and callback
   ownership; independently reproduce any fault before changing that path.
+
+## 2026-10-31: cycle 13 - investigate Instagram resolver callback ownership
+
+- Status: no_improvement; investigation only, not a new code improvement.
+  This one round does not terminate the approved twenty-round coordinator plan.
+- Reviewed the post-link resolver worker, main-Handler success/error callbacks,
+  cancellation, profile setup failure and HTTP/cookie/body resource boundaries.
+  Both posted callbacks check finished before starting a profile or reporting an
+  error. Cancellation marks finished before shared cleanup. The owner request
+  retains its source/cookie inputs; direct profile links skip the resolver.
+- New investigation evidence: extracted the exact current start/cancel/fail/
+  cleanup methods into a local Java host harness. Eight cases passed: live
+  success/error, cancellation before worker success/error, cancellation after
+  success/error is queued, profile setup failure, and direct-profile routing.
+  The worker is real Java; HTTP and main dispatch are controlled doubles.
+  This is evidence about existing guards, not an Android resolver bug fix.
+- Harness recovery: an initial fixture classified profile-setup failure as a
+  network error. Corrected fixture selection and reran all eight assertions;
+  original failure retained. No production code or assertion was weakened.
+- Required checks: 172 JVM tests / 27 suites freshly rerun, no failures/errors;
+  lint current unchanged inputs has no errors / 23 warnings (analysis was
+  incremental); isolated x86_64 app/test incremental builds and exact source
+  fingerprints verified; 11 Python packaging tests and 56 dependency hashes pass.
+- Existing runtime regression suite rerun on regular emulator using isolated
+  cycle8 package. Owned synthetic HTTPS MP4 completed: 14452 bytes, 12000 ms,
+  22 intermediate samples, valid video metadata. Prior discovery deadlines,
+  renderer/setup/MediaStore cleanup, cancellation, Wi-Fi restoration and engine
+  readiness checks pass. Startup/progress/final ready screens visually reviewed.
+  These regressions confirm existing behavior and are not new improvements.
+- Limits: resolver network/callbacks in the fresh host checks are controlled.
+  The HTTP reader has byte and per-read idle bounds, not a proven whole-request
+  deadline. Cancellation of in-flight resolver network I/O, natural slow trickle,
+  real authenticated Instagram pages and Activity recreation remain unverified.
+  No code change without a reproduced fault; no performance/power claim.
+- Restore: verified pre-investigation tracked-source ZIP and SHA-256, untracked
+  AGENTS.md preserved. Extract separately for review; do not reset active work.
+- Publication: log-only local commit; no app source/dependency/license/permission/
+  asset changes. No push, Release, signing, production install/activation, APK/LAN
+  delivery/server or duplicate Telegram send. Production APK/version/install times
+  and published main/asset unchanged; final publication remains round 20.
+  Dirty shared-context checkout preserved without pull/merge/reset/push.
+- Next investigation: resolver I/O lifetime under controlled slow response and
+  cancellation; then LoginActivity navigation/renderer cleanup. Independently
+  reproduce a user-visible fault before selecting any patch. Only the existing
+  coordinator may admit the next round after final-message delivery verification.
