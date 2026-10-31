@@ -761,3 +761,48 @@
   completion, inspect its output metadata and screens, then finalize validation
   and result. Do not repeat the patch/build/commit unnecessarily. Only the native
   coordinator resumes this round after user work and final report receipt.
+
+## 2026-10-31: cycle 14 - resumed runtime evidence verified and completed
+
+- Completion of the SAME resolver-deadline round after yielding to user work.
+  No new improvement, resolver patch, build, installation or download was repeated.
+- Read-only reconciliation: the existing patch commit is an ancestor of the
+  independently requested cumulative v1.9.33 release. Since the checkpoint,
+  tracked changes are only README and versionCode 72 / versionName 1.9.33.
+  Exact application, Android/JVM tests and dependency inputs remain identical.
+  Restore ZIP, checkpoint evidence and prior complete report receipts verified.
+- Reused host evidence: baseline reproduced the missing owner-resolution UI
+  deadline; all ten post-fix timeout/late callback/queued callback/cancel/normal
+  completion/direct-profile cases passed. This remains a controlled resolver and
+  Handler harness, not a ten-minute real upstream network timing measurement.
+- The intervening direct deployment already ran the required isolated regular
+  emulator regressions on this code. Verified the original instrumentation log
+  hash, actual installed/build APK hashes and build commit/tree identity. Owned
+  local HTTPS synthetic MP4 completed: 14452 bytes, 12000 ms duration, 320-pixel
+  video track and 22 intermediate progress samples, with 99 percent finalizing
+  and 100 percent completed UI. MediaStore cleanup, discovery deadline/renderer
+  cleanup, cancellation, engine readiness and Wi-Fi restoration passed.
+- Other retained checks: 172 JVM tests / 27 suites each Debug and Release, zero
+  failures/errors/skips; lint zero errors / 23 warnings; 11 Python packaging
+  tests and 56 dependency file hashes pass. Reuse is explicit: no new execution
+  of these tests is claimed in this resume. Reviewed retained startup, progress
+  and signed x86_64 ready captures, with no visible control clipping.
+- Publication distinction: this resume adds ONLY a local completion-log commit
+  and local evidence. It performs no push, Release upload, signing, installation,
+  operational activation, APK delivery or server restart. The prior separately
+  authorized deployment already published v1.9.33 and installed the signed
+  x86_64 validation variant. Its existing result is preserved, not reported as
+  a new intermediate-cycle deployment. Further publication remains round 20.
+- Limits: owner deadline bounds the UI wait, not cancellation of the daemon
+  resolver socket. Natural slow upstream, authenticated Instagram and physical
+  ARM64 runtime remain untested. The published ARM64 APK cannot be validated via
+  this emulator's ARM64 translation; unchanged native libraries and successful
+  native x86_64 checks do not prove physical ARM64 behavior. No performance/power
+  improvement claim. No new dependency, license, permission or external asset.
+- Verified prechange restore is retained; extract separately for inspection,
+  never reset active work or data. Dirty shared-context checkout is preserved
+  without pull/reset/merge or push; a separate local handoff records completion.
+- Next investigation for the coordinator: LoginActivity navigation and renderer
+  lifecycle cleanup; resolver socket cancellation remains a bounded future
+  investigation. Do not schedule another round here; native coordinator alone
+  admits it after this final Telegram message's full delivery receipt.
