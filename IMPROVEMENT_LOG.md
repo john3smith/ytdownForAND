@@ -761,3 +761,449 @@
   completion, inspect its output metadata and screens, then finalize validation
   and result. Do not repeat the patch/build/commit unnecessarily. Only the native
   coordinator resumes this round after user work and final report receipt.
+
+## 2026-10-31: cycle 14 - resumed runtime evidence verified and completed
+
+- Completion of the SAME resolver-deadline round after yielding to user work.
+  No new improvement, resolver patch, build, installation or download was repeated.
+- Read-only reconciliation: the existing patch commit is an ancestor of the
+  independently requested cumulative v1.9.33 release. Since the checkpoint,
+  tracked changes are only README and versionCode 72 / versionName 1.9.33.
+  Exact application, Android/JVM tests and dependency inputs remain identical.
+  Restore ZIP, checkpoint evidence and prior complete report receipts verified.
+- Reused host evidence: baseline reproduced the missing owner-resolution UI
+  deadline; all ten post-fix timeout/late callback/queued callback/cancel/normal
+  completion/direct-profile cases passed. This remains a controlled resolver and
+  Handler harness, not a ten-minute real upstream network timing measurement.
+- The intervening direct deployment already ran the required isolated regular
+  emulator regressions on this code. Verified the original instrumentation log
+  hash, actual installed/build APK hashes and build commit/tree identity. Owned
+  local HTTPS synthetic MP4 completed: 14452 bytes, 12000 ms duration, 320-pixel
+  video track and 22 intermediate progress samples, with 99 percent finalizing
+  and 100 percent completed UI. MediaStore cleanup, discovery deadline/renderer
+  cleanup, cancellation, engine readiness and Wi-Fi restoration passed.
+- Other retained checks: 172 JVM tests / 27 suites each Debug and Release, zero
+  failures/errors/skips; lint zero errors / 23 warnings; 11 Python packaging
+  tests and 56 dependency file hashes pass. Reuse is explicit: no new execution
+  of these tests is claimed in this resume. Reviewed retained startup, progress
+  and signed x86_64 ready captures, with no visible control clipping.
+- Publication distinction: this resume adds ONLY a local completion-log commit
+  and local evidence. It performs no push, Release upload, signing, installation,
+  operational activation, APK delivery or server restart. The prior separately
+  authorized deployment already published v1.9.33 and installed the signed
+  x86_64 validation variant. Its existing result is preserved, not reported as
+  a new intermediate-cycle deployment. Further publication remains round 20.
+- Limits: owner deadline bounds the UI wait, not cancellation of the daemon
+  resolver socket. Natural slow upstream, authenticated Instagram and physical
+  ARM64 runtime remain untested. The published ARM64 APK cannot be validated via
+  this emulator's ARM64 translation; unchanged native libraries and successful
+  native x86_64 checks do not prove physical ARM64 behavior. No performance/power
+  improvement claim. No new dependency, license, permission or external asset.
+- Verified prechange restore is retained; extract separately for inspection,
+  never reset active work or data. Dirty shared-context checkout is preserved
+  without pull/reset/merge or push; a separate local handoff records completion.
+- Next investigation for the coordinator: LoginActivity navigation and renderer
+  lifecycle cleanup; resolver socket cancellation remains a bounded future
+  investigation. Do not schedule another round here; native coordinator alone
+  admits it after this final Telegram message's full delivery receipt.
+
+## 2026-10-31: cycle 15 - investigate login navigation and renderer lifecycle
+
+- Status: no_improvement. Investigation only; no newly reproduced application
+  defect and no application code change. This does not end the approved plan.
+- Reviewed LoginActivity navigation, generation-bound asynchronous login-state
+  callbacks, main-frame versus subresource errors, renderer removal/destruction,
+  Activity destruction, readiness timers and pending proxy activation/release.
+- New evidence: compiled exact current production WebViewClient, transport,
+  save/readiness and destruction methods with the exact LoginPageReadiness class
+  in a Java 17 host harness. Fourteen cases pass: unfinished page rejection;
+  live positive result; repeated click and negative result; old result after new
+  page settles; main-frame network/HTTP failures; subresource errors; untrusted
+  page rejection; renderer detach/destroy/timer cleanup and late result; finishing
+  Activity; destroyed Activity; live proxy activation; destroy-before-activation
+  with asynchronous lease release; renderer loss before proxy activation.
+  Existing guards reject stale results. No speculative lifecycle patch selected.
+- Limits: Android, proxy and cookie-export effects are controlled doubles in the
+  new harness. It does not prove a natural renderer crash, real navigation/JS
+  callback timing, actual proxy service closure or successful login/persistence.
+  Existing proxy lease is released on Activity destruction; no user-visible fault
+  from its retention on the terminal renderer-error screen was reproduced.
+- Validation: fresh 172 JVM tests / 27 suites EACH Debug and Release, zero
+  failures/errors/skips; 11 fresh Python tests; lint zero errors / 23
+  warnings (incremental analysis); isolated x86_64 app/test builds up to date;
+  56 dependency artifact hashes verified. These regressions are not improvements.
+- Runtime: read-only reverified the prior independently authorized deployment's
+  exact application/test/build inputs and original regular-emulator evidence.
+  Its owned HTTPS MP4 completed at 14452 bytes / 12000 ms with 22 intermediate
+  progress samples. This round performs no new emulator interaction, installation
+  or download. That evidence is regression coverage, not new LoginActivity
+  Android verification. Physical ARM64 and authenticated upstream remain untested.
+- Restore: verified pre-investigation tracked-source ZIP and SHA-256. Untracked
+  AGENTS.md preserved. Extract separately for inspection; never reset active work
+  or user data. Only this log is committed locally; no performance claim.
+- Publication: no source/shared-context push, Release, signing, production
+  install/activation, APK/LAN delivery/server or duplicate report send. Existing
+  v1.9.33 asset, remote main and installed package hashes/times are unchanged.
+  Final publication remains round 20. No dependency/license/permission/asset
+  change. Dirty shared-context checkout preserved without pull/merge/reset/push.
+- Next investigation: AuthCookieStore atomic session export failure recovery and
+  preservation of an existing valid session, using synthetic input; independently
+  reproduce a fault before changing code. In-flight owner-resolver socket lifetime
+  remains unverified. Only the native coordinator admits the next round after
+  this final Telegram message's full encrypted delivery receipt.
+
+## 2026-10-31: cycle 16 - investigate cookie export failure preservation
+
+- Status: no_improvement. No newly reproduced application defect; application
+  source unchanged. This investigation does not terminate the approved plan.
+- New area: AuthCookieStore export transaction and existing-session preservation,
+  with exact current production AuthCookieStore and NetscapeCookie compiled into
+  a Java 17 host harness. Only synthetic cookie fixtures were used; no real
+  user session, browser login, credential or authentication material was read.
+- Twenty host cases pass: first export and replacement, start/I/O/runtime
+  failure with and without a prior file (six cases), unconfirmed prior-session
+  reuse without browser reads, guest rejection, confirmed empty export preserving
+  the previous file, ordinary and detailed cookie-reader failures, metadata
+  scope/HttpOnly preservation, invalid/expired/cross-domain rejection, existing
+  YouTube/X/Instagram auth exports, selected-platform clear, missing/short files.
+- Existing guards preserve previous bytes on controlled failed writes, propagate
+  exceptions, do not advertise failed first saves and retain trusted manual
+  confirmation requirements. No speculative transaction or auth-policy change.
+  Existing non-masked-platform stale-cookie invalidation is left unchanged.
+- Limits: file I/O is real Java, but Android CookieManager, feature support and
+  AtomicFile are controlled doubles. This does NOT prove Android AtomicFile
+  fsync/rename behavior, power-loss/process-death durability, legacy .bak recovery,
+  actual WebView cookie reads, disk exhaustion or authenticated website behavior.
+  Unverified backup recovery is a future investigation, not a confirmed defect.
+- Fresh validation: 172 JVM tests / 27 suites EACH Debug and Release, zero
+  failures/errors/skips; 11 Python tests; lint zero errors / 23 warnings
+  (incremental analysis); isolated x86_64 app/test incremental builds; 56 actual
+  dependency artifact hashes verified. These regressions are not improvements.
+- Runtime: reverified prior exact application/test/build inputs and retained
+  regular-emulator runtime/download evidence read-only. The prior owned HTTPS
+  synthetic MP4 completed at 14452 bytes / 12000 ms with 22 intermediate samples.
+  No new installation, emulator interaction or download in this round, and no
+  new Android cookie-persistence, physical ARM64 or real-login verification.
+- Restore: verified pre-investigation tracked-source ZIP and SHA-256; untracked
+  AGENTS.md preserved. Extract separately for inspection; never reset active
+  work or user data. Only this investigation log is committed locally.
+- Publication: no source/shared-context push, Release, signing, production
+  install/activation, APK/LAN delivery/server or duplicate report send. Existing
+  v1.9.33 asset, remote main, installed package hashes/times remain unchanged.
+  Final publication stays round 20. No dependency/license/permission/asset
+  change or performance claim. Dirty shared-context is preserved without pull,
+  merge, reset or push; a separate local handoff records this investigation.
+- Next area: real Android AtomicFile legacy backup/recovery and explicit logout
+  cleanup under interrupted writes, with isolated synthetic files and a suitable
+  API-level environment. First reproduce a user-visible fault before patching.
+  In-flight owner-resolver socket lifetime also remains unverified. Only the
+  native coordinator admits the next round after full final-message receipt.
+
+## 2026-10-31: cycle 17 - atomic cookie-file cleanup checkpoint, runtime yielded
+
+- Status: deferred / queued_user_work. New source correction preserved locally;
+  this SAME cycle is incomplete until required Android/runtime checks pass.
+- New reproduced defect: export writes sessions through Android AtomicFile but
+  explicit platform clearing and unauthenticated non-masked export deleted only
+  the base file. Interrupted writes leave .bak on older Android or .new on modern
+  Android; legacy backup is recoverable and raw base deletion leaves cookie data.
+- Priority: honor explicit session clearing and stale-session invalidation,
+  prevent recoverable old session data remaining after clear. Low-risk correction:
+  both deletion paths use AtomicFile.delete(), matching their existing writer.
+  Confirmed-but-empty masked-platform export still preserves the previous session.
+- Evidence: exact production AuthCookieStore with unmodified official AOSP
+  AtomicFile from Android 7/API24 and Android 15/API35, real Java filesystem I/O,
+  synthetic cookies, controlled Context/CookieManager and ancillary Android APIs.
+  Before: four failures per version (8 total), 2 passing controls each. After:
+  six pass per version (12 total): base/backup/new cleanup, backup-only clear,
+  interrupted real startWrite, unauthenticated export invalidation, empty-confirmed
+  prior-session preservation and other-platform preservation. No user session read.
+- Diagnostic recovery: the first API35 host compilation lacked ExceptionUtils in
+  its ancillary API shim. Added that shim, kept production/AOSP source unchanged,
+  compiled and reran both baselines and postfix cases successfully. This was a
+  diagnostic support error, not an application defect or failed final app check.
+- Adjacent coverage: 20 fresh controlled export/failure/auth/scope checks pass;
+  fresh 172 JVM tests / 27 suites EACH Debug and Release, no failure/error/skip;
+  11 Python tests; lint zero errors / 23 warnings; isolated x86_64 app and
+  existing Android-test APK builds; 56 dependency artifact hashes verified.
+- Runtime preflight found queued user work, alongside another running Android app
+  task. Yielded before installation/interaction; installed production and existing
+  isolated packages/times/hashes are unchanged. Android cleanup and fresh actual
+  owned HTTPS download regressions have NOT run for this changed source. Prior
+  deployment runtime evidence is not substituted for changed-code validation.
+- Restore: prechange tracked-source ZIP integrity and original file hash verified;
+  untracked AGENTS.md and unrelated work preserved. Extract separately for review;
+  never reset active work or user data. Local source checkpoint commit only.
+- Publication: no push/shared-context push, Release, signing, production install,
+  operational activation, APK/LAN delivery/server or duplicate report. Existing
+  v1.9.33 remote asset and remote main unchanged. Final publication remains cycle
+  20. Dirty shared-context checkout preserved with a separate local handoff.
+- No new dependency/license/permission/external asset shipped. Official AOSP
+  references are retained only as local diagnostic evidence with their Apache-2.0
+  notices; they are not bundled into application or staged source. No performance
+  claim, real-login/physical ARM64/disk-exhaustion/power-loss durability claim.
+- Resume same cycle: verify checkpoint/source/artifacts and native queue/ownership;
+  exercise actual Android AtomicFile synthetic cleanup and existing emulator suite,
+  including owned HTTPS MP4 completion/metadata. Do not repeat patch, build or
+  external operations unnecessarily. In-flight resolver socket lifetime remains a
+  separate future investigation. Only native coordinator resumes after user work
+  and complete final-message receipt; do not admit a new cycle here.
+
+### Cycle 17 resumed - required Android validation completed, local only
+
+- Resumed the same cycle after queued user work. The existing two-path
+  AuthCookieStore correction and checkpoint commit were preserved; no new
+  improvement or cycle was started. Reverified previous full final-message
+  receipt, source/evidence/restore hashes, remote Release and installed state.
+- Actual Android API35 verification: nine synthetic-file cases passed with
+  the production AuthCookieStore and real Android AtomicFile/CookieManager:
+  base/backup/new removal, backup-only clearing, interrupted startWrite cleanup,
+  unauthenticated export invalidation, empty confirmed export preservation,
+  other-platform preservation, legacy backup read recovery, failed-write
+  preservation and idempotent absent-file clearing. Temporary files were
+  removed; a distinct empty synthetic WebView profile isolated all cookies.
+- Used an isolated .cycle8 debug package on the regular YTDown_API_35 x86_64
+  emulator. A local-only diagnostic addition to the existing instrumentation
+  exercises these cases before the unchanged regression workflow. It was built
+  only into the local test APK, never production source/APK or a Release.
+  Prepared application APK hash exactly matches the verified checkpoint.
+- Existing Android regressions passed: startup/offline failure readiness,
+  cancellation and pending queue, Wi-Fi wait/recovery, X/Instagram discovery
+  setup/deadline/renderer cleanup, diagnostic Activity destruction, direct
+  video/image MediaStore success and fault cleanup, notification/UI progress.
+- Real owned synthetic HTTPS MP4 transfer completed: 14452 bytes,
+  12000 ms duration, 320-pixel video width, 22 intermediate progress
+  samples and 100-percent completion UI. TLS used the test's own CA; no third
+  party login, private media or access-control bypass. Generated MediaStore
+  fixtures were removed by the existing instrumentation cleanup.
+- Earlier same-cycle required results were hash-reverified, not unnecessarily
+  repeated: 172 JVM tests in each Debug/Release variant, 11 Python checks,
+  lint zero errors / 23 warnings and 56 dependency artifact hashes. Application,
+  existing test source and build inputs are unchanged since those checks.
+  Fresh Android probe compilation and installed runtime checks passed.
+- Fresh startup/progress/final-ready screenshots were reviewed locally. No UI
+  code or layout changed. No performance gain is claimed.
+- Prechange restore archive and untracked instructions verified intact. Final
+  local commit adds only this completion log to the source checkpoint; all
+  executable/build inputs remain identical to validated inputs.
+- No source/shared-context push, Release, production install/activation,
+  APK/LAN delivery, server change or duplicate report. Remote main, v1.9.33
+  asset and production package bytes/install times are unchanged. Publication
+  remains reserved for cycle 20. Dirty/diverged shared context stays local.
+- Limits: real runtime covers API35/x86_64, not physical ARM64 or API24 device
+  execution. API24/API35 host baseline/postfix evidence remains as previously
+  recorded. Power loss, process death, disk exhaustion, natural renderer crash
+  and live upstream authenticated download remain untested. No dependency,
+  license, permission, version or external asset changes.
+- Next investigation remains in-flight account-owner resolver socket/resource
+  lifetime. Native coordinator alone admits any next round after full report
+  delivery; this completion does not register another task.
+
+## 2026-10-31: cycle 18 - cooperative owner-resolver I/O cancellation checkpoint
+
+- Status: deferred / queued_user_work. New reproducible correction saved locally;
+  this SAME cycle remains incomplete pending fresh Android/runtime regressions.
+- New area: in-flight Instagram post-owner resolver network resource lifetime.
+  The existing volatile finished flag blocked stale main-thread callbacks but
+  never reached HTTP or metadata reads. Cancelling a gated response allowed all
+  body reads to finish; a cancelled redirect kept opening requests up to six.
+- Reproduction uses full production SocialImageDownloader, ScopedHttpConnection,
+  NetscapeCookie/Jar and BoundedDocument on Java17; URLConnection/response streams
+  are gated synthetic doubles. Four expected baseline failures (cancel before
+  open, during body, during headers, between redirects), three passing controls.
+  No real user cookie, upstream login, private media or website data was read.
+- Correction passes the existing finished predicate from discovery into owner
+  resolution, HTTP open/redirect handling and bounded metadata reads. Checks run
+  before each request and before/after each body read, and after response headers.
+  Cancellation throws InterruptedIOException and uses existing stream/disconnect
+  cleanup. Existing non-cancellable callers and cookie scope/redirect/size/auth
+  policy are preserved. No extra worker, scheduler or forced main-thread close.
+- After: seven host cases pass, including normal owner parsing, HTTP/read faults
+  and cleanup. Two new JVM test methods cover pre-read and data/EOF cancellation.
+  Fresh Debug and Release each pass 174 tests / 27 suites, zero failures/errors/
+  skips. Eleven Python checks pass; lint has zero errors and 23 warnings;
+  isolated x86_64 app and existing test APK build and ZIP integrity pass;
+  56 actual dependency artifact hashes verified. No performance gain is claimed.
+- Bound: cooperative cancellation stops after a pending network operation
+  returns; connect/read timeouts remain 15/30 seconds per operation. Immediate
+  socket abort, a strict wall-clock deadline and real upstream cancellation
+  latency were not measured or implemented. This is not a network timeout change.
+- Runtime preflight found another user app owning the regular emulator. Yielded
+  before installation/UI interaction; production and prior isolated package
+  bytes/install times unchanged. Fresh actual owned HTTPS download and Android
+  regressions have NOT run for this changed source. Prior cycle17 evidence is
+  not substituted. No new Android/UI test code or ARTEMIS operation was authored.
+- Restore: prechange tracked-source ZIP and SHA256 verified against original
+  changed files; untracked AGENTS.md and unrelated work preserved. Extract to a
+  separate review directory, never reset active work or user data.
+- Publication: local checkpoint commit only. No source/shared-context push,
+  Release, signing, production install/activation, APK/LAN delivery/server or
+  duplicate report. Remote main/v1.9.33 asset unchanged; final publication stays
+  cycle20. Dirty shared context retained with a separate local handoff.
+- No dependency/license/permission/version/asset changes. No physical ARM64,
+  authenticated upstream, disk-full or natural network cancellation claims.
+- Resume SAME cycle: verify checkpoint/source/restore/artifact/evidence hashes,
+  native queue and current emulator ownership, then run existing regular-emulator
+  regressions and owned HTTPS MP4 completion/metadata, inspect fresh visuals and
+  finalize. Investigate actual transport blocking/cancellation timing separately
+  only with an owned network fixture. Native coordinator alone resumes after full
+  final Telegram report receipt; no duplicate registration, queue edits or sends.
+
+### Cycle 18 resumed - required runtime checks completed, local only
+
+- Resumed the same cycle after queued user work. Preserved the existing
+  cooperative owner-resolver cancellation correction; no additional improvement
+  or round was started. Reverified both prior yield evidence and the latest full
+  final-message receipt, exact source/restore/build evidence/APK hashes, native
+  plan and queue, remote main, v1.9.33 asset and installed package identities.
+- Earlier shared-emulator owner completed restoration and full final delivery
+  before installation. Used the preserved isolated .cycle8 x86_64 debug app and
+  unchanged existing Android test APK on the regular YTDown_API_35 emulator.
+  No production package installation, new Android/UI test or ARTEMIS operation.
+- Fresh Android regressions passed: engine startup and offline failure readiness,
+  cancellation and pending queue, real Wi-Fi wait/recovery, X/Instagram discovery
+  setup/deadline/renderer cleanup, diagnostic Activity destruction, real image/
+  video MediaStore success and controlled fault cleanup, notifications and UI.
+- Real owned synthetic HTTPS MP4 download completed: 14452 bytes,
+  12000 ms duration, 320-pixel video width, 22 intermediate progress
+  samples and 100-percent UI completion. Existing test verifies generated file
+  integrity and playable metadata, then cleans synthetic MediaStore fixtures.
+  TLS uses the test's own CA; no third-party session or private media is used.
+- Fresh startup/progress/final-ready screenshots reviewed locally; final ready
+  UI has enabled download controls. Earlier same-cycle required results reused
+  only after exact executable-input/evidence verification: Debug/Release each
+  174 JVM tests, 11 Python checks, lint zero errors / 23 warnings, isolated APK
+  builds and 56 dependency artifact hashes. No redundant rebuild or test rerun.
+- Four baseline cancellation failures and seven post-fix host resolver cases
+  remain verified evidence. The existing finished predicate now reaches request
+  headers/redirects and bounded body reads; cancellation uses existing resource
+  cleanup. Pending network calls still retain 15/30-second connect/read bounds.
+  Immediate socket abort, upstream cancellation latency and performance gains
+  are not claimed. Actual Android regressions do not prove live upstream timing.
+- Prechange source ZIP and untracked AGENTS.md intact. Final local commit adds
+  only this completion log; all executable/test/build inputs remain identical
+  to the verified checkpoint. No dependencies, licenses, permissions, versions
+  or external assets changed.
+- No source/shared-context push, Release, signing, production activation,
+  APK/LAN delivery/server or duplicate message. Remote main/v1.9.33 and original
+  production package bytes/install times unchanged; final publication stays
+  cycle 20. Dirty/diverged shared context is retained locally.
+- Limits: API35/x86_64 runtime only; physical ARM64/API24 execution, authenticated
+  upstream cancellation/download, natural renderer crashes, power-loss/process
+  death/disk-full durability remain unverified. Next investigation may examine
+  transport blocking and cancellation timing using an owned network fixture.
+  Native coordinator alone admits any next round after full report receipt.
+
+## 2026-10-31: cycle 19 - investigate real transport cancellation and truncated metadata
+
+- Result: no_improvement. Investigated actual socket blocking and HTTP body
+  framing, rather than counting cycle18's controlled URLConnection checks again.
+  No new Android application defect was established; no application, test,
+  dependency, license, permission, version or packaged asset change was made.
+- Read-only preflight verified the current native plan/job and independent app
+  scopes, cycle18's full final-message receipt, exact source and prior evidence,
+  public matching source remote, private shared-context destination, published
+  v1.9.33 asset metadata and installed production/isolated package identities.
+  Existing dirty shared-context work remains local and untouched.
+- New host investigation compiled the actual ScopedHttpConnection,
+  BoundedDocument and cookie classes on Java17. A synthetic server used real
+  loopback TCP sockets, with no URLConnection mocks, upstream account, cookies,
+  private media, Android UI tests, ARTEMIS or external content downloads.
+- Seven checks passed: complete fixed-length and chunked documents, cancellation
+  before connect, cancellation during delayed headers/fixed-length body/chunked
+  body, and unknown-length oversized chunked metadata rejection. Actual socket
+  read stack observation establishes blocking before cancellation. All three
+  gated cancellation cases stayed pending during a 300 ms observation window,
+  then rejected their result after server release; measured release-to-completion
+  was 1/0/0 ms on this host. These are fixture observations, not upstream latency
+  or Android speed claims. Configured connect/read values remain 15/30 seconds;
+  natural timeout expiration and immediate socket abortion were not tested.
+- One additional observation: host JDK17 accepted a six-byte prefix when the
+  response declared 100 bytes. This alone does not establish an Android defect.
+  Official Android15 Http1xStream FixedLengthSource and ChunkedSource reject
+  premature EOF with ProtocolException. Official Android HttpURLConnection docs
+  also explain transparent gzip clearing Content-Length/Content-Encoding.
+  Preserved a local hashed source reference; no upstream source was added to Git.
+  Rejected a speculative application content-length patch pending Android proof.
+- Investigation fixture setup had two local failures, both resolved in this
+  cycle: missing compile classpath for the existing AuthCookieStore reference,
+  and a cancellation/read-entry race in the fixture. Added the existing compiled
+  production classpath and waited for an actual socket read stack before
+  cancelling. Failed attempts remain separate evidence; the final seven checks
+  passed. No failed attempt is reported as a passed application check.
+- Exact hashes reconcile all 127 prior tracked inputs, 24 prior validation
+  evidence files and both APKs. Preserved prior results: Debug/Release each 174
+  JVM tests, 11 Python checks, lint zero errors / 23 warnings, 56 dependency hashes
+  and cycle18's API35/x86_64 regressions plus actual owned HTTPS MP4 completion.
+  No fresh JVM/build/lint/Android/download run is claimed in this unchanged-source
+  investigation. No device installation or interaction was needed.
+- Verified a prechange tracked-source ZIP with hash and every archived entry;
+  untracked project instructions and unrelated work remain intact. Restore by
+  extracting separately for review; never reset current work or user data.
+  Only this investigation log is committed locally. Source push, Release,
+  signing, production activation, APK/LAN delivery/server and duplicate messages
+  were not attempted; remote main, v1.9.33 and installed packages are unchanged.
+- Limits: host Java17 socket observations and official Android15 source review
+  do not prove current device socket timing, API24/physical ARM64 behavior,
+  authenticated upstream cancellation or gzip/truncation behavior on device.
+  No performance improvement is claimed and this is not a code improvement.
+- Next distinct area: final packaging/signing/ABI and accumulated source versus
+  release verification for the reserved cycle20 publication, including any
+  remaining reproducible transport candidate only with platform-specific proof.
+  No new round, queue mutation or scheduler was started. Native coordinator
+  alone handles the next investigation after the full final report receipt.
+
+
+## 2026-10-31: cycle 20 - final packaging investigation and accumulated publication
+
+- Investigation result: no_improvement; no new application defect established.
+  Do not count release versioning or repeated validation as a new code fix.
+  Across twenty investigations, fifteen rounds corrected application behavior;
+  rounds 13, 15, 16, 19 and 20 were investigations without a new application fix.
+- Existing v1.9.33 publication already contains rounds 1-14 after a separate
+  direct deployment request. Verified and reused that outcome without repeating
+  its upload. Final v1.9.34 / code73 includes the subsequent atomic cookie-file
+  cleanup and cooperative cancelled owner-resolver request/body cleanup fixes.
+  Update README version and retain signing identity, permissions and dependencies.
+- Fresh Debug and Release: 174 JVM tests in 27 suites each, zero failures/errors/
+  skips; both lint variants zero errors/fatals and 23 existing warnings. Eleven
+  Python packaging tests pass. ARM64 release, signed x86_64 validation release
+  and isolated Android regression APKs build. All 56 resolved artifact hashes
+  verified for each ABI. No performance improvement is claimed.
+- Reused existing Android regression code and nine synthetic atomic-file cleanup/
+  recovery cases on the regular API35/x86_64 emulator; all pass. Owned HTTPS MP4
+  completed: 14,452 bytes, 12,000 ms playable metadata, 22 intermediate samples
+  and 100-percent completion. Controlled failures/renderer/timer checks retain
+  their documented limitations; authenticated upstream sites were not exercised.
+- Signed non-debuggable x86_64 production package updated in place to 1.9.34;
+  installed SHA256, version/code, UID, original firstInstallTime, running Activity,
+  native engine readiness and enabled download control verified. No uninstall,
+  data clear or physical-device operation. Delivery APK is ARM64: physical ARM64
+  execution remains untested because the regular emulator has a known native
+  executable translation limitation. Emulator execution is explicitly a matching
+  x86_64 validation variant, not proof of ARM64 runtime success.
+- Distinct packaging investigation compared the previous release with a fresh
+  build: all 1,231 embedded Python payload filenames retained; only the generated
+  curl_cffi wrapper differs. Existing build requirements pin host CFFI2.1.1;
+  the old build used host CFFI2.0.0. Reviewed generator changes and ELF sections
+  (132 changed text bytes, identical section sizes), retaining pinned upstream
+  sources, versions and license text. This is a refreshed build, not a new app
+  patch. Actual x86_64 Python/CFFI/curl_cffi imports, Curl native calls and native
+  callbacks pass. No ARM64 import/callback or upstream TLS/network claim.
+- Release signing and independent APK verification pass at API24/26/28/32/33/35/
+  36 with established legacy/API33 production lineage, debugging disabled and
+  alignment checked. APK excludes signing material, generated test credentials
+  and test fixtures. Existing LICENSE/NOTICE entries remain packaged. Existing
+  store/commercial source-compliance and service-policy review gates are not
+  cleared; no store submission or broad commercial compliance claim is made.
+- Prechange tracked-source ZIP/hash retained locally; extract separately for
+  review rather than resetting active work. Untracked instructions and unrelated
+  work preserved. Shared-context checkout is dirty/diverged, so handoff stays local.
+- Publication evidence is recorded separately: exact source/CI/tag/asset commit,
+  API digest and downloaded SHA256, existing LAN allowlist delivery with byte hash,
+  and current installed-native state. Only the final Telegram response reports
+  this round; no duplicate message, APK attachment, HTML report or new coordinator.
+- Twenty-round admission limit reached. Future work may validate native ARM64
+  execution, authenticated upstream cancellation/download, natural process or
+  renderer failures, and power-loss/disk-full behavior under separately scoped
+  execution. No next round or scheduler is registered here.

@@ -104,7 +104,7 @@ final class InstagramAccountMediaDiscovery {
         Thread resolver = new Thread(() -> {
             try {
                 String owner = SocialImageDownloader.resolveInstagramPostOwner(
-                        sourceUrl, cookieFile);
+                        sourceUrl, cookieFile, () -> finished);
                 handler.post(() -> {
                     if (finished) {
                         return;

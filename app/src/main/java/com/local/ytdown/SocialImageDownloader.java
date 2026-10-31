@@ -39,6 +39,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.BooleanSupplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -262,13 +263,18 @@ final class SocialImageDownloader {
 
     static String resolveInstagramPostOwner(String sourceUrl, File cookieFile)
             throws Exception {
+        return resolveInstagramPostOwner(sourceUrl, cookieFile, () -> false);
+    }
+
+    static String resolveInstagramPostOwner(String sourceUrl, File cookieFile,
+                                            BooleanSupplier cancelled) throws Exception {
         String shortcode = instagramShortcodeFromMediaUrl(sourceUrl);
         if (shortcode == null) {
             throw new IllegalArgumentException("Instagram 게시물 주소를 확인하지 못했습니다.");
         }
         String html = readText("https://www.instagram.com/p/" + shortcode
                         + "/embed/captioned/", NetscapeCookieJar.load(cookieFile),
-                INSTAGRAM_EMBED_USER_AGENT);
+                INSTAGRAM_EMBED_USER_AGENT, cancelled);
         return instagramUsernameFromEmbedHtml(html);
     }
 
@@ -1768,9 +1774,17 @@ final class SocialImageDownloader {
 
     private static String readText(String url, NetscapeCookieJar cookies, String userAgent)
             throws Exception {
-        HttpURLConnection connection = open(url, cookies, userAgent);
+        return readText(url, cookies, userAgent, () -> false);
+    }
+
+    private static String readText(String url, NetscapeCookieJar cookies, String userAgent,
+                                   BooleanSupplier cancelled) throws Exception {
+        HttpURLConnection connection = ScopedHttpConnection.open(url, cookies, userAgent, cancelled);
         try {
-            return readConnectionText(connection);
+            try (InputStream input = connection.getInputStream()) {
+                return BoundedDocument.read(input, connection.getContentLengthLong(),
+                        BoundedDocument.MAX_BYTES, cancelled);
+            }
         } finally {
             connection.disconnect();
         }
