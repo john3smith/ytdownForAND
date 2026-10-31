@@ -806,3 +806,48 @@
   lifecycle cleanup; resolver socket cancellation remains a bounded future
   investigation. Do not schedule another round here; native coordinator alone
   admits it after this final Telegram message's full delivery receipt.
+
+## 2026-10-31: cycle 15 - investigate login navigation and renderer lifecycle
+
+- Status: no_improvement. Investigation only; no newly reproduced application
+  defect and no application code change. This does not end the approved plan.
+- Reviewed LoginActivity navigation, generation-bound asynchronous login-state
+  callbacks, main-frame versus subresource errors, renderer removal/destruction,
+  Activity destruction, readiness timers and pending proxy activation/release.
+- New evidence: compiled exact current production WebViewClient, transport,
+  save/readiness and destruction methods with the exact LoginPageReadiness class
+  in a Java 17 host harness. Fourteen cases pass: unfinished page rejection;
+  live positive result; repeated click and negative result; old result after new
+  page settles; main-frame network/HTTP failures; subresource errors; untrusted
+  page rejection; renderer detach/destroy/timer cleanup and late result; finishing
+  Activity; destroyed Activity; live proxy activation; destroy-before-activation
+  with asynchronous lease release; renderer loss before proxy activation.
+  Existing guards reject stale results. No speculative lifecycle patch selected.
+- Limits: Android, proxy and cookie-export effects are controlled doubles in the
+  new harness. It does not prove a natural renderer crash, real navigation/JS
+  callback timing, actual proxy service closure or successful login/persistence.
+  Existing proxy lease is released on Activity destruction; no user-visible fault
+  from its retention on the terminal renderer-error screen was reproduced.
+- Validation: fresh 172 JVM tests / 27 suites EACH Debug and Release, zero
+  failures/errors/skips; 11 fresh Python tests; lint zero errors / 23
+  warnings (incremental analysis); isolated x86_64 app/test builds up to date;
+  56 dependency artifact hashes verified. These regressions are not improvements.
+- Runtime: read-only reverified the prior independently authorized deployment's
+  exact application/test/build inputs and original regular-emulator evidence.
+  Its owned HTTPS MP4 completed at 14452 bytes / 12000 ms with 22 intermediate
+  progress samples. This round performs no new emulator interaction, installation
+  or download. That evidence is regression coverage, not new LoginActivity
+  Android verification. Physical ARM64 and authenticated upstream remain untested.
+- Restore: verified pre-investigation tracked-source ZIP and SHA-256. Untracked
+  AGENTS.md preserved. Extract separately for inspection; never reset active work
+  or user data. Only this log is committed locally; no performance claim.
+- Publication: no source/shared-context push, Release, signing, production
+  install/activation, APK/LAN delivery/server or duplicate report send. Existing
+  v1.9.33 asset, remote main and installed package hashes/times are unchanged.
+  Final publication remains round 20. No dependency/license/permission/asset
+  change. Dirty shared-context checkout preserved without pull/merge/reset/push.
+- Next investigation: AuthCookieStore atomic session export failure recovery and
+  preservation of an existing valid session, using synthetic input; independently
+  reproduce a fault before changing code. In-flight owner-resolver socket lifetime
+  remains unverified. Only the native coordinator admits the next round after
+  this final Telegram message's full encrypted delivery receipt.
