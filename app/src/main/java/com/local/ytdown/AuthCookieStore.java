@@ -150,7 +150,7 @@ final class AuthCookieStore {
             }
         }
         if (!authenticated) {
-            if (!PORNHUB.equals(platform)) file.delete();
+            if (!PORNHUB.equals(platform)) new AtomicFile(file).delete();
             return null;
         }
         File directory = file.getParentFile();
@@ -209,7 +209,8 @@ final class AuthCookieStore {
             }
         }
         manager.flush();
-        cookieFile(context, platform).delete();
+        // Remove interrupted writes and recoverable backups as well as the base file.
+        new AtomicFile(cookieFile(context, platform)).delete();
     }
 
     private static File cookieFile(Context context, String platform) {

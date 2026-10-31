@@ -898,3 +898,53 @@
   API-level environment. First reproduce a user-visible fault before patching.
   In-flight owner-resolver socket lifetime also remains unverified. Only the
   native coordinator admits the next round after full final-message receipt.
+
+## 2026-10-31: cycle 17 - atomic cookie-file cleanup checkpoint, runtime yielded
+
+- Status: deferred / queued_user_work. New source correction preserved locally;
+  this SAME cycle is incomplete until required Android/runtime checks pass.
+- New reproduced defect: export writes sessions through Android AtomicFile but
+  explicit platform clearing and unauthenticated non-masked export deleted only
+  the base file. Interrupted writes leave .bak on older Android or .new on modern
+  Android; legacy backup is recoverable and raw base deletion leaves cookie data.
+- Priority: honor explicit session clearing and stale-session invalidation,
+  prevent recoverable old session data remaining after clear. Low-risk correction:
+  both deletion paths use AtomicFile.delete(), matching their existing writer.
+  Confirmed-but-empty masked-platform export still preserves the previous session.
+- Evidence: exact production AuthCookieStore with unmodified official AOSP
+  AtomicFile from Android 7/API24 and Android 15/API35, real Java filesystem I/O,
+  synthetic cookies, controlled Context/CookieManager and ancillary Android APIs.
+  Before: four failures per version (8 total), 2 passing controls each. After:
+  six pass per version (12 total): base/backup/new cleanup, backup-only clear,
+  interrupted real startWrite, unauthenticated export invalidation, empty-confirmed
+  prior-session preservation and other-platform preservation. No user session read.
+- Diagnostic recovery: the first API35 host compilation lacked ExceptionUtils in
+  its ancillary API shim. Added that shim, kept production/AOSP source unchanged,
+  compiled and reran both baselines and postfix cases successfully. This was a
+  diagnostic support error, not an application defect or failed final app check.
+- Adjacent coverage: 20 fresh controlled export/failure/auth/scope checks pass;
+  fresh 172 JVM tests / 27 suites EACH Debug and Release, no failure/error/skip;
+  11 Python tests; lint zero errors / 23 warnings; isolated x86_64 app and
+  existing Android-test APK builds; 56 dependency artifact hashes verified.
+- Runtime preflight found queued user work, alongside another running Android app
+  task. Yielded before installation/interaction; installed production and existing
+  isolated packages/times/hashes are unchanged. Android cleanup and fresh actual
+  owned HTTPS download regressions have NOT run for this changed source. Prior
+  deployment runtime evidence is not substituted for changed-code validation.
+- Restore: prechange tracked-source ZIP integrity and original file hash verified;
+  untracked AGENTS.md and unrelated work preserved. Extract separately for review;
+  never reset active work or user data. Local source checkpoint commit only.
+- Publication: no push/shared-context push, Release, signing, production install,
+  operational activation, APK/LAN delivery/server or duplicate report. Existing
+  v1.9.33 remote asset and remote main unchanged. Final publication remains cycle
+  20. Dirty shared-context checkout preserved with a separate local handoff.
+- No new dependency/license/permission/external asset shipped. Official AOSP
+  references are retained only as local diagnostic evidence with their Apache-2.0
+  notices; they are not bundled into application or staged source. No performance
+  claim, real-login/physical ARM64/disk-exhaustion/power-loss durability claim.
+- Resume same cycle: verify checkpoint/source/artifacts and native queue/ownership;
+  exercise actual Android AtomicFile synthetic cleanup and existing emulator suite,
+  including owned HTTPS MP4 completion/metadata. Do not repeat patch, build or
+  external operations unnecessarily. In-flight resolver socket lifetime remains a
+  separate future investigation. Only native coordinator resumes after user work
+  and complete final-message receipt; do not admit a new cycle here.
