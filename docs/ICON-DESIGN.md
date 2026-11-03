@@ -1,4 +1,19 @@
-# Red launcher icon
+# Red ribbon launcher icon
+
+Version 1.9.36 adopts the user's selected concept 2: an ivory folded ribbon
+combining a play cutout and a downward arrow on a red background. The source
+concept was generated with OpenAI ImageGen for this project on 2026-11-03;
+no external stock image, font or downloaded logo was added. This records asset
+provenance and does not imply trademark clearance or commercial-rights review.
+
+The selected image is preserved in the legacy launcher bitmap. For Android 8+
+adaptive icons, it occupies the central 72dp of the 108dp layer; repeated edge
+pixels fill the overscan area. This keeps the arrow inside circular masks.
+Android 13+ themed icons use a separate monochrome alpha mask of the ribbon.
+Both application icon attributes still resolve to the same versioned resource.
+No dependency, permission, signing identity or download behavior changed.
+
+## Previous vector design (1.9.35)
 
 Version 1.9.35 uses original Android vector artwork: a bright red background
 (`#E92338`), a darker red lower sweep (`#C61930`), and white play, download and
