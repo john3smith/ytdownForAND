@@ -16,6 +16,7 @@ public final class YTDownApplication extends Application {
         try {
             MetadataReadLimits.install();
             YoutubeDL.getInstance().init(this);
+            NativeLibraryAliases.restore(this);
             FFmpeg.getInstance().init(this);
         } catch (Throwable error) {
             initializationError = error;
