@@ -9,5 +9,6 @@
     <color name="progress">#3D5AF1</color>
     <color name="progress_track">#E9EDF7</color>
     <color name="input_surface">#F6F8FC</color>
+    <color name="options_surface">#EDF1FF</color>
     <color name="disabled_text">#8490A6</color>
 </resources>
