@@ -11,6 +11,7 @@ import json
 import os
 from pathlib import Path, PurePosixPath
 import posixpath
+import re
 import stat
 import subprocess
 import tarfile
@@ -149,6 +150,20 @@ def retain_native_support(payload, old):
             payload[name] = read_native(name)
 
 
+def remove_version_aliases(payload):
+    """Drop duplicate full-version aliases, retaining every ABI-major loader name.
+
+    Never deduplicate differently named SONAMEs (e.g. libssl vs libssl_python).
+    Only identical ELF bytes with an existing major-version filename qualify.
+    """
+    result = dict(payload)
+    for name, content in payload.items():
+        match = re.fullmatch(r'(usr/lib/[^/]+\.so\.\d+)\.\d+(?:\.\d+)*', name)
+        if match and content.startswith(b'\x7fELF') and payload.get(match[1]) == content:
+            del result[name]
+    return result
+
+
 def prepare(root, abi, base, output):
     if sha256(base) != BASE_SHA256:
         raise ValueError("Base youtubedl-android 0.18.1 AAR hash mismatch")
@@ -171,6 +186,21 @@ def prepare(root, abi, base, output):
         manifest = {"python": VERSION, "abi": abi, "source": "https://www.python.org/downloads/release/python-3148/",
                     "source_sha256": digest, "base_library": "0.18.1", **transport}
         payload["usr/python-runtime.json"] = json.dumps(manifest, sort_keys=True).encode()
+        # Installation tooling is never invoked by the embedded downloader.
+        # Preserve runtime modules, package metadata and all license notices.
+        site = "usr/lib/python3.14/site-packages/"
+        installer_roots = ("pip/", "setuptools/", "wheel/", "_distutils_hack/")
+        installer_notices = {"usr/share/licenses/omitted-installer-tools/" + name: content
+                             for name, content in payload.items()
+                             if name.startswith(site) and name[len(site):].startswith(installer_roots)
+                             and any(word in PurePosixPath(name).name.upper() for word in ("LICENSE", "COPYING", "NOTICE"))}
+        payload = {name: content for name, content in payload.items()
+                   if name != site + "distutils-precedence.pth"
+                   and not name.startswith("usr/lib/python3.14/ensurepip/")
+                   and not (name.startswith(site) and
+                            name[len(site):].startswith(installer_roots))}
+        payload.update(installer_notices)
+        payload = remove_version_aliases(payload)
         buffer = io.BytesIO()
         with zipfile.ZipFile(buffer, "w", compression=zipfile.ZIP_DEFLATED, compresslevel=9) as runtime:
             for name, content in sorted(payload.items()):
