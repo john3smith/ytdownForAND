@@ -9,6 +9,17 @@ import prepare_python_runtime as runtime
 
 
 class RuntimePackagingTest(unittest.TestCase):
+    def test_version_alias_cleanup_preserves_loader_names_and_different_bytes(self):
+        payload = {'usr/lib/libx.so.6': b'\x7fELFsame',
+                   'usr/lib/libx.so.6.5': b'\x7fELFsame',
+                   'usr/lib/libx.so.6.4': b'\x7fELFother',
+                   'usr/lib/liby.so.1.2': b'\x7fELForphan',
+                   'usr/lib/libx_python.so': b'\x7fELFsame',
+                   'usr/share/LICENSE': b'notice'}
+        result = runtime.remove_version_aliases(payload)
+        self.assertEqual(set(payload)-{'usr/lib/libx.so.6.5'},set(result))
+        self.assertEqual(6,len(payload))
+
     def test_retains_ffmpeg_dependencies_without_overwriting_official_python(self):
         buffer = io.BytesIO()
         with zipfile.ZipFile(buffer, 'w') as archive:
