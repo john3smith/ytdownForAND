@@ -576,11 +576,31 @@ public final class MainActivity extends Activity {
         Button optionsButton = commandButton(R.string.quality_label, false);
         optionsButton.setId(R.id.download_options_toggle);
         optionsButton.setGravity(Gravity.START | Gravity.CENTER_VERTICAL);
-        optionsButton.setTextSize(12);
+        optionsButton.setTextSize(14);
+        optionsButton.setMinHeight(dp(72));
+        optionsButton.setMaxLines(Integer.MAX_VALUE);
+        optionsButton.setEllipsize(null);
+        optionsButton.setPadding(dp(16), dp(12), dp(16), dp(12));
+        optionsButton.setTextColor(getColor(R.color.accent));
+        optionsButton.setCompoundDrawablePadding(dp(12));
+        optionsButton.setBackground(new android.graphics.drawable.RippleDrawable(
+                ColorStateList.valueOf(0x183D5AF1),
+                rounded(getColor(R.color.options_surface), getColor(R.color.accent), 1, 14),
+                rounded(Color.WHITE, Color.TRANSPARENT, 0, 14)));
         Runnable optionSummary = () -> {
+            boolean expanded = options.getVisibility() == View.VISIBLE;
             String selected = audioOnlySwitch.isChecked() ? "M4A 음원" : qualitySpinner.getSelectedItem() + " · 동영상";
-            optionsButton.setText(options.getVisibility() == View.VISIBLE ? "저장 옵션 닫기  ∧" : selected + "  ·  옵션 ∨");
-            optionsButton.setContentDescription("저장 옵션, " + selected + (options.getVisibility() == View.VISIBLE ? ", 펼쳐짐" : ", 접힘"));
+            String action = getString(expanded ? R.string.collapse_download_options : R.string.expand_download_options);
+            android.text.SpannableString label = new android.text.SpannableString(action + "\n" + selected);
+            label.setSpan(new android.text.style.RelativeSizeSpan(0.86f), action.length() + 1, label.length(), 0);
+            label.setSpan(new android.text.style.ForegroundColorSpan(getColor(R.color.text_secondary)),
+                    action.length() + 1, label.length(), 0);
+            optionsButton.setText(label);
+            optionsButton.setCompoundDrawablesRelativeWithIntrinsicBounds(0, 0,
+                    expanded ? R.drawable.ic_expand_less : R.drawable.ic_expand_more, 0);
+            optionsButton.setContentDescription(action + ", " + selected);
+            androidx.core.view.ViewCompat.setStateDescription(optionsButton,
+                    getString(expanded ? R.string.options_expanded : R.string.options_collapsed));
         };
         optionsButton.setOnClickListener(v -> {
             options.setVisibility(options.getVisibility() == View.VISIBLE ? View.GONE : View.VISIBLE);
@@ -608,6 +628,11 @@ public final class MainActivity extends Activity {
         downloadButton.setMinHeight(dp(56));
         pasteButton.setMinHeight(dp(56));
         place(composer, actions, 8);
+        bulkDownloadButton.setTextSize(13);
+        bulkDownloadButton.setMaxLines(Integer.MAX_VALUE);
+        bulkDownloadButton.setEllipsize(null);
+        bulkDownloadButton.setMinHeight(dp(52));
+        place(composer, bulkDownloadButton, 8);
         webPageButton.setTextSize(12);
         place(composer, webPageButton, 0);
         place(root, composer, 16);
@@ -650,8 +675,6 @@ public final class MainActivity extends Activity {
         loginRow.addView(clearLoginButton, clearParams);
         place(connection, loginRow, 8);
         place(connection, loginStatusText, 12);
-        bulkDownloadButton.setTextSize(12);
-        place(connection, bulkDownloadButton, 0);
         place(root, connection, 16);
 
         LinearLayout tools = dashboardCard("관리 및 안내", null);

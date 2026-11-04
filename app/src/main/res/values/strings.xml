@@ -22,7 +22,11 @@
     <string name="url_hint">YouTube, X, Instagram 링크</string>
     <string name="paste">붙여넣기</string>
     <string name="download">다운로드</string>
-    <string name="download_account_media">X·Instagram 계정 전체 미디어</string>
+    <string name="download_account_media">X Instagram 계정 전체 미디어 다운로드</string>
+    <string name="expand_download_options">저장 옵션 펼치기</string>
+    <string name="collapse_download_options">저장 옵션 접기</string>
+    <string name="options_expanded">펼쳐짐</string>
+    <string name="options_collapsed">접힘</string>
     <string name="cancel">취소</string>
     <string name="cancel_press_again">취소하려면 1초 안에 한 번 더 누르세요.</string>
     <string name="usage">사용법</string>
