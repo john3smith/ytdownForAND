@@ -1,5 +1,7 @@
 """Host-side tests of official-runtime packaging; no device/UI assumptions."""
 import io
+import json
+import hashlib
 import tarfile
 import tempfile
 import unittest
@@ -9,6 +11,20 @@ import prepare_python_runtime as runtime
 
 
 class RuntimePackagingTest(unittest.TestCase):
+    def test_deduplication_roundtrip_preserves_all_loader_names(self):
+        payload = {'usr/lib/libssl.so': b'\x7fELFsame',
+                   'usr/lib/libssl_python.so': b'\x7fELFsame',
+                   'usr/lib/libother.so': b'\x7fELFother',
+                   'usr/share/LICENSE': b'notice'}
+        packed = runtime.deduplicate_native_files(payload)
+        aliases = json.loads(packed.pop('usr/native-aliases.json'))
+        self.assertEqual(1, len(aliases))
+        for alias in aliases:
+            content = packed['usr/lib/' + alias['source']]
+            self.assertEqual(alias['sha256'], hashlib.sha256(content).hexdigest())
+            packed['usr/lib/' + alias['name']] = content
+        self.assertEqual(payload, packed)
+
     def test_version_alias_cleanup_preserves_loader_names_and_different_bytes(self):
         payload = {'usr/lib/libx.so.6': b'\x7fELFsame',
                    'usr/lib/libx.so.6.5': b'\x7fELFsame',

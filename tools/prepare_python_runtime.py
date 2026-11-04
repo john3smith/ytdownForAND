@@ -164,6 +164,25 @@ def remove_version_aliases(payload):
     return result
 
 
+def deduplicate_native_files(payload):
+    """Store identical native bytes once; retain all loader names in a manifest."""
+    result = dict(payload)
+    representatives = {}
+    aliases = []
+    for name, content in sorted(payload.items()):
+        if PurePosixPath(name).parent != PurePosixPath("usr/lib") or not content.startswith(b"\x7fELF"):
+            continue
+        digest = hashlib.sha256(content).hexdigest()
+        source = representatives.get(digest)
+        if source is not None and payload[source] == content:
+            aliases.append({"name": PurePosixPath(name).name, "source": PurePosixPath(source).name, "sha256": digest})
+            del result[name]
+        else:
+            representatives[digest] = name
+    result["usr/native-aliases.json"] = json.dumps(aliases, sort_keys=True).encode()
+    return result
+
+
 def prepare(root, abi, base, output):
     if sha256(base) != BASE_SHA256:
         raise ValueError("Base youtubedl-android 0.18.1 AAR hash mismatch")
@@ -200,7 +219,7 @@ def prepare(root, abi, base, output):
                    and not (name.startswith(site) and
                             name[len(site):].startswith(installer_roots))}
         payload.update(installer_notices)
-        payload = remove_version_aliases(payload)
+        payload = deduplicate_native_files(payload)
         buffer = io.BytesIO()
         with zipfile.ZipFile(buffer, "w", compression=zipfile.ZIP_DEFLATED, compresslevel=9) as runtime:
             for name, content in sorted(payload.items()):
