@@ -94,15 +94,15 @@ tasks.configureEach {
 }
 
 dependencies {
-    implementation "androidx.core:core:1.17.0"
+    implementation "androidx.core:core:1.19.1"
     implementation "androidx.webkit:webkit:1.17.0"
     pythonRuntimeBase "io.github.junkfood02.youtubedl-android:library:0.18.1@aar"
     implementation files(runtimeAar).builtBy(preparePythonRuntime)
     // Preserve the upstream AAR's published dependencies after local Python-only repackaging.
     implementation "io.github.junkfood02.youtubedl-android:common:0.18.1"
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.7.22"
-    implementation "androidx.appcompat:appcompat:1.4.2"
-    implementation "androidx.core:core-ktx:1.8.0"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:2.4.21"
+    implementation "androidx.appcompat:appcompat:1.8.0"
+    implementation "androidx.core:core-ktx:1.19.1"
     implementation enforcedPlatform("com.fasterxml.jackson:jackson-bom:2.22.4")
     implementation "com.fasterxml.jackson.core:jackson-databind"
     implementation "com.fasterxml.jackson.core:jackson-annotations"
@@ -111,7 +111,7 @@ dependencies {
     coreLibraryDesugaring "com.android.tools:desugar_jdk_libs:2.1.5"
     implementation "io.github.junkfood02.youtubedl-android:ffmpeg:0.18.1"
     testImplementation "junit:junit:4.13.2"
-    testImplementation "org.json:json:20250517"
+    testImplementation "org.json:json:20260814"
 }
 
 apply from: rootProject.file("gradle/store-release.gradle")
