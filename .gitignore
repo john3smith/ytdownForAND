@@ -49,3 +49,6 @@ store-local.properties
 *.jks
 *.keystore
 lineage.bin
+
+# Locally built native executables; published as release assets only.
+native-ffmpeg/

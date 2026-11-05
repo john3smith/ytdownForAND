@@ -1207,3 +1207,20 @@
   execution, authenticated upstream cancellation/download, natural process or
   renderer failures, and power-loss/disk-full behavior under separately scoped
   execution. No next round or scheduler is registered here.
+
+
+## 2026-11-05 - Minimal FFmpeg integration (v1.9.41)
+
+Replaced the bundled general FFmpeg dependency archive with statically linked
+arm64-v8a/x86_64 executables, built with libxml2, OpenSSL and x264. Kept
+MP4/M4A, HLS/DASH, AAC/H264 encoding and stream copy. Removed unused AV1/VP9/HEVC
+encoders and general-purpose filters/libraries. APK ARM64: 68,225,751 ->
+44,264,710 bytes (-35.12%); x86_64: 71,244,485 -> 44,543,220 (-37.48%).
+174 Java unit tests and 13 Python runtime tests passed. Installed-engine HTTPS
+fixture download, MP4 merge, M4A conversion, HLS/DASH and TLS rejection passed.
+Actual YouTube UI download completed: AV1/AAC MP4, 19.063583 s, 533,915 bytes.
+ARM64 execution on physical hardware remains untested. Source/dependency and
+license details: docs/minimal-ffmpeg.md. No claim of universal site availability.
+
+YouTube UI M4A extraction also completed: AAC, 19.063583 seconds,
+309,156 bytes. The final signed x86_64 APK was installed preserving data.

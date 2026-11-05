@@ -1,0 +1,10 @@
+{
+  "arm64-v8a": {
+    "ffmpeg": "97b2691dd63a83b1ff381a09d6bfad9b0d2d111eb671562556608c5b111dbc0a",
+    "ffprobe": "a2c65788ac7966444a899488269488236d58fed945c219efeb04edb40edb84c0"
+  },
+  "x86_64": {
+    "ffmpeg": "ccdd4dd570bda8fd36cd8720ad450ff0be923b9c23e6c4b1ddb06b74597babcb",
+    "ffprobe": "1d3ea0771251fa78ff59aff10ded5ca9fdd7083cc9b2df4ee0c0eb0c7a566966"
+  }
+}
