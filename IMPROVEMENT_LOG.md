@@ -1224,3 +1224,10 @@ license details: docs/minimal-ffmpeg.md. No claim of universal site availability
 
 YouTube UI M4A extraction also completed: AAC, 19.063583 seconds,
 309,156 bytes. The final signed x86_64 APK was installed preserving data.
+
+
+## 2026-11-05 - v1.9.42 additional APK reduction
+Lossless WebP icons preserve every RGBA pixel and save 449,506 source bytes.
+FFmpeg/ffprobe now share avcodec, avformat, avutil, avfilter, swscale and
+swresample. Python duplicate scan found no identical .so payloads; differently
+named OpenSSL/SQLite ABIs were inspected and retained to protect loading/TLS.

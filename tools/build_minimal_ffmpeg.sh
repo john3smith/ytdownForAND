@@ -39,7 +39,7 @@ export PKG_CONFIG_LIBDIR="$out/xml/lib/pkgconfig:$out/x264/lib/pkgconfig:$out/op
 cd "$out/ffmpeg-build"
 "$FFMPEG_SOURCE/configure" --target-os=android --arch="$arch" --enable-cross-compile \
  --cc="${triple}24-clang" --cxx="${triple}24-clang++" --ar=llvm-ar --ranlib=llvm-ranlib --strip=llvm-strip \
- --prefix="$out/install" --disable-autodetect --disable-shared --enable-static \
+ --prefix="$out/install" --disable-autodetect --enable-shared --disable-static \
  --disable-doc --disable-debug --disable-ffplay --disable-avdevice --disable-postproc \
  --disable-everything --enable-ffmpeg --enable-ffprobe --enable-small \
  --enable-version3 --enable-gpl --enable-openssl --enable-libxml2 --enable-libx264 --enable-network --pkg-config-flags=--static \

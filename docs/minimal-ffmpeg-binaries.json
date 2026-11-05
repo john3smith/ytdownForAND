@@ -1,10 +1,22 @@
 {
   "arm64-v8a": {
-    "ffmpeg": "97b2691dd63a83b1ff381a09d6bfad9b0d2d111eb671562556608c5b111dbc0a",
-    "ffprobe": "a2c65788ac7966444a899488269488236d58fed945c219efeb04edb40edb84c0"
+    "ffmpeg": "aff2d3c54ed2647e9e9e576571b8c07661fb7849f027692c4045aec8143d411b",
+    "ffprobe": "3e1d56b75f07a7afa117332188267cee22f2e312a910ea4f02ef120eaea31dab",
+    "libavcodec.so": "eeabf7168f1eff71c3acd16543c392300fcab922b651aec8d56e78eff1d1231c",
+    "libavfilter.so": "16a994349babc1c6e0a670723d47a02a264cdc399dd6af2cc20d55a6999f459f",
+    "libavformat.so": "def7b88746692dc84c5a6773a54ff5e5c75cc8e385ec2a19d1bc1eb4d6ce8fd6",
+    "libavutil.so": "eba4e68c15dcd22b9a39147a6b4ac6928d1ef504e84ab58191eddb857affbfa1",
+    "libswresample.so": "257cb83cd4be476cf929813053e3f3d40d564238856379d445fde9162cc79520",
+    "libswscale.so": "b321b378e02738f7e61d410099ffd3e4109fc5fd3574fbddade2d582845f1f0d"
   },
   "x86_64": {
-    "ffmpeg": "ccdd4dd570bda8fd36cd8720ad450ff0be923b9c23e6c4b1ddb06b74597babcb",
-    "ffprobe": "1d3ea0771251fa78ff59aff10ded5ca9fdd7083cc9b2df4ee0c0eb0c7a566966"
+    "ffmpeg": "7217d13aba41381cc98b0ddd6539bb16893f9b2250b94a41e9d9856aebd72486",
+    "ffprobe": "ff2d10bb830760a76071aef6fbd317319175ab885a79986241cd558576af3669",
+    "libavcodec.so": "99711cdc53031a3c42b2801be94a58da501a99a4d2016ee03d3782652b9ebd7e",
+    "libavfilter.so": "c6ff8215644290eb4376cc771c2f180f051b238aa6e6fca3a6a8197750ac65a4",
+    "libavformat.so": "00964b161502b7019ff7e04a3c6e5e2b0add7037cd70e99197216f97feb8daa7",
+    "libavutil.so": "e25dcda9712142bda7723642e64d8e5c63ef01b66dde267323c31fc11c0b1a3a",
+    "libswresample.so": "ba188b891b5bf6eb2ade6b8942b0cef0a735e9a17fe18676872f3af3e86aebcd",
+    "libswscale.so": "4ff29904cfc1bbd5cb61c2b1c3a5821249e2e357cad77e523532d64c219ad2b3"
   }
 }

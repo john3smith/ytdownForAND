@@ -1,4 +1,4 @@
-# Minimal FFmpeg runtime (YTDown 1.9.41)
+# Minimal FFmpeg runtime (YTDown 1.9.42)
 
 Built from FFmpeg 7.1.2, OpenSSL 3.5.4, libxml2 2.14.6, and x264 commit
 0480cb05fa188d37ae87e8f4fd8f1aea3711f7ee with Linux Android NDK r27c, API 24.
@@ -52,3 +52,12 @@ x264 was cloned from code.videolan.org/videolan/x264.git at the commit above.
 - ffmpeg-7.1.2.tar.xz: 089bc60fb59d6aecc5d994ff530fd0dcb3ee39aa55867849a2bbc4e555f9c304
 - openssl-3.5.4.tar.gz: 967311f84955316969bdb1d8d4b983718ef42338639c621ec4c34fddef355e99
 - libxml2-2.14.6.tar.xz: 7ce458a0affeb83f0b55f1f4f9e0e55735dbfc1a9de124ee86fb4a66b597203a
+
+## v1.9.42 optimization
+Icons use lossless WebP; all decoded RGBA pixels match the PNG originals.
+FFmpeg and ffprobe share six FFmpeg libraries in their existing private runtime
+package; the library search path is unchanged. Copy install/lib/*.so alongside
+install/bin/ffmpeg and ffprobe into native-ffmpeg/<ABI> when rebuilding.
+Python archive content duplicates are already removed. Remaining OpenSSL and
+SQLite libraries have different SONAME/NEEDED dependencies; they are preserved
+until their consumers can be rebuilt and tested against a common ABI.

@@ -1,5 +1,5 @@
-YTDown 1.9.41 minimal FFmpeg runtime
+YTDown 1.9.42 minimal FFmpeg runtime
 FFmpeg 7.1.2 + x264 0480cb05fa188d37ae87e8f4fd8f1aea3711f7ee: GPL version 3 or later combined build. OpenSSL 3.5.4: Apache-2.0; libxml2 2.14.6: MIT.
-Built with Android NDK r27c, API 24. Static dependencies; no nonfree components. Upstream source is unmodified. The build selection is in tools/build_minimal_ffmpeg.sh.
-Corresponding source (including dependency source and build scripts) is distributed alongside the APK as YTDown-v1.9.41-ffmpeg-source.tar.gz at https://github.com/john3smith/ytdownForAND/releases/tag/v1.9.41
+Built with Android NDK r27c, API 24. Shared FFmpeg libraries with static third-party dependencies; no nonfree components. Upstream source is unmodified. The build selection is in tools/build_minimal_ffmpeg.sh.
+Corresponding source (including dependency source and build scripts) is distributed alongside the APK as YTDown-v1.9.42-ffmpeg-source.tar.gz at https://github.com/john3smith/ytdownForAND/releases/tag/v1.9.42
 The application source is available in the same repository. These notices concern this runtime and do not replace other bundled component notices.
