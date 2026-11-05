@@ -51,8 +51,8 @@ android {
         applicationId "com.local.ytdown"
         minSdk 24
         targetSdk 36
-        versionCode 78
-        versionName "1.9.39"
+        versionCode 79
+        versionName "1.9.40"
         testInstrumentationRunner "com.local.ytdown.StreamProgressInstrumentation"
 
         ndk {
@@ -65,7 +65,9 @@ android {
             debuggable false
             // Sign separately after validating the owner-approved production identity.
             signingConfig null
-            minifyEnabled false
+            minifyEnabled true
+            shrinkResources true
+            proguardFiles getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
             proguardFiles getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
         }
     }
