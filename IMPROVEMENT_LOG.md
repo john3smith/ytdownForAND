@@ -1231,3 +1231,30 @@ Lossless WebP icons preserve every RGBA pixel and save 449,506 source bytes.
 FFmpeg/ffprobe now share avcodec, avformat, avutil, avfilter, swscale and
 swresample. Python duplicate scan found no identical .so payloads; differently
 named OpenSSL/SQLite ABIs were inspected and retained to protect loading/TLS.
+
+## 2026-11-12 - Link-grouped download logs (v1.9.43 preparation)
+
+- Started from published v1.9.42 / 5eec0a8, ahead of origin/main f8f21b6;
+  preserved the older main checkout's uncommitted size experiments in place.
+- Store one bounded recent-24-hour entry per exact download URL. Retries append
+  to the existing entry, while SHA-256 identities distinguish query-based video
+  URLs without retaining arbitrary query credentials. Preparation logs stay separate.
+- Migrate existing timestamped logs, merging identifiable links. Older YouTube
+  watch logs lack video IDs and remain separate legacy sessions to avoid false merges.
+- Link selection opens a scrollable detail popup with selectable text and a
+  whole-log copy button that keeps the popup open. Worker-local URL ownership
+  keeps cancelled workers' trailing logs with their original link.
+- Passed 174 existing Java unit tests, release lint (0 errors, 25 warnings),
+  x86_64 release build and production signing for APIs 24/26/28/32/33/35/36.
+- Regular emulator in-place update retained data. Verified repeated attempts
+  grouped into one item, distinct watch IDs as separate items, selection-handle
+  dragging, full clipboard content via paste, normal layout and 320x640dp at
+  font scale 1.3; display/font overrides restored afterward.
+- Installed-engine owned HTTPS fixture download, MP4 merge (H264/Opus), M4A
+  conversion (AAC), HLS/DASH and untrusted-certificate rejection passed. The old
+  fixture certificate had expired; regenerated a fixture-only certificate without
+  changing app trust settings. External YouTube test link returned unavailable;
+  no successful upstream-site download is claimed for this change.
+- ARM64 validation and final publication receipts are recorded separately.
+  Binary publication is deferred to the queued Instagram-download repair, so
+  the final same-app update includes both requests. No APK was sent or released.

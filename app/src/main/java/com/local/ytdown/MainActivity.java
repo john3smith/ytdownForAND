@@ -102,6 +102,8 @@ public final class MainActivity extends Activity {
     private Button queueListButton;
     private AlertDialog queueDialog;
     private IncompleteFilesDialog incompleteFilesDialog;
+    private DownloadLogsDialog downloadLogsDialog;
+    private final ThreadLocal<String> workerLogUrl = new ThreadLocal<>();
     private ConnectivityManager connectivityManager;
     private ConnectivityManager.NetworkCallback networkCallback;
     private TextView loginStatusText;
@@ -708,40 +710,8 @@ public final class MainActivity extends Activity {
     }
 
     private void showDownloadLog() {
-        String log = DownloadLogStore.read(this);
-        if (TextUtils.isEmpty(log)) {
-            log = getString(R.string.download_log_empty);
-        }
-        final String displayedLog = log;
-        TextView logView = new TextView(this);
-        logView.setText(displayedLog);
-        logView.setTextColor(getColor(R.color.text_primary));
-        logView.setTextSize(12);
-        logView.setTypeface(Typeface.MONOSPACE);
-        logView.setTextIsSelectable(true);
-        logView.setPadding(dp(16), dp(12), dp(16), dp(12));
-
-        ScrollView scrollView = new ScrollView(this);
-        scrollView.addView(logView, new ScrollView.LayoutParams(
-                ScrollView.LayoutParams.MATCH_PARENT,
-                ScrollView.LayoutParams.WRAP_CONTENT));
-
-        new AlertDialog.Builder(this)
-                .setTitle(R.string.download_log)
-                .setView(scrollView)
-                .setNeutralButton(R.string.copy_log, (dialog, which) -> {
-                    ClipboardManager clipboard = (ClipboardManager)
-                            getSystemService(Context.CLIPBOARD_SERVICE);
-                    clipboard.setPrimaryClip(ClipData.newPlainText(
-                            getString(R.string.download_log), displayedLog));
-                    toast(R.string.log_copied);
-                })
-                .setNegativeButton(R.string.clear_log, (dialog, which) -> {
-                    DownloadLogStore.clear(this);
-                    toast(R.string.log_cleared);
-                })
-                .setPositiveButton(R.string.close, null)
-                .show();
+        if (downloadLogsDialog == null) downloadLogsDialog = new DownloadLogsDialog(this);
+        downloadLogsDialog.show();
     }
 
     private void openLogin() {
@@ -824,7 +794,7 @@ public final class MainActivity extends Activity {
     private void updateDownloadEngine() {
         prepareDownloadEngine(new DownloadEngineStartup.Engine() {
             @Override public void update() throws Exception {
-                logDownload("yt-dlp 업데이트 확인 시작");
+                DownloadLogStore.append(getApplicationContext(), "yt-dlp 업데이트 확인 시작");
                 YoutubeDL.getInstance().updateYoutubeDL(
                         getApplicationContext(), YoutubeDL.UpdateChannel._STABLE);
             }
@@ -842,13 +812,13 @@ public final class MainActivity extends Activity {
             DownloadEngineStartup.Ready ready = DownloadEngineStartup.prepare(engine);
             String version = ready.version;
             if (ready.updateFailure != null) {
-                logDownload("yt-dlp 업데이트 확인 실패, 설치된 엔진 실행 확인: "
+                DownloadLogStore.append(getApplicationContext(), "yt-dlp 업데이트 확인 실패, 설치된 엔진 실행 확인: "
                         + safeMessage(ready.updateFailure));
                 Log.w(TAG, "Update check failed; installed yt-dlp execution verified", ready.updateFailure);
             }
             engineReady = true;
-            logDownload("Python 런타임: 3.14.8 · curl_cffi: 0.16.3 · Android 다운로드 라이브러리: 0.18.1");
-            logDownload("yt-dlp 준비 완료: " + version);
+            DownloadLogStore.append(getApplicationContext(), "Python 런타임: 3.14.8 · curl_cffi: 0.16.3 · Android 다운로드 라이브러리: 0.18.1");
+            DownloadLogStore.append(getApplicationContext(), "yt-dlp 준비 완료: " + version);
             runOnUiThread(() -> {
                 statusText.setText(getString(ready.updateFailure == null
                         ? R.string.status_engine_ready : R.string.status_engine_ready_update_failed, version));
@@ -861,7 +831,7 @@ public final class MainActivity extends Activity {
             });
         } catch (Throwable error) {
             engineReady = false;
-            logDownload("yt-dlp 준비 실패: " + safeMessage(error));
+            DownloadLogStore.append(getApplicationContext(), "yt-dlp 준비 실패: " + safeMessage(error));
             Log.e(TAG, "Failed to prepare yt-dlp", error);
             runOnUiThread(() -> {
                 statusText.setText(getString(R.string.status_engine_failed,
@@ -956,6 +926,8 @@ public final class MainActivity extends Activity {
         bulkMode = true;
         bulkScanning = true;
         accountTask = task;
+        DownloadLogStore.start(this, task.url, task.format);
+        logDownload("계정 전체 미디어 검색 시작");
         lastCancelButtonPressAt = 0;
         bulkTotal = 0;
         bulkAttempted = 0;
@@ -1126,7 +1098,6 @@ public final class MainActivity extends Activity {
         }
         bulkMode = false;
         bulkScanning = false;
-        accountTask = null;
         lastCancelButtonPressAt = 0;
         bulkMediaUrls.clear();
         stopKeepAlive();
@@ -1148,8 +1119,10 @@ public final class MainActivity extends Activity {
         } else {
             statusText.setText(getString(R.string.status_with_detail,
                     getString(R.string.status_failed), detail));
+            logDownload("계정 미디어 검색 실패: " + detail);
             clearDownloadNotifications();
         }
+        accountTask = null;
         shutdownExecutorIfDestroyed();
         if (!activityDestroyed) startNextQueuedDownload();
     }
@@ -1211,6 +1184,7 @@ public final class MainActivity extends Activity {
             return;
         }
 
+        activeUrl = task.url;
         DownloadLogStore.start(this, task.url, task.format);
         logDownload("다운로드 작업 시작");
         logDownload(task.audioOnly ? "음원만 추출: M4A · 사진/동영상 저장 안 함"
@@ -1246,9 +1220,15 @@ public final class MainActivity extends Activity {
                     + (cookieFile != null && cookieFile.isFile() ? "적용됨" : "없음"));
         }
         File downloadCookieFile = cookieFile;
-        activeDownloadFuture = executor.submit(() -> { synchronized (IncompleteFiles.IO_LOCK) { executeDownload(
-                task.url, outputDirectory, task.format, task.audioOnly, task.httpsAssist,
-                downloadCookieFile, generation); } });
+        activeDownloadFuture = executor.submit(() -> {
+            workerLogUrl.set(task.url);
+            try {
+                synchronized (IncompleteFiles.IO_LOCK) {
+                    executeDownload(task.url, outputDirectory, task.format, task.audioOnly, task.httpsAssist,
+                            downloadCookieFile, generation);
+                }
+            } finally { workerLogUrl.remove(); }
+        });
     }
 
     private void startNextQueuedDownload() {
@@ -1799,7 +1779,10 @@ public final class MainActivity extends Activity {
     }
 
     private void logDownload(String message) {
-        DownloadLogStore.append(getApplicationContext(), message);
+        String url = workerLogUrl.get();
+        if (url == null) url = activeUrl;
+        if (url == null && accountTask != null) url = accountTask.url;
+        DownloadLogStore.append(getApplicationContext(), url, message);
     }
 
     private boolean isDownloadActive(long generation) {
@@ -2326,6 +2309,7 @@ public final class MainActivity extends Activity {
     protected void onDestroy() {
         activityDestroyed = true;
         if (incompleteFilesDialog != null) incompleteFilesDialog.dismiss();
+        if (downloadLogsDialog != null) downloadLogsDialog.dismiss();
         if (serviceReceiverRegistered) {
             unregisterReceiver(downloadServiceReceiver);
             serviceReceiverRegistered = false;
