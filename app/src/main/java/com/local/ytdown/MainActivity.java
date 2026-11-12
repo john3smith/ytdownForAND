@@ -1449,6 +1449,14 @@ public final class MainActivity extends Activity {
                 }
             } catch (InterruptedException cancelled) {
                 return;
+            } catch (SocialImageDownloader.InstagramLoginRequiredException loginRequired) {
+                logDownload("Instagram 로그인·보안 확인 필요");
+                runOnUiThread(() -> finishDownload(generation, false, loginRequired.getMessage()));
+                return;
+            } catch (SocialImageDownloader.InstagramMediaException incomplete) {
+                logDownload(incomplete.getMessage());
+                runOnUiThread(() -> finishDownload(generation, false, incomplete.getMessage()));
+                return;
             } catch (Throwable error) {
                 photoError = error;
                 logDownload("구조화된 미디어 검사 실패: " + safeMessage(error));

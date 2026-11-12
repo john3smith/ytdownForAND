@@ -1258,3 +1258,29 @@ named OpenSSL/SQLite ABIs were inspected and retained to protect loading/TLS.
 - ARM64 validation and final publication receipts are recorded separately.
   Binary publication is deferred to the queued Instagram-download repair, so
   the final same-app update includes both requests. No APK was sent or released.
+
+## 2026-11-12 - Instagram photo carousel repair (v1.9.43)
+
+- Confirmed cause: embed HTML did not include the carousel structure, so the
+  image downloader found zero items and delegated image-only entries to yt-dlp's
+  video-only path, which reported missing video formats.
+- Use Instagram's authenticated media-info response with the existing scoped
+  cookie jar. Verify post identity and complete carousel membership; explicitly
+  separate photos and videos, choose the largest image candidate, and reject
+  video-cover substitution. Login/security redirects and failures stop instead
+  of repeating the same items through a fallback after partial storage.
+- Added six regression cases for shortcodes, full-resolution photo carousels,
+  mixed media, unavailable videos, incomplete metadata and mismatched identities.
+  All 180 Java tests pass. Release lint has 0 errors and 25 existing warnings.
+- Actual affected post: the production-signed x86_64 candidate saved all three
+  images through the real app on the regular emulator. Independently pulled and
+  fully decoded all three JPEGs: 1440x1800 / 156631 bytes; 1440x1801 / 141003 bytes;
+  1440x1799 / 338266 bytes. SHA-256 receipts stay local; no user media, URLs,
+  cookies or response bodies are published with source or release assets.
+- The emulator initially had persistent SystemUI ANRs. Cold boot and software
+  graphics were used without wiping data. Restored the original audio-only
+  setting after verifying normal photo/video mode. No physical phone was used.
+- Both same-app requests are included in this final version. Source push,
+  APK/Release integrity and LAN delivery have separate local receipts.
+- No new external dependencies or assets. Existing FFmpeg/runtime licenses and
+  corresponding-source links from v1.9.42 remain unchanged.

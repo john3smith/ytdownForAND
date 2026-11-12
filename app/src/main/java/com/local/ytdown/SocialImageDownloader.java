@@ -116,10 +116,18 @@ final class SocialImageDownloader {
         boolean isCancelled();
     }
 
-    static final class LoginRequiredException extends IllegalStateException {
+    static class LoginRequiredException extends IllegalStateException {
         LoginRequiredException(String message) {
             super(message);
         }
+    }
+
+    static final class InstagramLoginRequiredException extends LoginRequiredException {
+        InstagramLoginRequiredException(String message) { super(message); }
+    }
+
+    static final class InstagramMediaException extends IOException {
+        InstagramMediaException(String message, Throwable cause) { super(message, cause); }
     }
 
     static final class Result {
@@ -1353,6 +1361,44 @@ final class SocialImageDownloader {
                                                   boolean reelOrVideoRoute, Listener listener)
             throws Exception {
         listener.onLog("Instagram 사진 검사 시작");
+        NetscapeCookieJar cookies = NetscapeCookieJar.load(cookieFile);
+        String cookieHeader = cookieHeader(cookies, "https://www.instagram.com/");
+        if (cookieHeader != null && Pattern.compile("(?:^|;\\s*)sessionid=").matcher(cookieHeader).find()) {
+            listener.onLog("Instagram 로그인 세션으로 게시물 전체 미디어 조회");
+            try {
+                JSONObject post = readInstagramPost(shortcode, cookies, listener::isCancelled);
+                XMedia media = parseInstagramPost(post, shortcode);
+                JSONObject owner = post.optJSONObject("user");
+                String username = owner == null ? "" : owner.optString("username");
+                String title = "Instagram " + (username.isEmpty() ? "" : "@" + username + " ") + shortcode;
+                listener.onLog("Instagram 전체 미디어: 사진 " + media.imageUrls.size()
+                        + "개, 영상 " + media.videoUrls.size() + "개, 미해결 영상=" + media.unresolvedVideo);
+                listener.onTitle(title);
+                if (!media.imageUrls.isEmpty()) {
+                    downloadImages(context, media.imageUrls, outputDirectory, title, false, listener);
+                }
+                if (downloadDirectVideos && !media.videoUrls.isEmpty()) {
+                    downloadVideos(context, media.videoUrls, outputDirectory, title, cookies, listener);
+                }
+                return new Result(media.imageUrls.size(), downloadDirectVideos ? media.videoUrls.size() : 0,
+                        media.hasVideo, media.unresolvedVideo);
+            } catch (LoginRequiredException | InterruptedException blocked) {
+                throw blocked;
+            } catch (Exception unavailable) {
+                if (listener.isCancelled() || Thread.currentThread().isInterrupted()) {
+                    throw new InterruptedException("다운로드가 취소되었습니다.");
+                }
+                // Do not repeat partially saved items through yt-dlp or the embed path.
+                // Network/parser exceptions may contain response content. Retain only
+                // our own fixed diagnostic messages, never arbitrary response excerpts.
+                String detail = unavailable.getMessage();
+                if (detail == null || !(detail.startsWith("Instagram ") || detail.startsWith("요청한 Instagram "))) {
+                    detail = "Instagram 전체 미디어 조회 또는 저장에 실패했습니다. ("
+                            + unavailable.getClass().getSimpleName() + ")";
+                }
+                throw new InstagramMediaException(detail, unavailable);
+            }
+        }
         String embedUrl = "https://www.instagram.com/p/" + shortcode + "/embed/captioned/";
         String html = readText(embedUrl, NetscapeCookieJar.load(cookieFile),
                 INSTAGRAM_EMBED_USER_AGENT);
@@ -1388,6 +1434,105 @@ final class SocialImageDownloader {
         }
         return new Result(images.size(), downloadDirectVideos ? videos.size() : 0,
                 hasVideo, media.unresolvedVideo);
+    }
+
+    /** Instagram's normal authenticated media endpoint, also used by upstream yt-dlp.
+     * Cookies remain request-scoped; redirects and login/security challenges stop here. */
+    private static JSONObject readInstagramPost(String shortcode, NetscapeCookieJar cookies,
+                                                 BooleanSupplier cancelled) throws Exception {
+        if (cancelled.getAsBoolean()) throw new InterruptedException("다운로드가 취소되었습니다.");
+        String endpoint = "https://www.instagram.com/api/v1/media/" + instagramMediaId(shortcode) + "/info/";
+        HttpURLConnection connection = (HttpURLConnection) new URL(endpoint).openConnection();
+        try {
+            connection.setConnectTimeout(15_000);
+            connection.setReadTimeout(30_000);
+            connection.setInstanceFollowRedirects(false);
+            connection.setRequestProperty("User-Agent", USER_AGENT);
+            connection.setRequestProperty("X-IG-App-ID", "936619743392459");
+            connection.setRequestProperty("X-ASBD-ID", "359341");
+            connection.setRequestProperty("X-IG-WWW-Claim", "0");
+            connection.setRequestProperty("Origin", "https://www.instagram.com");
+            connection.setRequestProperty("Referer", "https://www.instagram.com/p/" + shortcode + "/");
+            connection.setRequestProperty("Accept", "application/json");
+            String header = cookieHeader(cookies, endpoint);
+            if (header != null) connection.setRequestProperty("Cookie", header);
+            int status = connection.getResponseCode();
+            if (cancelled.getAsBoolean()) throw new InterruptedException("다운로드가 취소되었습니다.");
+            if (status == 401 || status == 403 || (status >= 300 && status < 400)) {
+                throw new InstagramLoginRequiredException("Instagram 로그인 또는 보안 확인이 필요합니다. 앱의 Instagram 로그인 화면에서 확인해 주세요.");
+            }
+            if (status != 200) throw new IOException("Instagram 전체 미디어 조회 HTTP " + status);
+            JSONObject response;
+            try (InputStream input = connection.getInputStream()) {
+                response = new JSONObject(BoundedDocument.read(input, connection.getContentLengthLong(),
+                        BoundedDocument.MAX_BYTES, cancelled));
+            }
+            if (response.optBoolean("challenge_required") || response.has("challenge")
+                    || response.optBoolean("login_required")
+                    || "login_required".equals(response.optString("message"))
+                    || "challenge_required".equals(response.optString("message"))) {
+                throw new InstagramLoginRequiredException("Instagram 로그인 또는 보안 확인이 필요합니다. 앱의 Instagram 로그인 화면에서 확인해 주세요.");
+            }
+            JSONArray items = response.optJSONArray("items");
+            if (items == null || items.length() != 1 || items.optJSONObject(0) == null) {
+                throw new IOException("Instagram 전체 미디어 정보를 확인하지 못했습니다.");
+            }
+            return items.getJSONObject(0);
+        } finally {
+            connection.disconnect();
+        }
+    }
+
+    static String instagramMediaId(String shortcode) {
+        if (shortcode == null || !shortcode.matches("[A-Za-z0-9_-]{1,28}")) {
+            throw new IllegalArgumentException("Instagram 게시물 주소를 확인하지 못했습니다.");
+        }
+        String alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
+        BigInteger result = BigInteger.ZERO;
+        for (int index = 0; index < shortcode.length(); index++) {
+            result = result.shiftLeft(6).add(BigInteger.valueOf(alphabet.indexOf(shortcode.charAt(index))));
+        }
+        return result.toString();
+    }
+
+    /** Read explicit media types so a video's preview is never saved as a photo. */
+    static XMedia parseInstagramPost(JSONObject post, String shortcode) throws Exception {
+        String expectedId = instagramMediaId(shortcode);
+        String code = post.optString("code");
+        String pk = post.optString("pk", post.optString("id")).split("_", 2)[0];
+        if ((!code.isEmpty() && !code.equals(shortcode))
+                || (!pk.isEmpty() && !pk.equals(expectedId))
+                || (code.isEmpty() && pk.isEmpty())) {
+            throw new IOException("요청한 Instagram 게시물과 미디어 응답이 일치하지 않습니다.");
+        }
+        JSONArray items;
+        if (post.optInt("media_type") == 8) {
+            items = post.optJSONArray("carousel_media");
+            if (items == null || items.length() == 0
+                    || post.optInt("carousel_media_count", items.length()) != items.length()) {
+                throw new IOException("Instagram 묶음 게시물의 일부 미디어 정보가 누락되었습니다.");
+            }
+        } else items = new JSONArray().put(post);
+        List<String> images = new ArrayList<>();
+        List<String> videos = new ArrayList<>();
+        boolean hasVideo = false, unresolvedVideo = false;
+        for (int index = 0; index < items.length(); index++) {
+            JSONObject item = items.optJSONObject(index);
+            int type = item == null ? 0 : item.optInt("media_type");
+            if (type == 1) {
+                String image = bestInstagramImage(item);
+                if (isEmpty(image)) throw new IOException("Instagram 원본 사진 주소를 확인하지 못했습니다.");
+                images.add(image);
+            } else if (type == 2) {
+                hasVideo = true;
+                String video = bestInstagramVideo(item);
+                if (isEmpty(video)) unresolvedVideo = true;
+                else videos.add(video);
+            } else {
+                throw new IOException("Instagram 미디어 종류를 확인하지 못했습니다.");
+            }
+        }
+        return new XMedia(images, videos, hasVideo, unresolvedVideo);
     }
 
     static XMedia parseInstagramEmbedMedia(String normalized,
